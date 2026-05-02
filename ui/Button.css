@@ -1,0 +1,249 @@
+/* cgos-ui — Button atom companion CSS
+ * -----------------------------------------------------------------------
+ * Pseudo-states (:hover, :active, :focus-visible, :disabled) are
+ * unrepresentable in inline styles, so visual rules live here. Variant +
+ * size attributes drive everything; the JSX side is just markup + data
+ * attribute markers. See ui/Button.tsx.
+ */
+
+[data-cg-button] {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-family: var(--cg-font);
+  font-weight: var(--cg-weight-medium);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--cg-duration-fast) var(--cg-ease-emphasize),
+    background var(--cg-duration-fast) var(--cg-ease-emphasize),
+    border-color var(--cg-duration-fast) var(--cg-ease-emphasize),
+    box-shadow var(--cg-duration-fast) var(--cg-ease-emphasize),
+    filter var(--cg-duration-fast) var(--cg-ease-emphasize);
+}
+
+/* ── Sizes ────────────────────────────────────────────────────── */
+
+[data-cg-button][data-size="xs"] {
+  min-height: 24px;
+  padding: 0 8px;
+  font-size: 0.6875rem;       /* 11px */
+  font-weight: var(--cg-weight-semibold);
+  border-radius: var(--cg-radius-sm);
+  gap: 0.375rem;
+}
+[data-cg-button][data-size="sm"] {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 0.75rem;         /* 12px */
+  border-radius: var(--cg-radius-sm);
+  gap: 0.375rem;
+}
+[data-cg-button][data-size="md"] {
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 0.8125rem;       /* 13px */
+  border-radius: var(--cg-radius-md);
+}
+[data-cg-button][data-size="lg"] {
+  min-height: 48px;
+  padding: 0 24px;
+  font-size: 0.875rem;        /* 14px */
+  font-weight: var(--cg-weight-semibold);
+  border-radius: var(--cg-radius-md);
+  gap: 0.625rem;
+}
+
+/* ── Variants ─────────────────────────────────────────────────── */
+
+/* primary — solid accent fill, high-contrast text */
+[data-cg-button][data-variant="primary"] {
+  background: var(--cg-accent);
+  color: var(--cg-bg);
+}
+[data-cg-button][data-variant="primary"]:hover:not(:disabled):not([data-loading]) {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: var(--cg-elev-2);
+}
+[data-cg-button][data-variant="primary"]:active:not(:disabled):not([data-loading]) {
+  transform: translateY(0);
+  filter: brightness(0.96);
+  box-shadow: var(--cg-elev-1);
+}
+
+/* ghost — surface fill + hairline border */
+[data-cg-button][data-variant="ghost"] {
+  background: var(--cg-bg-surface);
+  border: 1px solid var(--cg-border);
+  color: var(--cg-text);
+}
+[data-cg-button][data-variant="ghost"]:hover:not(:disabled):not([data-loading]) {
+  transform: translateY(-1px);
+  background: var(--cg-bg-elevated);
+  border-color: var(--cg-border-hover);
+  box-shadow: var(--cg-elev-2);
+}
+[data-cg-button][data-variant="ghost"]:active:not(:disabled):not([data-loading]) {
+  transform: translateY(0);
+  box-shadow: var(--cg-elev-1);
+}
+
+/* accent — outlined accent for soft CTAs */
+[data-cg-button][data-variant="accent"] {
+  background: var(--cg-accent-subtle);
+  border: 1px solid var(--cg-accent-dim);
+  color: var(--cg-accent);
+}
+[data-cg-button][data-variant="accent"]:hover:not(:disabled):not([data-loading]) {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--cg-accent) 20%, transparent);
+  border-color: var(--cg-accent);
+  box-shadow: var(--cg-elev-2);
+}
+[data-cg-button][data-variant="accent"]:active:not(:disabled):not([data-loading]) {
+  transform: translateY(0);
+  box-shadow: var(--cg-elev-1);
+}
+
+/* danger — outlined destructive */
+[data-cg-button][data-variant="danger"] {
+  background: color-mix(in srgb, var(--cg-status-danger) 10%, transparent);
+  border: 1px solid var(--cg-status-danger);
+  color: var(--cg-status-danger);
+}
+[data-cg-button][data-variant="danger"]:hover:not(:disabled):not([data-loading]) {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--cg-status-danger) 20%, transparent);
+  box-shadow: var(--cg-elev-2);
+}
+[data-cg-button][data-variant="danger"]:active:not(:disabled):not([data-loading]) {
+  transform: translateY(0);
+  box-shadow: var(--cg-elev-1);
+}
+
+/* link — bare accent text, no fill, no chrome */
+[data-cg-button][data-variant="link"] {
+  background: transparent;
+  border: none;
+  color: var(--cg-accent);
+  padding: 0;
+  min-height: 0;
+  font-weight: var(--cg-weight-medium);
+}
+[data-cg-button][data-variant="link"]:hover:not(:disabled):not([data-loading]) {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transform: none;
+}
+[data-cg-button][data-variant="link"]:active:not(:disabled):not([data-loading]) {
+  transform: none;
+}
+
+/* glass — frosted floating surface (CGActionButton-style) */
+[data-cg-button][data-variant="glass"] {
+  background: var(--cg-glass-bg-elevated);
+  -webkit-backdrop-filter: var(--cg-glass-blur-strong);
+  backdrop-filter: var(--cg-glass-blur-strong);
+  border: 1px solid var(--cg-glass-border-strong);
+  color: var(--cg-text);
+  box-shadow: var(--cg-glass-shadow);
+}
+[data-cg-button][data-variant="glass"]:hover:not(:disabled):not([data-loading]) {
+  transform: translateY(-1px);
+  filter: saturate(1.15) brightness(1.04);
+  box-shadow: var(--cg-glass-shadow-floating);
+}
+[data-cg-button][data-variant="glass"]:active:not(:disabled):not([data-loading]) {
+  transform: translateY(0);
+  box-shadow: var(--cg-elev-2);
+}
+
+/* glass + pill = circular icon trigger (CGActionButton, etc.) */
+[data-cg-button][data-variant="glass"][data-pill] {
+  border-radius: var(--cg-glass-radius-pill);
+  width: var(--cg-button-pill-size, 56px);
+  height: var(--cg-button-pill-size, 56px);
+  min-height: 0;
+  padding: 0;
+  gap: 0;
+}
+
+/* ── Modifiers ───────────────────────────────────────────────── */
+
+[data-cg-button][data-full-width] {
+  width: 100%;
+}
+
+/* ── States ─────────────────────────────────────────────────── */
+
+[data-cg-button]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 2px;
+}
+
+[data-cg-button]:disabled,
+[data-cg-button][aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Loading ────────────────────────────────────────────────── */
+
+[data-cg-button][data-loading] {
+  cursor: progress;
+}
+[data-cg-button][data-loading] [data-cg-button-icon],
+[data-cg-button][data-loading] [data-cg-button-label] {
+  visibility: hidden;
+}
+
+[data-cg-button-spinner-wrapper] {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+[data-cg-button-spinner] {
+  display: inline-block;
+  border-radius: 50%;
+  border-style: solid;
+  border-color: currentColor;
+  border-right-color: transparent;
+  opacity: 0.85;
+  animation: cg-button-spin 700ms linear infinite;
+}
+
+@keyframes cg-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Icons ──────────────────────────────────────────────────── */
+
+[data-cg-button-icon] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+[data-cg-button][data-size="xs"] [data-cg-button-icon] svg { width: 12px; height: 12px; }
+[data-cg-button][data-size="sm"] [data-cg-button-icon] svg { width: 14px; height: 14px; }
+[data-cg-button][data-size="md"] [data-cg-button-icon] svg { width: 16px; height: 16px; }
+[data-cg-button][data-size="lg"] [data-cg-button-icon] svg { width: 18px; height: 18px; }
