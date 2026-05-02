@@ -1,0 +1,147 @@
+/* ============================================================
+   Common Garden — Base Utility Classes
+   Single-implementation typography + glass + elevation utilities.
+   Depends on: tokens.css (must be imported before this file).
+   ------------------------------------------------------------
+   Conservative about global selectors — consumers retain control
+   of resets, scrollbars, ::selection, and heading defaults.
+   ============================================================ */
+
+/* ── Typography ──────────────────────────────────────────────── */
+
+.cg-text-hero {
+  font-size: clamp(2.25rem, 5.5vw, 4.5rem);
+  font-weight: var(--cg-weight-light);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.cg-text-display {
+  font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+  font-weight: var(--cg-weight-light);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.cg-text-title {
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-weight: var(--cg-weight-medium);
+  line-height: 1.3;
+}
+
+.cg-text-body {
+  font-size: 1rem;
+  font-weight: var(--cg-weight-regular);
+  line-height: 1.6;
+}
+
+.cg-text-small {
+  font-size: 0.875rem;
+  font-weight: var(--cg-weight-regular);
+  line-height: 1.5;
+}
+
+.cg-text-label {
+  font-size: 0.6875rem;
+  font-weight: var(--cg-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cg-text-label-sm {
+  font-size: 0.6875rem;
+  font-weight: var(--cg-weight-regular);
+  line-height: 1.4;
+}
+
+.cg-text-micro {
+  font-size: 0.625rem;
+  font-weight: var(--cg-weight-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.cg-text-mono {
+  font-family: var(--cg-font-mono);
+  font-size: 0.8125rem;
+  font-weight: var(--cg-weight-regular);
+}
+
+/* ── Glass surfaces ──────────────────────────────────────────── */
+
+/*
+ * .cg-glass — translucent panel with hairline border + soft blur.
+ *   Use for: navigation overlays, side panels, content surfaces.
+ *
+ * .cg-glass-floating — same family but with stronger blur + lift
+ * shadow. Use for: modals, popovers, drawers, mobile action sheets.
+ *
+ * Both depend on backdrop-filter being available. Safari requires
+ * the -webkit prefix, included here.
+ */
+
+.cg-glass {
+  background: var(--cg-glass-bg);
+  border: 1px solid var(--cg-glass-border);
+  border-radius: var(--cg-glass-radius-md);
+  -webkit-backdrop-filter: var(--cg-glass-blur);
+  backdrop-filter: var(--cg-glass-blur);
+  box-shadow: var(--cg-glass-shadow);
+}
+
+.cg-glass-floating {
+  background: var(--cg-glass-bg-strong);
+  border: 1px solid var(--cg-glass-border-strong);
+  border-radius: var(--cg-glass-radius-lg);
+  -webkit-backdrop-filter: var(--cg-glass-blur-strong);
+  backdrop-filter: var(--cg-glass-blur-strong);
+  box-shadow: var(--cg-glass-shadow-floating);
+}
+
+/* ── Elevation utilities ─────────────────────────────────────── */
+
+.cg-elev-0 { box-shadow: var(--cg-elev-0); }
+.cg-elev-1 { box-shadow: var(--cg-elev-1); }
+.cg-elev-2 { box-shadow: var(--cg-elev-2); }
+.cg-elev-3 { box-shadow: var(--cg-elev-3); }
+.cg-elev-4 { box-shadow: var(--cg-elev-4); }
+.cg-elev-5 { box-shadow: var(--cg-elev-5); }
+
+/* ── Garden surface utilities ────────────────────────────────── */
+
+/*
+ * Theme-aware: derives dot color from current text color so the
+ * field works in both dark and light workspaces.
+ */
+.cg-dotted-field {
+  background-image:
+    radial-gradient(circle, color-mix(in srgb, var(--cg-text) 6%, transparent) 1px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+.cg-dotted-field-fine {
+  background-image:
+    radial-gradient(circle, color-mix(in srgb, var(--cg-text) 5%, transparent) 1px, transparent 1.5px);
+  background-size: 14px 14px;
+}
+
+.cg-iridescent-text {
+  background: var(--cg-iridescent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.cg-hairline {
+  height: 1px;
+  width: 100%;
+  background: color-mix(in srgb, var(--cg-text) 8%, transparent);
+}
+
+.cg-hairline-iridescent {
+  height: 1px;
+  width: 100%;
+  background: var(--cg-iridescent);
+  opacity: 0.4;
+}

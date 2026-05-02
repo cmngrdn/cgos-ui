@@ -1,0 +1,236 @@
+/* ============================================================
+   Common Garden — Unified Design Tokens
+   Single source of truth across cgos, cmngrdn, feather, reliquary.
+   ------------------------------------------------------------
+   Consumers should import this file from a top-level CSS file
+   and may add a per-app local CSS file for app-specific overrides
+   (e.g. dashboard sidebar widths).
+   ============================================================ */
+
+:root {
+  /* ── Backgrounds ─────────────────────────────────────────── */
+  --cg-bg:                  #0a0a0f;
+  --cg-bg-elevated:         #101018;
+  --cg-bg-surface:          #16161f;
+  --cg-bg-surface-hover:    #1c1c28;
+  --cg-bg-overlay:          rgba(10, 10, 15, 0.85);
+
+  /* ── Text ────────────────────────────────────────────────── */
+  --cg-text:                #e8e6e1;
+  --cg-text-secondary:      #8a8880;
+  --cg-text-dim:            rgba(232, 230, 225, 0.45);
+  --cg-text-muted:          rgba(232, 230, 225, 0.30);
+  --cg-text-accent:         #c4bea8;
+
+  /* ── Borders ─────────────────────────────────────────────── */
+  --cg-border:              rgba(255, 255, 255, 0.06);
+  --cg-border-hover:        rgba(255, 255, 255, 0.12);
+  --cg-border-subtle:       rgba(255, 255, 255, 0.04);
+
+  /* ── Translucent surface raise (low-opacity highlight over bg) ── */
+  --cg-surface-raise:       rgba(255, 255, 255, 0.05);
+  --cg-surface-raise-strong:rgba(255, 255, 255, 0.08);
+
+  /* ── Awen Accent (teal) ──────────────────────────────────── */
+  --cg-accent:              #2dd4a8;
+  --cg-accent-dim:          color-mix(in srgb, var(--cg-accent) 55%, black);
+  --cg-accent-glow:         color-mix(in srgb, var(--cg-accent), transparent 85%);
+  --cg-accent-subtle:       color-mix(in srgb, var(--cg-accent), transparent 93%);
+
+  /* ── Warm Accent (amber) ─────────────────────────────────── */
+  --cg-warm:                #d4a854;
+  --cg-warm-dim:            color-mix(in srgb, var(--cg-warm) 55%, black);
+  --cg-warm-glow:           color-mix(in srgb, var(--cg-warm), transparent 85%);
+
+  /* ── Artist Accents ──────────────────────────────────────── */
+  --cg-artist-feather:      #e040fb;
+  --cg-artist-sadie:        #00bfa5;
+  --cg-artist-erik:         #3d5afe;
+  --cg-artist-shams:        #ff6d00;
+  --cg-artist-brandon:      #00e5ff;
+  --cg-artist-mercedes:     #f50057;
+
+  /* ── CG Brand Gradient ───────────────────────────────────── */
+  --cg-gradient:            linear-gradient(135deg, #e040fb, #ff6d00, #ffd600, #00e5ff, #3d5afe);
+
+  /* ── Iridescent stroke (hairlines, dividers, sigils) ─────── */
+  --cg-iridescent:          linear-gradient(90deg, #6dc0ff 0%, #b78bff 22%, #ff5ec8 44%, #ff8a3d 66%, #ffd24a 80%, #26d4a6 100%);
+
+  /* ── Garden palette: petal stops (master sigil) ──────────── */
+  --cg-petal-blue:          #6dc0ff;
+  --cg-petal-magenta:       #e040fb;
+  --cg-petal-orange:        #ff8a3d;
+  --cg-petal-green:         #26d4a6;
+
+  /* ── Status — basic 5-color palette ──────────────────────── */
+  --cg-status-green:        #2dd4a8;
+  --cg-status-red:          #e05252;
+  --cg-status-amber:        #ffd600;
+  --cg-status-cyan:         #4fc3f7;
+  --cg-status-magenta:      #c44dff;
+
+  /* ── Status — semantic palette (appointment/inquiry/billing pills) ── */
+  --cg-status-success:      #34d399;
+  --cg-status-warning:      #f59e0b;
+  --cg-status-danger:       #ef4444;
+  --cg-status-blue:         #3d5afe;
+  --cg-status-purple:       #a78bfa;
+  --cg-status-neutral:      #6b7280;
+  --cg-status-archived:     #525252;
+
+  /* ── Typography ──────────────────────────────────────────── */
+  --cg-font:                'Outfit', system-ui, -apple-system, sans-serif;
+  --cg-font-mono:           'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+
+  /* Font weights */
+  --cg-weight-light:        300;
+  --cg-weight-regular:      400;
+  --cg-weight-medium:       500;
+  --cg-weight-semibold:     600;
+
+  /* ── Spacing ─────────────────────────────────────────────── */
+  --cg-space-xs:            4px;
+  --cg-space-sm:            8px;
+  --cg-space-md:            16px;
+  --cg-space-lg:            24px;
+  --cg-space-xl:            32px;
+  --cg-space-2xl:           48px;
+
+  /* ── Radii ───────────────────────────────────────────────── */
+  --cg-radius-sm:           4px;
+  --cg-radius-md:           8px;
+  --cg-radius-lg:           12px;
+  --cg-radius-xl:           16px;
+  --cg-radius-full:         100px;
+
+  /* ── Backdrop (Modal / overlay) ──────────────────────────── */
+  --cg-backdrop:            rgba(10, 10, 15, 0.6);
+
+  /* ── Background bloom (theme-controlled atmospheric tint) ── */
+  --cg-bloom-h:             240;
+  --cg-bloom-s:             25%;
+  --cg-bloom-opacity:       0.12;
+  /* Aliases for legacy consumers (do not remove) */
+  --bg-bloom-h:             var(--cg-bloom-h);
+  --bg-bloom-s:             var(--cg-bloom-s);
+  --bg-bloom-opacity:       var(--cg-bloom-opacity);
+  --bg-texture-opacity:     0;
+  --bg-texture-size:        18px;
+  --bg-texture-dot:         1px;
+
+  /* ============================================================
+     Elevation scale (HIG-style depth)
+     Layered shadows for surface hierarchy. Pair with --cg-glass-*
+     when the surface is translucent.
+     - 0: flat, no shadow
+     - 1: subtle lift (chips, hover state on flat cards)
+     - 2: card resting (panels, list items)
+     - 3: dropdown / popover / hover card
+     - 4: modal, drawer
+     - 5: floating overlays, mobile sheets
+     ============================================================ */
+  --cg-elev-0:              none;
+  --cg-elev-1:              0 1px 2px rgba(0, 0, 0, 0.20);
+  --cg-elev-2:              0 2px 6px rgba(0, 0, 0, 0.25);
+  --cg-elev-3:              0 4px 16px rgba(0, 0, 0, 0.35);
+  --cg-elev-4:              0 8px 24px rgba(0, 0, 0, 0.45);
+  --cg-elev-5:              0 16px 48px rgba(0, 0, 0, 0.55);
+
+  /* Legacy aliases — existing code still references these. */
+  --cg-shadow-sm:           var(--cg-elev-2);
+  --cg-shadow-md:           var(--cg-elev-3);
+  --cg-shadow-lift:         var(--cg-elev-4);
+  --cg-shadow-glow:         0 0 12px var(--cg-accent-glow);
+
+  /* ============================================================
+     Motion scale
+     HIG splits motion into entry (decelerate-in) vs exit
+     (accelerate-out). Springs are referenced for framer-motion
+     configs in atoms (the JS side reads named tokens — see
+     `cgos-ui/lib/motion.ts` once that lands).
+     ============================================================ */
+  --cg-duration-fast:       150ms;
+  --cg-duration-base:       220ms;
+  --cg-duration-slow:       400ms;
+  --cg-duration-slower:     600ms;
+
+  --cg-ease:                cubic-bezier(0.4, 0, 0.2, 1);  /* legacy: ease-in-out */
+  --cg-ease-entry:          cubic-bezier(0.0, 0.0, 0.2, 1); /* decelerate (HIG: appear) */
+  --cg-ease-exit:           cubic-bezier(0.4, 0.0, 1.0, 1); /* accelerate (HIG: dismiss) */
+  --cg-ease-emphasize:      cubic-bezier(0.2, 0.0, 0.0, 1); /* HIG-style emphasized motion */
+
+  /* ============================================================
+     Glass (Liquid Glass surface system)
+     Composable with the tokens above. Theme-aware via color-mix
+     so glass surfaces work in dark workspaces and light ones
+     (e.g. Reliquary) without per-theme overrides.
+     ============================================================ */
+
+  /* Surfaces — translucent, sit over the cosmic/page backdrop */
+  --cg-glass-bg:            color-mix(in srgb, var(--cg-bg-elevated) 70%, transparent);
+  --cg-glass-bg-elevated:   color-mix(in srgb, var(--cg-bg-surface) 75%, transparent);
+  --cg-glass-bg-strong:     color-mix(in srgb, var(--cg-bg-elevated) 88%, transparent);
+
+  /* Borders — Apple "Highlights" pattern: hairline + brighter top edge */
+  --cg-glass-border:        color-mix(in srgb, var(--cg-text) 8%, transparent);
+  --cg-glass-border-strong: color-mix(in srgb, var(--cg-text) 14%, transparent);
+  --cg-glass-border-top:    color-mix(in srgb, var(--cg-text) 22%, transparent);
+
+  /* Blur — the actual liquid effect. Safari requires -webkit prefix at usage. */
+  --cg-glass-blur:          blur(20px) saturate(140%);
+  --cg-glass-blur-strong:   blur(40px) saturate(160%);
+
+  /* Shadows — depth + subtle cosmic glow tint on floating elements */
+  --cg-glass-shadow:        0 8px 32px rgba(0, 0, 0, 0.32);
+  --cg-glass-shadow-floating: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 32px rgba(64, 32, 96, 0.08);
+
+  /* Radii — slightly more generous than --cg-radius-* for the soft glass feel */
+  --cg-glass-radius-sm:     10px;
+  --cg-glass-radius-md:     16px;
+  --cg-glass-radius-lg:     24px;
+  --cg-glass-radius-pill:   999px;
+}
+
+/* ============================================================
+   Light theme override (Reliquary / Holographic Academia)
+   Activated by [data-theme="light"] on :root. Overrides only
+   what differs — accents, status colors, typography, spacing
+   all inherit from the dark default.
+   ============================================================ */
+:root[data-theme="light"] {
+  --cg-bg:                  #faf6f0;
+  --cg-bg-elevated:         #fdfaf5;
+  --cg-bg-surface:          #f3ede3;
+  --cg-bg-surface-hover:    #ebe4d6;
+  --cg-bg-overlay:          rgba(250, 246, 240, 0.85);
+
+  --cg-text:                #1c1814;
+  --cg-text-secondary:      #6b6158;
+  --cg-text-dim:            rgba(28, 24, 20, 0.50);
+  --cg-text-muted:          rgba(28, 24, 20, 0.32);
+  --cg-text-accent:         #8a7865;
+
+  --cg-border:              rgba(40, 30, 20, 0.08);
+  --cg-border-hover:        rgba(40, 30, 20, 0.18);
+  --cg-border-subtle:       rgba(40, 30, 20, 0.05);
+
+  --cg-surface-raise:       rgba(40, 30, 20, 0.035);
+  --cg-surface-raise-strong:rgba(40, 30, 20, 0.07);
+
+  /* Light-theme elevation — softer, warmer */
+  --cg-elev-1:              0 1px 2px rgba(40, 30, 20, 0.04);
+  --cg-elev-2:              0 2px 6px rgba(40, 30, 20, 0.06);
+  --cg-elev-3:              0 4px 16px rgba(40, 30, 20, 0.08);
+  --cg-elev-4:              0 8px 24px rgba(40, 30, 20, 0.10);
+  --cg-elev-5:              0 16px 48px rgba(40, 30, 20, 0.14);
+  --cg-shadow-glow:         0 0 12px var(--cg-accent-glow);
+
+  --cg-backdrop:            rgba(40, 30, 20, 0.35);
+
+  --cg-bloom-h:             22;
+  --cg-bloom-s:             75%;
+  --cg-bloom-opacity:       0.10;
+  --bg-bloom-h:             var(--cg-bloom-h);
+  --bg-bloom-s:             var(--cg-bloom-s);
+  --bg-bloom-opacity:       var(--cg-bloom-opacity);
+}
