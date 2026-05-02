@@ -1,0 +1,41 @@
+/* cgos-ui — ControlChip atom companion CSS
+ * -----------------------------------------------------------------------
+ * The four sub-atoms (ChipToggle / ChipSelect / ChipGroup / ChipSegment)
+ * use inline styles for their dynamic visual state. This file adds:
+ *  - Button reset (border / background / appearance) for the chips that
+ *    used to inline `all: 'unset'`
+ *  - Menu-item hover via CSS pseudo-state (replaces the per-render JS
+ *    onMouseEnter / onMouseLeave handlers in the dashboard original)
+ *  - Focus-visible ring for a11y across all chip sub-types
+ */
+
+/* Base reset for all chip / menu buttons (the chips already set their own
+ * border + background inline; we just remove the UA defaults). */
+[data-cg-chip],
+[data-cg-chip-segment],
+[data-cg-chip-menu-item] {
+  font: inherit;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  text-align: left;
+}
+
+[data-cg-chip-segment],
+[data-cg-chip-menu-item] {
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+/* Menu item hover — surface-hover bg, swept color override */
+[data-cg-chip-menu-item]:hover {
+  background: var(--cg-bg-surface-hover);
+}
+
+/* Focus ring — accent at 2px offset, matches Button atom */
+[data-cg-chip]:focus-visible,
+[data-cg-chip-segment]:focus-visible,
+[data-cg-chip-menu-item]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 2px;
+}
