@@ -145,3 +145,12 @@
   background: var(--cg-iridescent);
   opacity: 0.4;
 }
+
+/* Shared keyframe for circular loading spinners. Used by Spinner atom + Button
+ * atom's loading state. Kept here (not in tokens.css) because @keyframes are
+ * runtime CSS, not design tokens. */
+@keyframes cg-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

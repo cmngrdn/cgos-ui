@@ -225,14 +225,10 @@
   border-color: currentColor;
   border-right-color: transparent;
   opacity: 0.85;
-  animation: cg-button-spin 700ms linear infinite;
+  animation: cg-spin 700ms linear infinite;
 }
 
-@keyframes cg-button-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* @keyframes cg-spin lives in base.css — shared with the Spinner atom. */
 
 /* ── Icons ──────────────────────────────────────────────────── */
 
