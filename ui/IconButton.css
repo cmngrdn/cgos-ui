@@ -1,0 +1,131 @@
+/* cgos-ui — IconButton atom companion CSS
+ * -----------------------------------------------------------------------
+ * Pseudo-state styling for ui/IconButton.tsx. Variant + size + state
+ * driven entirely by data attributes; the JSX side is just markup.
+ */
+
+[data-cg-icon-button] {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-family: var(--cg-font);
+  cursor: pointer;
+  padding: 0;
+  border-radius: var(--cg-radius-md);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background var(--cg-duration-fast) var(--cg-ease-emphasize),
+    color var(--cg-duration-fast) var(--cg-ease-emphasize),
+    transform var(--cg-duration-fast) var(--cg-ease-emphasize);
+}
+
+/* ── Sizes ────────────────────────────────────────────────────── */
+
+[data-cg-icon-button][data-size="xs"] {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--cg-radius-sm);
+}
+[data-cg-icon-button][data-size="sm"] {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--cg-radius-sm);
+}
+[data-cg-icon-button][data-size="md"] {
+  width: 32px;
+  height: 32px;
+}
+[data-cg-icon-button][data-size="lg"] {
+  width: 40px;
+  height: 40px;
+}
+
+/* Icon span constrains the rendered glyph to the appropriate size */
+[data-cg-icon-button-icon] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+[data-cg-icon-button][data-size="xs"] [data-cg-icon-button-icon] { width: 10px; height: 10px; }
+[data-cg-icon-button][data-size="sm"] [data-cg-icon-button-icon] { width: 14px; height: 14px; }
+[data-cg-icon-button][data-size="md"] [data-cg-icon-button-icon] { width: 16px; height: 16px; }
+[data-cg-icon-button][data-size="lg"] [data-cg-icon-button-icon] { width: 20px; height: 20px; }
+
+/* SVG icons inherit the glyph slot dimensions */
+[data-cg-icon-button][data-size="xs"] [data-cg-icon-button-icon] svg { width: 10px; height: 10px; }
+[data-cg-icon-button][data-size="sm"] [data-cg-icon-button-icon] svg { width: 14px; height: 14px; }
+[data-cg-icon-button][data-size="md"] [data-cg-icon-button-icon] svg { width: 16px; height: 16px; }
+[data-cg-icon-button][data-size="lg"] [data-cg-icon-button-icon] svg { width: 20px; height: 20px; }
+
+/* ── Variants — default + hover ──────────────────────────────── */
+
+[data-cg-icon-button][data-variant="ghost"] {
+  color: var(--cg-text-muted);
+}
+[data-cg-icon-button][data-variant="ghost"]:hover:not(:disabled):not([data-active]) {
+  background: var(--cg-surface-raise);
+  color: var(--cg-text);
+}
+
+[data-cg-icon-button][data-variant="subtle"] {
+  color: var(--cg-text-secondary);
+}
+[data-cg-icon-button][data-variant="subtle"]:hover:not(:disabled):not([data-active]) {
+  background: var(--cg-surface-raise);
+  color: var(--cg-text);
+}
+
+[data-cg-icon-button][data-variant="accent"] {
+  color: var(--cg-accent);
+}
+[data-cg-icon-button][data-variant="accent"]:hover:not(:disabled):not([data-active]) {
+  background: var(--cg-accent-subtle);
+}
+
+[data-cg-icon-button][data-variant="danger"] {
+  color: var(--cg-status-danger);
+}
+[data-cg-icon-button][data-variant="danger"]:hover:not(:disabled):not([data-active]) {
+  background: color-mix(in srgb, var(--cg-status-danger) 12%, transparent);
+}
+
+/* xs: hover is color-swap only — surface tint reads too heavy at 16×16 */
+[data-cg-icon-button][data-size="xs"]:hover:not(:disabled):not([data-active]) {
+  background: transparent;
+}
+
+/* ── Active (toggle / pressed-selected) ──────────────────────── */
+
+[data-cg-icon-button][data-active] {
+  background: var(--cg-accent-subtle);
+  color: var(--cg-accent);
+}
+
+/* ── Press / active-tap feedback (HIG) ───────────────────────── */
+
+[data-cg-icon-button]:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* ── Focus ──────────────────────────────────────────────────── */
+
+[data-cg-icon-button]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 1px;
+}
+
+/* ── Disabled ───────────────────────────────────────────────── */
+
+[data-cg-icon-button]:disabled,
+[data-cg-icon-button][aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
