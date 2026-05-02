@@ -161,3 +161,13 @@
   0%   { transform: translateX(-100%); }
   100% { transform: translateX(350%); }
 }
+
+/* Modal entry — used by Modal atom for backdrop fade-in + surface rise. */
+@keyframes cg-modal-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes cg-modal-rise {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
