@@ -1,0 +1,26 @@
+/* Input + Textarea atoms — focus + placeholder + invalid pseudo-states.
+ *
+ * Inline styles in Input.tsx handle the resting state. Pseudo-states need
+ * real CSS. Auto-loaded via cgos-ui/index.css.
+ */
+
+[data-cg-input]:focus,
+[data-cg-textarea]:focus {
+  border-color: var(--cg-accent-dim);
+}
+
+[data-cg-input]:focus-visible,
+[data-cg-textarea]:focus-visible {
+  border-color: var(--cg-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cg-accent) 18%, transparent);
+}
+
+[data-cg-input]::placeholder,
+[data-cg-textarea]::placeholder {
+  color: var(--cg-text-muted);
+}
+
+[data-cg-input][aria-invalid="true"],
+[data-cg-textarea][aria-invalid="true"] {
+  border-color: var(--cg-status-danger);
+}

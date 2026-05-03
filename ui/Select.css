@@ -1,0 +1,27 @@
+/* Select atom — focus + open + invalid pseudo-states.
+ *
+ * Inline styles in Select.tsx handle the resting state; pseudo-states
+ * need real CSS. Auto-loaded via cgos-ui/index.css.
+ */
+
+[data-cg-select]:focus {
+  border-color: var(--cg-accent-dim);
+}
+
+[data-cg-select]:focus-visible {
+  border-color: var(--cg-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cg-accent) 18%, transparent);
+}
+
+[data-cg-select][aria-invalid="true"] {
+  border-color: var(--cg-status-danger);
+}
+
+[data-cg-select] option {
+  /* In Chromium + Firefox, option styling is mostly system-controlled. We
+   * bring the background up to bg-elevated so the dropdown reads as a
+   * panel against the page; text uses cg-text. Safari ignores most of
+   * this — its native picker takes over. */
+  background: var(--cg-bg-elevated);
+  color: var(--cg-text);
+}
