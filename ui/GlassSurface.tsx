@@ -29,6 +29,14 @@ import { forwardRef, type CSSProperties, type HTMLAttributes, type ReactNode, ty
  *   4: modal / drawer
  *   5: floating overlay / mobile sheet
  *
+ * Rim highlight (Apple HIG "Highlights" pattern): every elevation
+ * adds an `inset 0 1px 0 var(--cg-glass-border-top)` to the box-shadow
+ * — a brighter top edge that gives the "lifted glass" read even when
+ * dark-on-dark contexts make the bleed-through invisible. Survives
+ * border overrides (sidebar / InspectorDrawer override `border` for
+ * single-edge styling — the rim is via shadow, not border, so it
+ * stays).
+ *
  * The atom does not handle hover, focus, or click states — it is a
  * presentational primitive. Wrap with a button or apply interactive
  * styles in the consumer.
@@ -117,6 +125,8 @@ function resolveRadius(radius: GlassRadius | string): string {
   return radius
 }
 
+const RIM_HIGHLIGHT = 'inset 0 1px 0 var(--cg-glass-border-top)'
+
 export const GlassSurface = forwardRef<HTMLElement, GlassSurfaceProps>(function GlassSurface(
   {
     variant = 'frosted',
@@ -131,6 +141,12 @@ export const GlassSurface = forwardRef<HTMLElement, GlassSurfaceProps>(function 
   ref,
 ) {
   const variantCss = variantStyles(variant, tintColor)
+  // Rim highlight: a brighter top edge composes with the elevation
+  // shadow. At elevation 0 (`--cg-elev-0` resolves to `none`), we drop
+  // the `none` and emit just the rim — `box-shadow: <inset>, none` is
+  // invalid CSS.
+  const elevToken = ELEVATION_TOKEN[elevation]
+  const boxShadow = elevation === 0 ? RIM_HIGHLIGHT : `${RIM_HIGHLIGHT}, ${elevToken}`
   return (
     <Tag
       ref={ref as Ref<HTMLElement> as Ref<HTMLDivElement>}
@@ -139,7 +155,7 @@ export const GlassSurface = forwardRef<HTMLElement, GlassSurfaceProps>(function 
       style={{
         ...variantCss,
         borderRadius: resolveRadius(radius),
-        boxShadow: ELEVATION_TOKEN[elevation],
+        boxShadow,
         ...style,
       }}
       {...rest}

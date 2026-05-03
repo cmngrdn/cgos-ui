@@ -174,7 +174,7 @@
   /* Borders — Apple "Highlights" pattern: hairline + brighter top edge */
   --cg-glass-border:        color-mix(in srgb, var(--cg-text) 8%, transparent);
   --cg-glass-border-strong: color-mix(in srgb, var(--cg-text) 14%, transparent);
-  --cg-glass-border-top:    color-mix(in srgb, var(--cg-text) 22%, transparent);
+  --cg-glass-border-top:    color-mix(in srgb, var(--cg-text) 38%, transparent);
 
   /* Blur — the actual liquid effect. Safari requires -webkit prefix at usage. */
   --cg-glass-blur:          blur(20px) saturate(140%);
