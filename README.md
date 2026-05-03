@@ -2,7 +2,7 @@
 
 Shared design tokens, atoms, and visual primitives for the Common Garden ecosystem — one source of truth across `cgos`, `cmngrdn`, `feather`, and `reliquary`.
 
-> **Status:** Phase 1 — token consolidation. CSS-only package. Atoms (`Button`, `Toggle`, `Badge`, etc.) land in Phase 2.
+> **Status:** v0.13.0 — Phases 1 + 2 complete (2026-05-02). Tokens + 9 atoms + 3 lifted libs. Both consumer repos (cgos dashboard + cmngrdn) consume directly.
 
 See [`docs/design-system-unification-plan.md`](https://github.com/cmngrdn/cgos/blob/main/docs/design-system-unification-plan.md) in the cgos repo for the multi-phase plan, audit findings, and architecture decisions.
 
@@ -65,6 +65,46 @@ Drop-in `:root` declarations covering the entire token vocabulary:
 - `.cg-dotted-field` `.cg-dotted-field-fine`
 - `.cg-iridescent-text`
 - `.cg-hairline` `.cg-hairline-iridescent`
+- `@keyframes cg-spin` (used by Spinner + Button loading state)
+- `@keyframes cg-progress-indeterminate` (used by ProgressBar)
+- `@keyframes cg-modal-fade` + `cg-modal-rise` (used by Modal)
+
+### `ui/` — atoms (v0.13.0)
+
+Imported via subpath. Each atom is self-contained TSX + (optional) companion CSS auto-loaded by `cgos-ui/index.css`.
+
+```ts
+import { Button } from 'cgos-ui/ui/Button'
+import { IconButton } from 'cgos-ui/ui/IconButton'
+import { Spinner } from 'cgos-ui/ui/Spinner'
+import { Badge } from 'cgos-ui/ui/Badge'
+import { Toggle } from 'cgos-ui/ui/Toggle'
+import { ProgressBar } from 'cgos-ui/ui/ProgressBar'
+import { EmptyState } from 'cgos-ui/ui/EmptyState'
+import { Modal } from 'cgos-ui/ui/Modal'
+import { ChipToggle, ChipSelect, ChipGroup, ChipSegment } from 'cgos-ui/ui/ControlChip'
+```
+
+| Atom | Variants × Sizes | Notes |
+|------|------------------|-------|
+| **Button** | 6 × 4 | primary / ghost / accent / danger / link / glass; xs/sm/md/lg; loading state, iconLeft/Right, fullWidth, glass+pill. Visual brief: [`docs/button-atom-brief.md`](https://github.com/cmngrdn/cgos/blob/main/docs/button-atom-brief.md) |
+| **IconButton** | 4 × 4 | ghost / subtle / accent / danger; xs/sm/md/lg; active-toggle (aria-pressed); xs skips hover-bg lift |
+| **Spinner** | n/a × 4 | sm/md/lg/xl; default tint `--cg-accent`, override via `color` prop |
+| **Badge** | 3 × 2 × 8 | subtle / outline / solid; sm/md; 8 status tones; supports `dot` + `uppercase` |
+| **Toggle** | 4 × 2 | accent / success / warning / danger; sm/md; `role="switch"` + `aria-checked` baked in |
+| **ProgressBar** | 5 tones, determinate or indeterminate | accent / success / warning / danger / neutral |
+| **EmptyState** | 2 sizes | sm/md; icon + title + description + optional action |
+| **Modal** | n/a | Glass-frosted backdrop (`backdrop-filter: blur(8px) saturate(140%)` + `--cg-backdrop` tint), opaque surface, click-outside + Esc close |
+| **ControlChip** | 4 sub-atoms | ChipToggle + ChipSelect (portal-rendered dropdown) + ChipGroup + ChipSegment. 28px pill height across all |
+
+### `lib/` — typed contracts shared across repos
+
+- `lib/pass-art.ts` — `PassArt`, `PassEra`, `PassArtVariant`, `EMPTY_PASS_ART`, `resolveLevelArt()`, `resolveActivePassArt()`
+- `lib/dossier.ts` — `Dossier`, `DossierMission`, `DossierService`, `DossierTransmission`, `DossierGroveMember`, `EMPTY_DOSSIER`, `TRANSMISSION_KINDS`
+
+### `passes/` — visual primitives
+
+- `passes/PassCard.tsx` — `PassCard` + `PassCardInWallet` (Apple Wallet pass approximation, 320×400, optional `scale` prop and Wallet chrome wrapper)
 
 ## Local development
 
@@ -88,6 +128,26 @@ npm unlink --no-save cgos-ui
 npm install
 ```
 
+### Vite + npm-link gotcha — clear `.vite` cache after adding new `@import` entries
+
+When you add a new `@import "./ui/X.css"` to `cgos-ui/index.css` and the consumer is on `npm link`, Vite's per-package CSS dependency graph sometimes caches the previous `@import` chain and silently drops the new file. Symptom: the new atom's CSS is fetched (visible in the network tab) but its rules don't appear in the page's loaded stylesheets, so styles don't apply.
+
+**Fix:** stop the dev server, `rm -rf node_modules/.vite` in the consumer repo, restart. The chain re-resolves cleanly. No fix needed when consuming via `github:` URL — only an issue with linked packages.
+
+### Next.js + Turbopack — add `transpilePackages: ["cgos-ui"]`
+
+Turbopack doesn't transpile TSX inside `node_modules` by default. Without this opt-in, `npm run build` fails with "Unknown module type" on every cgos-ui atom import:
+
+```ts
+// next.config.ts
+const nextConfig = {
+  transpilePackages: ["cgos-ui"],
+  // ...
+}
+```
+
+cgos's Vite handles this natively via `@vitejs/plugin-react` — no opt-in needed.
+
 ## Architecture decisions
 
 Locked 2026-05-02 in the plan doc. Summarized:
@@ -101,8 +161,8 @@ Locked 2026-05-02 in the plan doc. Summarized:
 
 ## Roadmap
 
-- **Phase 1** ⏳ — token consolidation (this release)
-- **Phase 2** — atom library: Button, IconButton, Toggle, Badge, Modal, Spinner, ProgressBar, EmptyState, ControlChip
+- **Phase 1** ✅ — token consolidation (2026-05-02)
+- **Phase 2** ✅ — atom library v1: Button, IconButton, Spinner, Badge, Toggle, ProgressBar, EmptyState, Modal, ControlChip; mirror files lifted (PassCard, pass-art, dossier types) (2026-05-02)
 - **Phase 3** — Liquid Glass primitives: material atoms, depth-elevation system, motion primitives, HIG interaction states
 - **Phase 4** — sub-atoms (Input, Select, Card, Chip, SegmentedControl); orb animation reconciliation
 - **Phase 5** — native shell exploration (deferred)
