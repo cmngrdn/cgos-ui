@@ -35,6 +35,16 @@
   line-height: 1.6;
 }
 
+/* Headline — HIG "Headline" rank: same size as body, semibold weight.
+ * Bridges body and title. Use for inspector titles, card titles within
+ * a list, section headings inside a panel — anywhere text needs more
+ * weight than body but doesn't earn a Title-class size jump. */
+.cg-text-headline {
+  font-size: 1rem;
+  font-weight: var(--cg-weight-semibold);
+  line-height: 1.4;
+}
+
 .cg-text-small {
   font-size: 0.875rem;
   font-weight: var(--cg-weight-regular);
@@ -106,7 +116,7 @@
   border-radius: var(--cg-glass-radius-md);
   -webkit-backdrop-filter: var(--cg-glass-blur);
   backdrop-filter: var(--cg-glass-blur);
-  box-shadow: var(--cg-glass-shadow);
+  box-shadow: inset 0 1px 0 var(--cg-glass-border-top), var(--cg-glass-shadow);
 }
 
 .cg-glass-floating {
@@ -115,7 +125,7 @@
   border-radius: var(--cg-glass-radius-lg);
   -webkit-backdrop-filter: var(--cg-glass-blur-strong);
   backdrop-filter: var(--cg-glass-blur-strong);
-  box-shadow: var(--cg-glass-shadow-floating);
+  box-shadow: inset 0 1px 0 var(--cg-glass-border-top), var(--cg-glass-shadow-floating);
 }
 
 /* ── Elevation utilities ─────────────────────────────────────── */

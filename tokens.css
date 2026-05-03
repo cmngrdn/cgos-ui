@@ -103,6 +103,10 @@
   --cg-radius-xl:           16px;
   --cg-radius-full:         100px;
 
+  /* ── Interaction states ──────────────────────────────────── */
+  --cg-disabled-opacity:    0.5;
+  --cg-pressed-opacity:     0.85;
+
   /* ── Backdrop (Modal / overlay) ──────────────────────────── */
   --cg-backdrop:            rgba(10, 10, 15, 0.6);
 

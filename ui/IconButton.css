@@ -125,7 +125,7 @@
 
 [data-cg-icon-button]:disabled,
 [data-cg-icon-button][aria-disabled="true"] {
-  opacity: 0.5;
+  opacity: var(--cg-disabled-opacity);
   cursor: not-allowed;
   transform: none !important;
 }

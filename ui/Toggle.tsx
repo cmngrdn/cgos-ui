@@ -77,7 +77,7 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(function Toggle
         alignItems: 'center',
         gap: 8,
         cursor: disabled ? 'not-allowed' : 'pointer',
-        opacity: disabled ? 0.4 : 1,
+        opacity: disabled ? 'var(--cg-disabled-opacity)' : 1,
         ...style,
       }}
     >
