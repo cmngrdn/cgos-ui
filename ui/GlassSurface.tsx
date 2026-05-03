@@ -133,7 +133,7 @@ export const GlassSurface = forwardRef<HTMLElement, GlassSurfaceProps>(function 
   const variantCss = variantStyles(variant, tintColor)
   return (
     <Tag
-      ref={ref as Ref<HTMLElement>}
+      ref={ref as Ref<HTMLElement> as Ref<HTMLDivElement>}
       data-cg-glass-surface={variant}
       data-cg-elevation={String(elevation)}
       style={{
