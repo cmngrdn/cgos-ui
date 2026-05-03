@@ -170,12 +170,15 @@ export function ChipSelect({
               top: pos.top,
               left: pos.left,
               minWidth: pos.minWidth,
-              background: 'var(--cg-bg-elevated)',
-              border: '1px solid var(--cg-border)',
-              borderRadius: 'var(--cg-radius-md)',
-              boxShadow: 'var(--cg-elev-3)',
+              background: 'var(--cg-glass-bg)',
+              WebkitBackdropFilter: 'var(--cg-glass-blur)',
+              backdropFilter: 'var(--cg-glass-blur)',
+              border: '1px solid var(--cg-glass-border)',
+              borderRadius: 'var(--cg-glass-radius-md)',
+              boxShadow: 'inset 0 1px 0 var(--cg-glass-border-top), var(--cg-elev-3)',
               padding: '4px',
               zIndex: 1000,
+              animation: 'cg-modal-rise 140ms var(--cg-ease-entry)',
             }}
           >
             <MenuItem
