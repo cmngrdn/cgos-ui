@@ -68,6 +68,25 @@
   font-weight: var(--cg-weight-regular);
 }
 
+/* Caption — inline metadata, secondary timestamps, footnote text.
+ * Fills the 12px gap between .cg-text-small (14px) and the 11px
+ * label classes. Use for "3 days ago", "12 contacts · 3 inquiries"
+ * — content that's secondary but not a label. */
+.cg-text-caption {
+  font-size: 0.75rem;
+  font-weight: var(--cg-weight-regular);
+  line-height: 1.4;
+}
+
+/* Callout — emphasized inline text that's not a heading. Body
+ * size, semibold weight. Use for inline emphasis ("Active",
+ * "Required"), the lead sentence of an empty state, etc. */
+.cg-text-callout {
+  font-size: 1rem;
+  font-weight: var(--cg-weight-semibold);
+  line-height: 1.4;
+}
+
 /* ── Glass surfaces ──────────────────────────────────────────── */
 
 /*
@@ -107,6 +126,62 @@
 .cg-elev-3 { box-shadow: var(--cg-elev-3); }
 .cg-elev-4 { box-shadow: var(--cg-elev-4); }
 .cg-elev-5 { box-shadow: var(--cg-elev-5); }
+
+/* ── Interactive card utility ────────────────────────────────────
+ * .cg-card                — resting glass card (frosted, elev 1, rim).
+ * .cg-card-interactive    — adds hover lift (+1 elevation, brighter
+ *                           border) and press depression (translateY
+ *                           1px + shadow contract). Apply to <button>
+ *                           or clickable <div>.
+ *
+ * The hover/active states use --cg-ease-entry / --cg-ease-exit so
+ * the lift feels deliberate, not snappy.
+ *
+ * Theme-aware via the glass tokens (color-mix). Survives consumer
+ * border overrides — rim is via box-shadow, not border.
+ * ───────────────────────────────────────────────────────────────── */
+.cg-card {
+  background: var(--cg-glass-bg);
+  border: 1px solid var(--cg-glass-border);
+  border-radius: var(--cg-glass-radius-md);
+  -webkit-backdrop-filter: var(--cg-glass-blur);
+  backdrop-filter: var(--cg-glass-blur);
+  box-shadow: inset 0 1px 0 var(--cg-glass-border-top), var(--cg-elev-1);
+  transition:
+    transform 180ms var(--cg-ease-entry),
+    box-shadow 180ms var(--cg-ease-entry),
+    border-color 180ms var(--cg-ease-entry);
+}
+
+.cg-card-interactive {
+  background: var(--cg-glass-bg);
+  border: 1px solid var(--cg-glass-border);
+  border-radius: var(--cg-glass-radius-md);
+  -webkit-backdrop-filter: var(--cg-glass-blur);
+  backdrop-filter: var(--cg-glass-blur);
+  box-shadow: inset 0 1px 0 var(--cg-glass-border-top), var(--cg-elev-1);
+  cursor: pointer;
+  transition:
+    transform 180ms var(--cg-ease-entry),
+    box-shadow 180ms var(--cg-ease-entry),
+    border-color 180ms var(--cg-ease-entry);
+}
+.cg-card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 var(--cg-glass-border-top), var(--cg-elev-3);
+  border-color: var(--cg-glass-border-strong);
+}
+.cg-card-interactive:active {
+  transform: translateY(0);
+  box-shadow: inset 0 1px 0 var(--cg-glass-border-top), var(--cg-elev-1);
+  transition:
+    transform 80ms var(--cg-ease-exit),
+    box-shadow 80ms var(--cg-ease-exit);
+}
+.cg-card-interactive:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 2px;
+}
 
 /* ── Garden surface utilities ────────────────────────────────── */
 
