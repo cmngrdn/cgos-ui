@@ -2,7 +2,7 @@
 
 Shared design tokens, atoms, and visual primitives for the Common Garden ecosystem — one source of truth across `cgos`, `cmngrdn`, `feather`, and `reliquary`.
 
-> **Status:** v0.13.0 — Phases 1 + 2 complete (2026-05-02). Tokens + 9 atoms + 3 lifted libs. Both consumer repos (cgos dashboard + cmngrdn) consume directly.
+> **Status:** v0.20.0 — Phases 1 + 2 + 3 + 4.1 complete; cross-cutting `preview/` module landed (2026-05-08). Tokens + atoms + lifted libs + DevicePreview v2. Both consumer repos (cgos dashboard + cmngrdn) consume directly.
 
 See [`docs/design-system-unification-plan.md`](https://github.com/cmngrdn/cgos/blob/main/docs/design-system-unification-plan.md) in the cgos repo for the multi-phase plan, audit findings, and architecture decisions.
 
@@ -106,6 +106,33 @@ import { ChipToggle, ChipSelect, ChipGroup, ChipSegment } from 'cgos-ui/ui/Contr
 
 - `passes/PassCard.tsx` — `PassCard` + `PassCardInWallet` (Apple Wallet pass approximation, 320×400, optional `scale` prop and Wallet chrome wrapper)
 
+### `preview/` — device-frame preview chrome (v0.20.0+)
+
+The cross-cutting "edit-with-live-preview" surface for portals, dossiers, inquiry forms, and any future builder. Same chrome everywhere.
+
+```ts
+import {
+  DeviceIframePreview,
+  DeviceSubtreePreview,
+} from 'cgos-ui/preview/DevicePreview'
+import { MobileFrame } from 'cgos-ui/preview/MobileFrame'
+import { DesktopFrame } from 'cgos-ui/preview/DesktopFrame'
+```
+
+| Export | Use when |
+|--------|----------|
+| **`<DeviceIframePreview url=… />`** | Previewing a live URL. Renders an `<iframe>` inside the device chrome. Bump the iframe to reload via `ref.current?.refresh()` (or the toolbar reload button) after a parent save. |
+| **`<DeviceSubtreePreview>`** | Previewing arbitrary React content. No iframe — props update in-place, no reload. Preferred for in-context editors (Phase 2 dossier surface). |
+| **`<MobileFrame>`** | Standalone iPhone 15 Pro silhouette. Use when you want the chrome without the viewport-toggle toolbar. |
+| **`<DesktopFrame>`** | Standalone browser-window silhouette (max-width 1280px). |
+
+Both `Device*Preview` variants:
+- Default to **mobile** viewport (most authoring surfaces are mobile-dominant).
+- Accept `viewport` (controlled) OR `defaultViewport` (uncontrolled). Pass `onViewportChange` to observe in either mode.
+- Same toolbar chrome — viewport toggle pills, optional reload (iframe variant only).
+
+Phase 4 (Expo wrap) note: `DeviceSubtreePreview` is the native-portable variant. RN has no `<iframe>`; iframe-variant consumers pick up a `WebView`-shimmed leaf at native time.
+
 ## Local development
 
 When iterating on `cgos-ui` changes from a consumer repo, use `npm link` to avoid the publish/reinstall round-trip:
@@ -164,7 +191,9 @@ Locked 2026-05-02 in the plan doc. Summarized:
 - **Phase 1** ✅ — token consolidation (2026-05-02)
 - **Phase 2** ✅ — atom library v1: Button, IconButton, Spinner, Badge, Toggle, ProgressBar, EmptyState, Modal, ControlChip; mirror files lifted (PassCard, pass-art, dossier types) (2026-05-02)
 - **Phase 3** — Liquid Glass primitives: material atoms, depth-elevation system, motion primitives, HIG interaction states
-- **Phase 4** — sub-atoms (Input, Select, Card, Chip, SegmentedControl); orb animation reconciliation
+- **Phase 4.1** ✅ — sub-atoms (Card, Input + Textarea, Select) (2026-05-07)
+- **Phase 4.2** — Chip, SegmentedControl; orb animation reconciliation
+- **DevicePreview v2** ✅ — `preview/` module (DeviceIframePreview + DeviceSubtreePreview, MobileFrame, DesktopFrame) (2026-05-08, v0.20.0)
 - **Phase 5** — native shell exploration (deferred)
 
 ## License

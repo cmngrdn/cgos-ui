@@ -1,6 +1,6 @@
 {
   "name": "cgos-ui",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "description": "Shared design tokens, atoms, and visual primitives for the Common Garden ecosystem (cgos dashboard + cmngrdn + feather + reliquary).",
   "type": "module",
   "license": "UNLICENSED",
@@ -83,6 +83,18 @@
       "types": "./passes/PassCard.tsx",
       "import": "./passes/PassCard.tsx"
     },
+    "./preview/DevicePreview": {
+      "types": "./preview/DevicePreview.tsx",
+      "import": "./preview/DevicePreview.tsx"
+    },
+    "./preview/MobileFrame": {
+      "types": "./preview/MobileFrame.tsx",
+      "import": "./preview/MobileFrame.tsx"
+    },
+    "./preview/DesktopFrame": {
+      "types": "./preview/DesktopFrame.tsx",
+      "import": "./preview/DesktopFrame.tsx"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -94,6 +106,7 @@
     "ui/",
     "lib/",
     "passes/",
+    "preview/",
     "README.md"
   ],
   "repository": {
