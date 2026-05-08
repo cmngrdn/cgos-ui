@@ -71,6 +71,10 @@
       "import": "./ui/Select.tsx"
     },
     "./ui/Select.css": "./ui/Select.css",
+    "./ui/FieldDot": {
+      "types": "./ui/FieldDot.tsx",
+      "import": "./ui/FieldDot.tsx"
+    },
     "./lib/pass-art": {
       "types": "./lib/pass-art.ts",
       "import": "./lib/pass-art.ts"
