@@ -78,6 +78,26 @@
   --cg-status-neutral:      #6b7280;
   --cg-status-archived:     #525252;
 
+  /* ── Module accents (Studio V2 sidebar) ──────────────────────
+     One color per sidebar module. 9 of 11 alias existing brand
+     tokens (petal palette, iridescent stops, status palette,
+     cg-accent); 2 new (home white, pulse lime). Walks the
+     iridescent stroke gradient across the sidebar: workspace blue
+     → world violet → journey magenta → vault orange → offerings
+     yellow → service teal — the garden flower's petals as modules.
+     ───────────────────────────────────────────────────────────── */
+  --cg-module-home:         #ffffff;                  /* white — neutral hub, distinct from rainbow */
+  --cg-module-journey:      #ff5ec8;                  /* iridescent stop 3 — magenta */
+  --cg-module-vault:        var(--cg-petal-orange);   /* #ff8a3d */
+  --cg-module-world:        #b78bff;                  /* iridescent stop 2 — violet */
+  --cg-module-dispatch:     var(--cg-status-blue);    /* #3d5afe — indigo */
+  --cg-module-offerings:    #ffd24a;                  /* iridescent stop 5 — yellow */
+  --cg-module-pulse:        #a3e635;                  /* lime — alive measurement, distinct from petal-green teal */
+  --cg-module-service:      var(--cg-accent);         /* #2dd4a8 Awen teal */
+  --cg-module-workspace:    var(--cg-petal-blue);     /* #6dc0ff sky blue */
+  --cg-module-settings:     var(--cg-status-neutral); /* #6b7280 slate */
+  --cg-module-admin:        var(--cg-status-danger);  /* #ef4444 red */
+
   /* ── Typography ──────────────────────────────────────────── */
   --cg-font:                'Outfit', system-ui, -apple-system, sans-serif;
   --cg-font-mono:           'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;

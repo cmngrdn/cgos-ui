@@ -83,6 +83,10 @@
       "types": "./lib/dossier.ts",
       "import": "./lib/dossier.ts"
     },
+    "./lib/modules": {
+      "types": "./lib/modules.ts",
+      "import": "./lib/modules.ts"
+    },
     "./passes/PassCard": {
       "types": "./passes/PassCard.tsx",
       "import": "./passes/PassCard.tsx"
