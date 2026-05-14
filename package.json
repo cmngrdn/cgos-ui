@@ -1,6 +1,6 @@
 {
   "name": "cgos-ui",
-  "version": "0.20.0",
+  "version": "0.21.0",
   "description": "Shared design tokens, atoms, and visual primitives for the Common Garden ecosystem (cgos dashboard + cmngrdn + feather + reliquary).",
   "type": "module",
   "license": "UNLICENSED",
@@ -74,6 +74,10 @@
     "./ui/FieldDot": {
       "types": "./ui/FieldDot.tsx",
       "import": "./ui/FieldDot.tsx"
+    },
+    "./ui/ModuleIconChip": {
+      "types": "./ui/ModuleIconChip.tsx",
+      "import": "./ui/ModuleIconChip.tsx"
     },
     "./lib/pass-art": {
       "types": "./lib/pass-art.ts",
