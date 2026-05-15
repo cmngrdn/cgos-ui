@@ -4,35 +4,36 @@
  *
  * Single source of truth for both the dashboard editor (PassArtEditor /
  * PassArtVariantEditor / EraEditor) and the public renderer (cmngrdn
- * `/me/[artistSlug]` PassCard mount). Previously mirrored across both
- * repos with a "keep in sync" warning — that warning is retired now that
- * this file lives in cgos-ui.
+ * `/me/[artistSlug]` PassCard mount).
+ *
+ * Schema honesty pass (2026-05-14): aligned to what Apple Wallet's
+ * storeCard pass type actually renders. Removed:
+ *   - background_image_url (storeCard ignores it; only eventTicket uses
+ *     backgrounds, and even there it's heavily blurred)
+ *   - footer_image_url (only boardingPass uses footer)
+ *   - strip_effect (custom CG aesthetic; no PassKit equivalent)
+ *   - level_tiers / PassLevelTier (level-progression UI deferred until
+ *     rebuilt against honest renderings)
+ *
+ * If you need a non-Wallet visual approximation that wants a background
+ * image (e.g. the cmngrdn home-page wallet pass spectacle), define a
+ * local extended interface in your component — don't add it back here.
  */
 
-export interface PassLevelTier {
-  min_level: number
-  label: string
-  overrides?: Partial<PassArt>
-}
-
 export interface PassArt {
-  // Colors
+  // Colors — Apple Wallet expects `rgb(R, G, B)` strings only.
   background_color?: string | null
   foreground_color?: string | null
   label_color?: string | null
   // Text
   logo_text?: string | null
-  // Images (all Supabase Storage URLs — Airtable URLs expire)
+  // Images (all Supabase Storage URLs — Airtable URLs expire). Slot
+  // names match Apple PassKit's `pass.json` image filenames so the
+  // mapping at signing time is 1:1.
   logo_image_url?: string | null
   icon_image_url?: string | null
   strip_image_url?: string | null
   thumbnail_image_url?: string | null
-  background_image_url?: string | null
-  footer_image_url?: string | null
-  // Effects
-  strip_effect?: 'foil' | null
-  // Progression (resolved by the render pipeline, not the editor yet)
-  level_tiers?: PassLevelTier[]
 }
 
 export const EMPTY_PASS_ART: PassArt = {}
@@ -42,8 +43,6 @@ export type PassArtImageKind =
   | 'icon'
   | 'strip'
   | 'thumbnail'
-  | 'background'
-  | 'footer'
 
 /**
  * A named, dated window where pass art is overridden. Mirror of `pass_eras`
@@ -75,45 +74,24 @@ export interface PassArtVariant {
 }
 
 /**
- * Resolve the active level tier for a given level and merge its overrides onto base art.
- * Picks the tier with the highest `min_level` where `level >= min_level`.
- * Returns `{ art, tier }` — `tier` is the matched tier (or null) so callers can show the label.
- */
-export function resolveLevelArt(
-  art: PassArt,
-  level: number | null | undefined,
-): { art: PassArt; tier: PassLevelTier | null } {
-  const tiers = art.level_tiers
-  if (!tiers || tiers.length === 0 || level == null) {
-    return { art, tier: null }
-  }
-  const match = tiers
-    .filter((t) => level >= t.min_level)
-    .sort((a, b) => b.min_level - a.min_level)[0]
-  if (!match) return { art, tier: null }
-  const merged: PassArt = { ...art, ...(match.overrides || {}) }
-  delete merged.level_tiers
-  return { art: merged, tier: match }
-}
-
-/**
- * Full render pipeline: base → active era variant → level tier.
+ * Full render pipeline: base → active era variant.
  *
  * Compose order matches docs/fan-system-pass-spec.md §Render pipeline:
  *   1. `base` (workspaces.pass_art)
  *   2. `variant.art` overrides (per-era, workspace-specific)
- *   3. level tier override (highest matching `min_level`)
  *
  * Caller pre-loads the active era + variant; this is a pure merge.
+ *
+ * Level-tier resolution (`resolveLevelArt`) was removed in the schema
+ * honesty pass — will be reintroduced when the level-progression UX
+ * is rebuilt against honest storeCard renderings.
  */
 export function resolveActivePassArt(input: {
   base: PassArt
   variant?: PassArtVariant | null
   era?: PassEra | null
-  level?: number | null
-}): { art: PassArt; tier: PassLevelTier | null; era: PassEra | null } {
-  const { base, variant, era, level } = input
-  const withEra: PassArt = variant?.art ? { ...base, ...variant.art } : base
-  const { art, tier } = resolveLevelArt(withEra, level)
-  return { art, tier, era: era ?? null }
+}): { art: PassArt; era: PassEra | null } {
+  const { base, variant, era } = input
+  const art: PassArt = variant?.art ? { ...base, ...variant.art } : base
+  return { art, era: era ?? null }
 }

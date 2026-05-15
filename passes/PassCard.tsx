@@ -13,11 +13,7 @@
  */
 
 import type { CSSProperties } from 'react'
-import { resolveLevelArt, type PassArt } from '../lib/pass-art'
-
-// Foil-strip sheen — a fixed hardware aesthetic, not a theme color.
-const FOIL_GRADIENT =
-  'linear-gradient(115deg, rgba(255,255,255,0) 35%, rgba(255,255,255,0.28) 50%, rgba(255,255,255,0) 65%)'
+import type { PassArt } from '../lib/pass-art'
 
 // iOS Wallet chrome palette — defined at module level so the
 // no-restricted-syntax ESLint rule (which targets literals inside JSX style
@@ -43,18 +39,16 @@ const CARD_WIDTH = 320
 const CARD_HEIGHT = 400
 
 export function PassCard({
-  art: baseArt,
+  art,
   workspaceName,
   serial = '0001',
   memberName,
   level = 1,
   scale = 1,
 }: PassCardProps) {
-  const { art, tier } = resolveLevelArt(baseArt, level)
   const bg = art.background_color || '#1a1a1a'
   const fg = art.foreground_color || '#ffffff'
   const label = art.label_color || 'rgba(255, 255, 255, 0.7)'
-  const hasBackgroundImage = Boolean(art.background_image_url)
   const hasStrip = Boolean(art.strip_image_url)
 
   const rootStyle: CSSProperties = {
@@ -75,21 +69,6 @@ export function PassCard({
 
   return (
     <div style={rootStyle}>
-      {hasBackgroundImage && (
-        <img
-          src={art.background_image_url!}
-          alt=""
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            opacity: 0.85,
-          }}
-        />
-      )}
-
       {/* Header — logo + pass type */}
       <div
         style={{
@@ -137,7 +116,7 @@ export function PassCard({
               marginLeft: 8,
             }}
           >
-            {tier ? `${tier.label} · Lv ${level}` : `Lv ${level}`}
+            {`Lv ${level}`}
           </div>
         )}
       </div>
@@ -157,16 +136,6 @@ export function PassCard({
             alt=""
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
-          {art.strip_effect === 'foil' && (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: FOIL_GRADIENT,
-                mixBlendMode: 'screen',
-              }}
-            />
-          )}
         </div>
       ) : (
         <div style={{ flex: 1, minHeight: 0 }} />
