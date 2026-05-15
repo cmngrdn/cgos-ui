@@ -1,43 +1,68 @@
 import { type CSSProperties, type ComponentType, type SVGProps } from 'react'
 
 /**
- * ModuleIconChip — Liquid Glass tinted chip for module-tile icons.
+ * ModuleIconChip — module-tile icon surface. Two recipes via `variant`.
  *
- * The "Unified Glass Treatment" recipe locked in `cgos/docs/v2-palette-swatch.html`
- * (Studio V2 Phase A, 2026-05-14). One chip recipe, both themes. The chip
- * composes with whatever `--cg-bg-elevated` / `--cg-glass-bg` resolve to per
- * theme — dark over dark-elevated, cream over cream-elevated. Same design,
- * theme-aware composition.
+ * Both lock in `cgos/docs/v2-palette-swatch.html` (Studio V2 Phase A,
+ * 2026-05-14). One chip atom, two visual treatments — same API, callers
+ * flip via `variant` to A/B which one ships.
  *
- * Recipe (in style order):
- *   - Background: 24% module-color mixed into `--cg-glass-bg` (theme-cascaded)
- *   - Border: 1px 45% module-color mixed into `--cg-glass-border`
- *   - Shadow: rim highlight via `inset 0 1px 0 --cg-glass-border-top`,
- *     plus `--cg-elev-2` resting elevation
- *   - Backdrop blur via `--cg-glass-blur`
- *   - Icon: by default colored as the module accent; pass `iconColor` to
- *     override (Home uses `var(--cg-text)` so a white-tinted chip stays
- *     legible on the cream light theme)
+ * ─────────────────────────────────────────────────────────────────────────
+ * variant="translucent"  ← default. The "Unified Glass Treatment."
+ * ─────────────────────────────────────────────────────────────────────────
+ * Recipe:
+ *   - Background: 24% module color mixed into `--cg-glass-bg` (theme-cascaded)
+ *   - Border: 1px 45% module color mixed into `--cg-glass-border`
+ *   - Shadow: rim highlight via `inset 0 1px 0 --cg-glass-border-top`
+ *     + `--cg-elev-2` resting elevation
+ *   - Backdrop blur via `--cg-glass-blur` so the chip composes with the
+ *     surface behind it
+ *   - Icon color defaults to the module accent (so the icon AND the tint
+ *     share one hue family). Override via `iconColor` for white-chip case.
  *
- * Use anywhere a module accent needs to read as "lifted glass" — sidebar
- * tiles, mobile launcher tiles, search-result rows, dashboard module
- * cards. Always pass the module's color hex / token; the chip handles the
+ * Reads as a control-surface chip — tinted glass, soft.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * variant="iridescent"  ← the "embossed app-icon" treatment.
+ * ─────────────────────────────────────────────────────────────────────────
+ * Recipe:
+ *   - Background: solid color BASE — radial top-left dome highlight
+ *     (rgba(255,255,255,0.32)) layered over a vertical 3-stop gradient
+ *     (lighter at top → accent at 55% → darker at bottom) using `color-mix`
+ *     so the gradient stays in the accent's hue family
+ *   - Shadow: rim highlight + inset bottom shadow + outer accent glow + drop
+ *     shadow — the "embossed glass tile" depth recipe
+ *   - No backdrop blur (it's a solid surface, not a translucent material)
+ *   - Icon color defaults to white at 97% (since the chip is fully colored;
+ *     white reads cleanly across every accent except the deliberately
+ *     near-white Home chip — pass `iconColor` to override)
+ *
+ * Reads as an iOS app icon — saturated, embossed, present.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * Use anywhere a module accent needs to read as a tile — sidebar tiles,
+ * mobile launcher tiles, search-result rows, dashboard module cards.
+ * Always pass the module's color hex / token; the chip handles all the
  * tint math so all surfaces stay visually identical.
  *
  * Pure presentational atom — does not own hover, focus, or active states.
- * The parent button/anchor owns those (typically a scale transform or
- * elevation lift; see consumers in cmngrdn `NavTile` + `MobileDrawer`).
- *
- * Polymorphism: accepts an `icon` component (any `(props) => ReactNode`
- * that takes width/height) — pass `Phosphor.Bookmark`, a custom SVG
- * component, anything that renders inside a sized container.
+ * The parent button/anchor owns those.
  */
+
+export type ModuleIconChipVariant = 'translucent' | 'iridescent'
 
 export interface ModuleIconChipProps {
   /** Module accent color — hex string (`#2dd4a8`) or CSS var (`var(--cg-accent)`). */
   color: string
   /** Icon component rendered inside the chip. Receives width/height. */
   icon: ComponentType<SVGProps<SVGSVGElement>>
+  /**
+   * Visual variant. Defaults `'translucent'` (Liquid Glass tinted) for
+   * backward-compat with the V2 Phase A ship. Pass `'iridescent'` for the
+   * solid-color embossed treatment.
+   */
+  variant?: ModuleIconChipVariant
   /** Chip side length in px. Default 56 (swatch baseline). */
   size?: number
   /**
@@ -47,9 +72,11 @@ export interface ModuleIconChipProps {
    */
   iconScale?: number
   /**
-   * Icon color override. Defaults to the chip's `color` so the icon matches
-   * the tint. Pass `var(--cg-text)` for Home (white chip → use text color
-   * so the icon stays visible on both themes).
+   * Icon color override. By default:
+   *   translucent → defaults to the module accent (icon shares hue)
+   *   iridescent  → defaults to white at 97% (white reads on saturated fill)
+   * Pass to override (e.g. Home's near-white chip wants `var(--cg-text)` so
+   * the icon stays legible on both themes).
    */
   iconColor?: string
   /** Border radius in px. Default 14 (swatch baseline). */
@@ -63,9 +90,43 @@ export interface ModuleIconChipProps {
   ariaLabel?: string
 }
 
+function translucentStyle(color: string, iconColor?: string): CSSProperties {
+  return {
+    background: `color-mix(in srgb, ${color} 24%, var(--cg-glass-bg))`,
+    WebkitBackdropFilter: 'var(--cg-glass-blur)',
+    backdropFilter: 'var(--cg-glass-blur)',
+    border: `1px solid color-mix(in srgb, ${color} 45%, var(--cg-glass-border))`,
+    boxShadow: 'inset 0 1px 0 var(--cg-glass-border-top), var(--cg-elev-2)',
+    color: iconColor ?? color,
+  }
+}
+
+function iridescentStyle(color: string, iconColor?: string): CSSProperties {
+  return {
+    // Radial highlight layered over a vertical 3-stop gradient — keeps the
+    // gradient in the accent's hue family (color-mix with white/black) so
+    // the chip stays "in the color" while still feeling lit from above.
+    background: [
+      'radial-gradient(ellipse 75% 60% at 30% 18%, rgba(255,255,255,0.32), transparent 65%)',
+      `linear-gradient(180deg, color-mix(in srgb, ${color} 90%, white 10%) 0%, ${color} 55%, color-mix(in srgb, ${color} 85%, black 15%) 100%)`,
+    ].join(', '),
+    border: '1px solid transparent',
+    // Apple HIG "lifted glass": rim highlight at the top edge + subtle
+    // inset bottom shadow + outer accent glow + drop shadow.
+    boxShadow: [
+      'inset 0 1px 0 rgba(255, 255, 255, 0.55)',
+      'inset 0 -1px 0 rgba(0, 0, 0, 0.16)',
+      `0 0 24px color-mix(in srgb, ${color} 35%, transparent)`,
+      '0 6px 14px rgba(0, 0, 0, 0.30)',
+    ].join(', '),
+    color: iconColor ?? 'rgba(255, 255, 255, 0.97)',
+  }
+}
+
 export function ModuleIconChip({
   color,
   icon: Icon,
+  variant = 'translucent',
   size = 56,
   iconScale = 0.54,
   iconColor,
@@ -75,8 +136,13 @@ export function ModuleIconChip({
   ariaLabel,
 }: ModuleIconChipProps) {
   const iconPx = Math.round(size * iconScale)
+  const variantStyle =
+    variant === 'iridescent'
+      ? iridescentStyle(color, iconColor)
+      : translucentStyle(color, iconColor)
   return (
     <span
+      data-module-chip-variant={variant}
       className={className}
       role={ariaLabel ? 'img' : undefined}
       aria-label={ariaLabel}
@@ -89,12 +155,7 @@ export function ModuleIconChip({
         width: size,
         height: size,
         borderRadius: radius,
-        background: `color-mix(in srgb, ${color} 24%, var(--cg-glass-bg))`,
-        WebkitBackdropFilter: 'var(--cg-glass-blur)',
-        backdropFilter: 'var(--cg-glass-blur)',
-        border: `1px solid color-mix(in srgb, ${color} 45%, var(--cg-glass-border))`,
-        boxShadow: 'inset 0 1px 0 var(--cg-glass-border-top), var(--cg-elev-2)',
-        color: iconColor ?? color,
+        ...variantStyle,
         ...style,
       }}
     >
