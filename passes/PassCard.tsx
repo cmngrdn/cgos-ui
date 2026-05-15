@@ -100,15 +100,17 @@ export function PassCard({
 
   return (
     <div style={rootStyle}>
-      {/* Header — logo + level chip */}
+      {/* Header — logo (top-left) + LEVEL header field (top-right).
+          Mirrors pass.json `headerFields` rendering position. */}
       <div
         style={{
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           justifyContent: 'space-between',
           padding: '14px 16px 10px',
           position: 'relative',
           zIndex: 1,
+          gap: 8,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
@@ -135,20 +137,14 @@ export function PassCard({
           )}
         </div>
         {level !== null && (
-          <div
-            style={{
-              fontSize: 10,
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              color: label,
-              textAlign: 'right',
-              flexShrink: 0,
-              marginLeft: 8,
-            }}
-          >
-            {`Lv ${level}`}
-          </div>
+          <FieldBlock
+            label="LV"
+            value={String(level)}
+            fg={fg}
+            labelColor={label}
+            align="right"
+            compact
+          />
         )}
       </div>
 
@@ -170,11 +166,11 @@ export function PassCard({
         </div>
       )}
 
-      {/* Fields — Apple's storeCard renders these in TWO rows BELOW the
-          strip image (no overlay — primaryFields are deliberately empty
-          in our pass.json so the strip image stays clean and readable).
-          Row 1 = secondaryFields (MEMBER name + LEVEL), Row 2 =
-          auxiliaryFields (WORLD + PASS#). */}
+      {/* Fields below strip — secondaryFields row (MEMBER, left) +
+          auxiliaryFields row (PASS #, right-aligned). primaryFields kept
+          EMPTY in pass.json so the strip stays clean. WORLD field
+          intentionally dropped — logoText already shows workspace name
+          in the top-left corner. */}
       <div
         style={{
           padding: '12px 16px 8px',
@@ -185,36 +181,19 @@ export function PassCard({
           zIndex: 1,
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-          <FieldBlock
-            label="MEMBER"
-            value={memberName || '—'}
-            fg={fg}
-            labelColor={label}
-          />
-          <FieldBlock
-            label="LEVEL"
-            value={String(level ?? 1)}
-            fg={fg}
-            labelColor={label}
-            align="right"
-          />
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-          <FieldBlock
-            label="WORLD"
-            value={workspaceName || '—'}
-            fg={fg}
-            labelColor={label}
-          />
-          <FieldBlock
-            label="PASS"
-            value={`#${serial || '0001'}`}
-            fg={fg}
-            labelColor={label}
-            align="right"
-          />
-        </div>
+        <FieldBlock
+          label="MEMBER"
+          value={memberName || '—'}
+          fg={fg}
+          labelColor={label}
+        />
+        <FieldBlock
+          label="PASS"
+          value={`#${serial || '0001'}`}
+          fg={fg}
+          labelColor={label}
+          align="right"
+        />
       </div>
 
       {/* Barcode — fixed black-on-white per Apple, sits on a white tile */}
@@ -296,14 +275,25 @@ interface FieldBlockProps {
   labelColor: string
   align?: 'left' | 'right'
   large?: boolean
+  /** Smaller variant for header-field rendering (top-right LV chip). */
+  compact?: boolean
 }
 
-function FieldBlock({ label, value, fg, labelColor, align = 'left', large }: FieldBlockProps) {
+function FieldBlock({ label, value, fg, labelColor, align = 'left', large, compact }: FieldBlockProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, textAlign: align }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        minWidth: 0,
+        textAlign: align,
+        flexShrink: 0,
+      }}
+    >
       <div
         style={{
-          fontSize: 10,
+          fontSize: compact ? 8 : 10,
           fontWeight: 600,
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
@@ -314,7 +304,7 @@ function FieldBlock({ label, value, fg, labelColor, align = 'left', large }: Fie
       </div>
       <div
         style={{
-          fontSize: large ? 18 : 13,
+          fontSize: large ? 18 : compact ? 11 : 13,
           fontWeight: 600,
           color: fg,
           whiteSpace: 'nowrap',
