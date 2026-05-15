@@ -2,28 +2,45 @@
  * Apple Wallet pass visual approximation. Used in the cgos dashboard art
  * editor preview, the Passes section, and on cmngrdn `/me/[artistSlug]`.
  *
- * Not a pixel-perfect PKPass render — it's a design-time + member-facing
- * surface that reads the same PassArt JSONB the server uses to bake the
- * actual .pkpass. Keep the DOM shape aligned to the PKPass field
- * vocabulary (header / primary / secondary / auxiliary / back) so future
- * fields map cleanly.
+ * Honest layout (matches storeCard rendering, May 2026):
+ *   • Header  → logo + level chip
+ *   • Strip   → sharp banner (the dominant visual)
+ *   • Primary → MEMBER + member name
+ *   • Sec     → WORLD + LEVEL row
+ *   • Aux     → PASS # row
+ *   • QR      → bottom block, fixed black-on-white per Apple constraint
+ *   • altText → small mono caption under the QR
  *
- * Single source of truth for both repos. Previously mirrored — Phase 2.6
- * of the design system unification (2026-05-02) lifted it into cgos-ui.
+ * Non-customizable per Apple PassKit:
+ *   • barcode color (always black on white)
+ *   • barcode placement (Apple decides — bottom of front for QR)
+ *   • barcode frame (none — sits on a fixed white tile)
+ *   • barcode size (Apple sizes it; we approximate at ~140px)
+ *
+ * The taller card height (520) reflects iOS storeCard with QR present —
+ * artists need to see how much real estate the QR occupies so they
+ * design strip/colors around it.
+ *
+ * Single source of truth for both repos.
  */
 
 import type { CSSProperties } from 'react'
 import type { PassArt } from '../lib/pass-art'
 
-// iOS Wallet chrome palette — defined at module level so the
-// no-restricted-syntax ESLint rule (which targets literals inside JSX style
-// props) doesn't require these fixed device-UI colors to be --cg-* tokens.
+// iOS Wallet chrome palette — module-level so the no-restricted-syntax
+// ESLint rule (which targets literals inside JSX style props) doesn't
+// require these fixed device-UI colors to be --cg-* tokens.
 const WALLET_OUTER_BG = '#000'
 const WALLET_OUTER_SHADOW = '0 24px 60px rgba(0, 0, 0, 0.5)'
 const WALLET_INNER_BG = '#1c1c1e'
 const WALLET_CHROME_FG = '#fff'
 const WALLET_DIVIDER = '1px solid rgba(255,255,255,0.08)'
 const WALLET_BLUE = '#0a84ff'
+
+// Barcode hardware constants — Apple enforces all of these.
+const BARCODE_BG = '#ffffff'
+const BARCODE_FG = '#000000'
+const BARCODE_SIZE = 140
 
 interface PassCardProps {
   art: PassArt
@@ -33,10 +50,18 @@ interface PassCardProps {
   level?: number | null
   /** Scale factor — 1 = 320px wide (Apple Wallet native width). */
   scale?: number
+  /**
+   * Barcode + altText below it. When omitted, no barcode tile renders
+   * (use this if a pass deliberately ships without one). Default: shows
+   * a placeholder QR tile so artists see how much room it occupies.
+   */
+  barcodeAltText?: string | null
+  /** Set false to hide the barcode entirely (rare — most passes ship one). */
+  showBarcode?: boolean
 }
 
 const CARD_WIDTH = 320
-const CARD_HEIGHT = 400
+const CARD_HEIGHT = 520
 
 export function PassCard({
   art,
@@ -45,11 +70,17 @@ export function PassCard({
   memberName,
   level = 1,
   scale = 1,
+  barcodeAltText,
+  showBarcode = true,
 }: PassCardProps) {
   const bg = art.background_color || '#1a1a1a'
   const fg = art.foreground_color || '#ffffff'
   const label = art.label_color || 'rgba(255, 255, 255, 0.7)'
   const hasStrip = Boolean(art.strip_image_url)
+
+  const altText =
+    barcodeAltText ??
+    (workspaceName ? `${workspaceName.toUpperCase()} #${serial ?? '0001'}` : null)
 
   const rootStyle: CSSProperties = {
     width: CARD_WIDTH,
@@ -69,7 +100,7 @@ export function PassCard({
 
   return (
     <div style={rootStyle}>
-      {/* Header — logo + pass type */}
+      {/* Header — logo + level chip */}
       <div
         style={{
           display: 'flex',
@@ -122,11 +153,11 @@ export function PassCard({
       </div>
 
       {/* Strip / hero area */}
-      {hasStrip ? (
+      {hasStrip && (
         <div
           style={{
             width: '100%',
-            height: 98,
+            height: 110,
             position: 'relative',
             overflow: 'hidden',
           }}
@@ -137,50 +168,91 @@ export function PassCard({
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         </div>
-      ) : (
-        <div style={{ flex: 1, minHeight: 0 }} />
       )}
 
-      {/* Fields — primary + thumbnail */}
+      {/* Fields — primary (member name) + secondary (world/level) + aux (pass) */}
       <div
         style={{
-          padding: '14px 16px 12px',
+          padding: '12px 16px 8px',
           display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-          gap: 12,
+          flexDirection: 'column',
+          gap: 10,
           position: 'relative',
           zIndex: 1,
-          marginTop: 'auto',
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: 1 }}>
-          <div
-            style={{
-              fontSize: 10,
-              fontWeight: 600,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: label,
-            }}
-          >
-            Member
-          </div>
-          <div
-            style={{
-              fontSize: 18,
-              fontWeight: 600,
-              color: fg,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {memberName || '—'}
-          </div>
+        <FieldBlock label="MEMBER" value={memberName || '—'} fg={fg} labelColor={label} large />
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+          <FieldBlock
+            label="WORLD"
+            value={workspaceName || '—'}
+            fg={fg}
+            labelColor={label}
+          />
+          <FieldBlock
+            label="PASS"
+            value={`#${serial || '0001'}`}
+            fg={fg}
+            labelColor={label}
+            align="right"
+          />
         </div>
+      </div>
 
-        {art.thumbnail_image_url ? (
+      {/* Barcode — fixed black-on-white per Apple, sits on a white tile */}
+      {showBarcode && (
+        <div
+          style={{
+            marginTop: 'auto',
+            padding: '10px 0 14px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 4,
+          }}
+        >
+          <div
+            style={{
+              background: BARCODE_BG,
+              padding: 8,
+              borderRadius: 4,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <BarcodePlaceholder />
+          </div>
+          {altText && (
+            <div
+              style={{
+                fontFamily:
+                  'ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace',
+                fontSize: 9,
+                color: fg,
+                opacity: 0.8,
+                letterSpacing: '0.05em',
+              }}
+            >
+              {altText}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Thumbnail (small accent right of barcode area) — only if set + not
+          competing with the QR tile. Kept off when showBarcode=true; iOS
+          favors the barcode there. */}
+      {!showBarcode && art.thumbnail_image_url && (
+        <div
+          style={{
+            position: 'absolute',
+            right: 16,
+            bottom: 16,
+            width: 60,
+            height: 60,
+          }}
+        >
           <img
             src={art.thumbnail_image_url}
             alt=""
@@ -189,46 +261,138 @@ export function PassCard({
               height: 60,
               objectFit: 'cover',
               borderRadius: 6,
-              flexShrink: 0,
             }}
           />
-        ) : (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-              alignItems: 'flex-end',
-              flexShrink: 0,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 10,
-                fontWeight: 600,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: label,
-              }}
-            >
-              Serial
-            </div>
-            <div
-              style={{
-                fontSize: 18,
-                fontWeight: 600,
-                color: fg,
-                fontVariantNumeric: 'tabular-nums',
-              }}
-            >
-              {serial || '—'}
-            </div>
-          </div>
-        )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Field block helper ─────────────────────────────────────────────────────
+
+interface FieldBlockProps {
+  label: string
+  value: string
+  fg: string
+  labelColor: string
+  align?: 'left' | 'right'
+  large?: boolean
+}
+
+function FieldBlock({ label, value, fg, labelColor, align = 'left', large }: FieldBlockProps) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, textAlign: align }}>
+      <div
+        style={{
+          fontSize: 10,
+          fontWeight: 600,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          color: labelColor,
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontSize: large ? 18 : 13,
+          fontWeight: 600,
+          color: fg,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        {value}
       </div>
     </div>
   )
 }
+
+// ── Barcode placeholder ────────────────────────────────────────────────────
+// SVG that visually approximates a QR code at the right size — three corner
+// registration markers + a deterministic noise grid. Renders in the same
+// space as the actual QR Apple bakes into the .pkpass, so the artist can
+// design around its footprint.
+
+function BarcodePlaceholder() {
+  const cells = 21 // matches typical QR module count for short URLs
+  const cellSize = (BARCODE_SIZE - 16) / cells
+
+  // Deterministic pseudo-noise pattern for the data area — same every render
+  // so the preview doesn't flicker when the artist tweaks colors.
+  const noise: boolean[][] = []
+  for (let y = 0; y < cells; y++) {
+    const row: boolean[] = []
+    for (let x = 0; x < cells; x++) {
+      // Skip corner registration zones (7×7 at top-left, top-right, bottom-left)
+      const inTL = x < 7 && y < 7
+      const inTR = x >= cells - 7 && y < 7
+      const inBL = x < 7 && y >= cells - 7
+      if (inTL || inTR || inBL) {
+        row.push(false)
+        continue
+      }
+      // Pseudo-random but stable based on position
+      row.push(((x * 31 + y * 17 + 13) % 7) < 3)
+    }
+    noise.push(row)
+  }
+
+  function CornerMarker({ cx, cy }: { cx: number; cy: number }) {
+    return (
+      <g>
+        <rect x={cx} y={cy} width={cellSize * 7} height={cellSize * 7} fill={BARCODE_FG} />
+        <rect
+          x={cx + cellSize}
+          y={cy + cellSize}
+          width={cellSize * 5}
+          height={cellSize * 5}
+          fill={BARCODE_BG}
+        />
+        <rect
+          x={cx + cellSize * 2}
+          y={cy + cellSize * 2}
+          width={cellSize * 3}
+          height={cellSize * 3}
+          fill={BARCODE_FG}
+        />
+      </g>
+    )
+  }
+
+  return (
+    <svg
+      width={BARCODE_SIZE - 16}
+      height={BARCODE_SIZE - 16}
+      viewBox={`0 0 ${BARCODE_SIZE - 16} ${BARCODE_SIZE - 16}`}
+      style={{ display: 'block' }}
+    >
+      {/* Data cells */}
+      {noise.map((row, y) =>
+        row.map((on, x) =>
+          on ? (
+            <rect
+              key={`${x}-${y}`}
+              x={x * cellSize}
+              y={y * cellSize}
+              width={cellSize}
+              height={cellSize}
+              fill={BARCODE_FG}
+            />
+          ) : null,
+        ),
+      )}
+      {/* Corner registration markers */}
+      <CornerMarker cx={0} cy={0} />
+      <CornerMarker cx={(cells - 7) * cellSize} cy={0} />
+      <CornerMarker cx={0} cy={(cells - 7) * cellSize} />
+    </svg>
+  )
+}
+
+// ── Wallet-chrome wrapper ──────────────────────────────────────────────────
 
 interface PassCardInWalletProps extends PassCardProps {
   /** Show the card inside a simplified iPhone Wallet chrome (status bar, done button). */
