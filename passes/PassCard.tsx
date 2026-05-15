@@ -170,7 +170,11 @@ export function PassCard({
         </div>
       )}
 
-      {/* Fields — primary (member name) + secondary (world/level) + aux (pass) */}
+      {/* Fields — Apple's storeCard renders these in TWO rows BELOW the
+          strip image (no overlay — primaryFields are deliberately empty
+          in our pass.json so the strip image stays clean and readable).
+          Row 1 = secondaryFields (MEMBER name + LEVEL), Row 2 =
+          auxiliaryFields (WORLD + PASS#). */}
       <div
         style={{
           padding: '12px 16px 8px',
@@ -181,7 +185,21 @@ export function PassCard({
           zIndex: 1,
         }}
       >
-        <FieldBlock label="MEMBER" value={memberName || '—'} fg={fg} labelColor={label} large />
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+          <FieldBlock
+            label="MEMBER"
+            value={memberName || '—'}
+            fg={fg}
+            labelColor={label}
+          />
+          <FieldBlock
+            label="LEVEL"
+            value={String(level ?? 1)}
+            fg={fg}
+            labelColor={label}
+            align="right"
+          />
+        </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
           <FieldBlock
             label="WORLD"
