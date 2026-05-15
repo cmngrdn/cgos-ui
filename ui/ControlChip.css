@@ -39,3 +39,10 @@
   outline: 2px solid var(--cg-accent);
   outline-offset: 2px;
 }
+
+/* Multi-select search input — accent border on focus, replaces hairline */
+[data-cg-chip-menu-search]:focus,
+[data-cg-chip-menu-search]:focus-visible {
+  outline: none;
+  border-color: var(--cg-accent-dim);
+}
