@@ -4,6 +4,18 @@ Shared design tokens, atoms, and visual primitives consumed by **cgos** (FastAPI
 
 This file is the conventions doc for working **inside** this repo. For consumption patterns + install instructions see [README.md](README.md). For the multi-phase unification history see [`cgos/docs/design-system-unification-plan.md`](https://github.com/cmngrdn/cgos/blob/main/docs/design-system-unification-plan.md).
 
+## Design authority — read this first
+
+**cgos-ui is the cross-repo design authority for the entire Common Garden system.** Any design / UI / visual-language decision — a new component, a button restyle, a color choice, a token, a layout pattern, a Google or Apple branded surface — MUST be cross-referenced here, even when the implementation lives in a consumer repo (cmngrdn, cgos, feather, reliquary).
+
+The rule, in order of preference:
+
+1. **First choice — the atom lives here.** If it's pure presentation (no auth, no fetch, no project-specific business logic) it gets built in `ui/` / `lib/` / `passes/` / `preview/` and imported from `cgos-ui/...`. Every consumer pulls from one place; bug fixes / token changes propagate via `npm install`.
+2. **Second choice — the atom lives in a consumer, but is documented here.** When the component bundles project-specific behavior (a download endpoint, an auth header fetch, a cgos API call) that can't reasonably live in cgos-ui, the component stays in the consumer repo. But it MUST get a row in the "Atom inventory" table below, marked with its home repo. The visual contract is locked here regardless of where the code lives. If the visual part can be split out as a pure-presentation badge atom, do that — keep the badge here, compose the data wrapper in the consumer.
+3. **Never — silent duplication.** Two copies of the same UI element across repos with slightly-drifted styles is the failure mode every section of this doc exists to prevent.
+
+When in doubt: open this file before reaching for `style={{}}`. Search the inventory table for what you need. If it's not there and you're about to build it, the build belongs here.
+
 ## Repo role
 
 - Single source of truth for **tokens** (`tokens.css`), **base utility classes** (`base.css`), and **v1 atoms** (`ui/`, `lib/`, `passes/`, `preview/`).
@@ -39,6 +51,8 @@ Tokens + base utility classes + v1 atoms. To add or change a token, edit `tokens
 | Native select dropdown | `cgos-ui/ui/Select` | Native `<select>` wrapper with custom CSS chevron. sm + md sizes. For chip-style multi-option dropdowns prefer `ChipSelect`. |
 | Card surface | `cgos-ui/ui/Card` (React wrapper) OR `.cg-card` / `.cg-card-interactive` (className) | Variants: `resting` + `interactive` (hover lift + press snap + focus ring). Polymorphic via `as` prop including `as="button"` (auto-resets default button styling). Don't pair with `style={{ all: 'unset' }}`. |
 | FieldDot indicator | `cgos-ui/ui/FieldDot` | "Lit up" form-field indicator — neutral grey when empty, accent with glow when filled, 200ms transition. Sizes `sm`/`md`/`lg`. |
+| "Continue with Google" button | `@/components/auth/GoogleSignInButton` in **cmngrdn** (hoist candidate) | CANONICAL Google sign-in button across every auth surface. 4-color G logo + "Continue with Google" label. Variants: `surface` (legacy cgos dashboard look — muted bg + hairline border, secondary action) and `solid` (inverted, primary-CTA contexts). Standalone `<GoogleGlyph>` exported for non-button surfaces. Brand-identity hex literals (`#EA4335 / #4285F4 / #FBBC05 / #34A853`) locked by Google's identity guidelines. Mounted in cmngrdn on `/hq/sign-in`, `/join`, `<ReturningMemberPrompt>`, `<GardenPassCTA>`. Lives in cmngrdn today; visual atom is hoist-ready when a second consumer needs it. Never hand-roll a Google button anywhere — extend this. |
+| "Add to Apple Wallet" button | `@/components/hq/vault/AddToWalletButton` in **cmngrdn** (data-aware wrapper) | CANONICAL Apple Wallet install CTA. Bundles cgos `GET /api/passes/download` fetch + auth header + blob→download + iOS Safari Wallet-sheet handoff + the full error-message ladder (401/403 → re-sign-in nudge, 503 → cert-config message). Aesthetic mirrors Apple's official "Add to Apple Wallet" badge: black surface, white Apple logo, two-line "ADD TO / Apple Wallet" label in SF Pro, identity-locked colors. Variants: `pill` (full badge) and `inline` (compact text-link). Mounted in cmngrdn on `<ArtPieceInspector>` Design tab, `<HeldPassesSection>`, `<GardenPassCTA>` signed-in state. The visual badge could split into a pure-presentation `AppleWalletBadge` atom here if a second consumer needs it; for now the visual contract is locked in this row. Never hand-roll an Apple Wallet button — extend this. |
 
 ## Token surface
 
