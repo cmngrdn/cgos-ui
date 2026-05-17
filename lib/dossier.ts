@@ -21,18 +21,71 @@ export type DossierLink = {
   external?: boolean
 }
 
+/* ─── v2 — Ref pattern ──────────────────────────────────────────────
+ *
+ * Dossier list items (missions / services / grove members) can be EITHER
+ * "custom" (free-form entry, the legacy shape) OR a reference to a
+ * canonical entity elsewhere in the system (a Library project, a Journey
+ * quest, an Inquiry form, a Workspace). Ref-pattern fields are additive
+ * + optional; pre-v2 rows without a `source` field are treated as custom.
+ *
+ * Why additive instead of a strict discriminated union: the legacy fields
+ * stay populated as a write-time snapshot of the referenced entity, so
+ * editors that haven't learned about refs yet (cgos dashboard's
+ * <DossierEditor>) keep rendering something usable. cmngrdn's renderer
+ * prefers fresh values from ref resolution + `override` at render time
+ * and falls back to the cached snapshot only when context is missing.
+ */
+
+export type DossierMissionSource = 'custom' | 'library_project' | 'journey_quest'
+
+export type DossierMissionOverride = {
+  name?: string
+  kind?: string
+  kind_subtitle?: string
+  accent?: string
+  accent_secondary?: string
+}
+
 export type DossierMission = {
+  /** Display fields — populated by the artist (custom) or by the picker
+   *  as a write-time snapshot of the referenced entity. cmngrdn's renderer
+   *  prefers fresh ref-resolved values + `override`; these are the fallback
+   *  when context is missing AND the only values cgos dashboard sees. */
   name: string
   kind: string
   kind_subtitle?: string
   /** Left strip + progress-bar color. Defaults to workspace accent if absent. */
   accent?: string
   /** 0–1 fractional progress, drawn as a gradient bar at the card's bottom edge.
-   *  Two color stops: `accent` (filled portion) → `accent_secondary || warm`. */
+   *  Two color stops: `accent` (filled portion) → `accent_secondary || warm`.
+   *  For custom missions: manual value set by the artist.
+   *  For ref'd missions: ignored — derived at render from project status or quest progress. */
   progress?: number
   /** Optional second stop for the progress gradient. Defaults to --cg-warm. */
   accent_secondary?: string
   href?: string
+
+  // ── v2 ─────────────────────────────────────────
+  /** Data source discriminator. Absent or 'custom' = legacy free-form entry. */
+  source?: DossierMissionSource
+  /** Airtable record id when source='library_project' (stable across renames). */
+  project_id?: string
+  /** Supabase quests.id UUID when source='journey_quest'. */
+  quest_id?: string
+  /** Explicit per-field display overrides for ref'd missions. */
+  override?: DossierMissionOverride
+}
+
+export type DossierServiceSource = 'custom' | 'inquiry_form'
+
+export type DossierServiceOverride = {
+  name?: string
+  kind?: string
+  kind_subtitle?: string
+  blurb?: string
+  accent?: string
+  cta_label?: string
 }
 
 export type DossierService = {
@@ -43,6 +96,15 @@ export type DossierService = {
   accent?: string
   cta_label?: string
   href?: string
+
+  // ── v2 ─────────────────────────────────────────
+  /** Data source discriminator. Absent or 'custom' = legacy free-form entry. */
+  source?: DossierServiceSource
+  /** Supabase intake_forms.id UUID when source='inquiry_form'.
+   *  href is derived at render from `/{workspace_slug}/inquiry/{form_slug}`. */
+  form_id?: string
+  /** Explicit per-field display overrides for ref'd services. */
+  override?: DossierServiceOverride
 }
 
 export type DossierTransmissionKind =
@@ -62,11 +124,30 @@ export type DossierTransmission = {
   href?: string
 }
 
+export type DossierGroveMemberSource = 'custom' | 'workspace'
+
+export type DossierGroveMemberOverride = {
+  label?: string
+  role?: string
+}
+
 export type DossierGroveMember = {
-  /** Optional — links the card to /[slug] on cmngrdn. */
+  /** Linked workspace slug — drives the card's <a href> on the public render.
+   *  For custom members: manually set if the member happens to have a workspace.
+   *  For workspace-ref'd members: written by the picker alongside workspace_id
+   *  as a denormalized convenience so the renderer doesn't need to resolve the
+   *  ref for a basic link. cmngrdn renders fresh slug from context when available. */
   workspace_slug?: string
   label: string
   role: string
+
+  // ── v2 ─────────────────────────────────────────
+  /** Data source discriminator. Absent or 'custom' = legacy free-form entry. */
+  source?: DossierGroveMemberSource
+  /** Supabase workspaces.id UUID when source='workspace' (stable across slug renames). */
+  workspace_id?: string
+  /** Explicit per-field display overrides for ref'd workspace members. */
+  override?: DossierGroveMemberOverride
 }
 
 export type DossierVariant = 'artist' | 'studio'
