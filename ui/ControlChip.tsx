@@ -1,4 +1,6 @@
 import {
+  createContext,
+  useContext,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -9,11 +11,7 @@ import {
 import { createPortal } from 'react-dom'
 
 /**
- * ControlChip — the canonical 28px pill atom for every filter / view control.
- *
- * All five sub-atoms render at the same height / radius / font so the filter
- * row reads as one coherent system. Used everywhere a filter row appears
- * (LibraryFilters, audience filters, calendar nav, etc.).
+ * ControlChip — pill / segmented-control atom family.
  *
  * Sub-atoms:
  *  - ChipToggle      — label-only flip (`active` boolean), shape='pill' for
@@ -25,9 +23,17 @@ import { createPortal } from 'react-dom'
  *                      search-within when options > 8. Menu stays open on
  *                      toggle. Use for every filter where 2+ selections make
  *                      sense (status, type, tag, channel, calendar).
- *  - ChipGroup       — wrapper that hosts a row of ChipSegment children inside
- *                      one chip's visual shell (e.g. grid / list view toggle)
- *  - ChipSegment     — segment inside a ChipGroup
+ *  - ChipGroup       — segmented-control shell hosting a row of ChipSegment
+ *                      children. `size='sm'` (default, 28px) for filter-row
+ *                      contexts; `size='md'` (40px) for form bodies where the
+ *                      group sits alongside Input/Select md. Size flows down
+ *                      to nested ChipSegments via context — never set it on
+ *                      individual segments.
+ *  - ChipSegment     — segment inside a ChipGroup. Reads size from context.
+ *
+ * ChipToggle / ChipSelect / ChipMultiSelect are 28px filter-row chips. Use
+ * ChipGroup + ChipSegment for mutually-exclusive in-place choices (including
+ * within form bodies, where `size='md'` lines up with Input/Select md height).
  *
  * ChipSelect + ChipMultiSelect share the same portal-rendered menu chrome
  * (closes on outside click + scroll + resize + Esc so the anchor never goes
@@ -463,26 +469,87 @@ export function ChipMultiSelect({
   )
 }
 
+export type ChipGroupSize = 'sm' | 'md'
+
+interface ChipGroupSizeTokens {
+  height: string
+  padding: string
+  gap: string
+  fontSize: string
+  radius: string
+  background: string
+  segHeight: string
+  segPadding: string
+}
+
+const GROUP_SIZE_TOKENS: Record<ChipGroupSize, ChipGroupSizeTokens> = {
+  // sm — the original 28px chip-group. Filter rows, dense chrome.
+  sm: {
+    height: '28px',
+    padding: '2px',
+    gap: '2px',
+    fontSize: '11px',
+    radius: '6px',
+    background: 'transparent',
+    segHeight: '22px',
+    segPadding: '0 8px',
+  },
+  // md — 40px segmented control. Form bodies where peers are Input/Select md.
+  // Tinted bg so the group reads as one filled control (the segments visually
+  // "live inside" a surface rather than floating in a hairline frame).
+  md: {
+    height: '40px',
+    padding: '3px',
+    gap: '2px',
+    fontSize: '13px',
+    radius: 'var(--cg-radius-md)',
+    background: 'var(--cg-bg)',
+    segHeight: '32px',
+    segPadding: '0 12px',
+  },
+}
+
+const ChipGroupSizeContext = createContext<ChipGroupSize>('sm')
+
 export interface ChipGroupProps {
+  /** sm (default) — 28px filter-row chip. md — 40px form-body segmented control
+   *  matching Input/Select `size="md"`. Use md whenever the group sits in a
+   *  form body alongside text inputs / selects. */
+  size?: ChipGroupSize
   children: ReactNode
 }
 
-/** Wrapper for a row of ChipSegment children inside one chip shell. */
-export function ChipGroup({ children }: ChipGroupProps) {
+/** Wrapper for a row of ChipSegment children inside one segmented-control shell. */
+export function ChipGroup({ size = 'sm', children }: ChipGroupProps) {
+  const tokens = GROUP_SIZE_TOKENS[size]
   return (
-    <div
-      data-cg-chip-group=""
-      style={{
-        ...BASE,
-        padding: '2px',
-        gap: '2px',
-        cursor: 'default',
-        border: '1px solid var(--cg-border)',
-        background: 'transparent',
-      }}
-    >
-      {children}
-    </div>
+    <ChipGroupSizeContext.Provider value={size}>
+      <div
+        data-cg-chip-group=""
+        data-cg-size={size}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: tokens.height,
+          padding: tokens.padding,
+          gap: tokens.gap,
+          fontSize: tokens.fontSize,
+          fontFamily: 'var(--cg-font)',
+          borderRadius: tokens.radius,
+          border: '1px solid var(--cg-border)',
+          background: tokens.background,
+          whiteSpace: 'nowrap',
+          cursor: 'default',
+          boxSizing: 'border-box',
+          flexShrink: 0,
+          transition:
+            'border-color var(--cg-duration-fast), background var(--cg-duration-fast)',
+        }}
+      >
+        {children}
+      </div>
+    </ChipGroupSizeContext.Provider>
   )
 }
 
@@ -494,25 +561,28 @@ export interface ChipSegmentProps {
 }
 
 export function ChipSegment({ active, onClick, title, children }: ChipSegmentProps) {
+  const groupSize = useContext(ChipGroupSizeContext)
+  const tokens = GROUP_SIZE_TOKENS[groupSize]
   return (
     <button
       type="button"
       onClick={onClick}
       title={title}
       data-cg-chip-segment=""
+      data-cg-size={groupSize}
       {...(active ? { 'data-active': '' } : {})}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        height: '22px',
-        padding: '0 8px',
+        height: tokens.segHeight,
+        padding: tokens.segPadding,
         borderRadius: '999px',
-        fontSize: '11px',
+        fontSize: tokens.fontSize,
         fontWeight: 500,
         fontFamily: 'var(--cg-font)',
         background: active ? 'var(--cg-accent-subtle)' : 'transparent',
-        color: active ? 'var(--cg-accent)' : 'var(--cg-text-muted)',
+        color: active ? 'var(--cg-accent)' : 'var(--cg-text-secondary)',
         cursor: 'pointer',
         transition: 'background var(--cg-duration-fast), color var(--cg-duration-fast)',
       }}
