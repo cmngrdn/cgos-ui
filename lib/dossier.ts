@@ -107,7 +107,22 @@ export type DossierService = {
   override?: DossierServiceOverride
 }
 
-export type DossierTransmissionKind =
+/* ─── Signals (formerly "Transmissions") ─────────────────────────────
+ *
+ * Public-page cross-platform feed cards (Spotify drop, YouTube ep, IG post,
+ * Site update, etc) shown in the dossier "Signals" section.
+ *
+ * D1 decision 2026-05-19: renamed from "Transmission" → "Signal" to
+ * disambiguate from the `transmissions` Supabase table (email broadcasts
+ * in the Dispatch module). Same word, two unrelated concepts; the
+ * dossier-side concept aligns with feather's `signals` SQL table.
+ *
+ * Field name preservation: the storage JSONB key `Dossier.transmissions[]`
+ * stays as-is for backward compatibility with already-written workspace
+ * rows. Full storage-side migration is queued for the next time the
+ * dossier schema gets touched.
+ */
+export type DossierSignalKind =
   | 'spotify'
   | 'youtube'
   | 'instagram'
@@ -115,8 +130,8 @@ export type DossierTransmissionKind =
   | 'release'
   | 'other'
 
-export type DossierTransmission = {
-  kind: DossierTransmissionKind
+export type DossierSignal = {
+  kind: DossierSignalKind
   title: string
   source_label: string
   /** ISO date — rendered as relative ("3 days ago"). Sort descending by this. */
@@ -172,14 +187,19 @@ export type Dossier = {
   links?: DossierLink[]
 
   /** Selects canvas layout: 'studio' uses Services + optional intro,
-   *  'artist' uses Missions. Both share Transmissions + Grove. */
+   *  'artist' uses Missions. Both share Signals + Grove. */
   variant: DossierVariant
 
   // Canvas content
   intro?: string // optional studio bio paragraph above services
   missions?: DossierMission[]
   services?: DossierService[]
-  transmissions?: DossierTransmission[]
+  /** Dossier "Signals" section — public-page feed cards.
+   *  Field name historically `transmissions` (D1 rename 2026-05-19 left
+   *  the JSONB storage key intact for backward compat; full storage-side
+   *  migration queued). The TYPE is `DossierSignal[]`; only the wrapping
+   *  field name is legacy. */
+  transmissions?: DossierSignal[]
   grove?: DossierGroveMember[]
 }
 
@@ -190,8 +210,8 @@ export const EMPTY_DOSSIER: Dossier = {
 }
 
 /** Source-of-truth list rendered next to the kind dropdown in the editor. */
-export const TRANSMISSION_KINDS: ReadonlyArray<{
-  value: DossierTransmissionKind
+export const SIGNAL_KINDS: ReadonlyArray<{
+  value: DossierSignalKind
   label: string
 }> = [
   { value: 'spotify', label: 'Spotify' },
