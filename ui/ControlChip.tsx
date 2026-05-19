@@ -142,14 +142,21 @@ export function ChipSelect({
       if (menuRef.current?.contains(target)) return
       setOpen(false)
     }
-    const onScroll = () => setOpen(false)
+    // Scroll listener uses capture so it fires for any scrolling descendant.
+    // Skip scrolls inside the menu itself — otherwise scrolling a long option
+    // list closes the menu, making it unusable.
+    const onScroll = (e: Event) => {
+      if (menuRef.current?.contains(e.target as Node)) return
+      setOpen(false)
+    }
+    const onResize = () => setOpen(false)
     window.addEventListener('mousedown', close)
     window.addEventListener('scroll', onScroll, true)
-    window.addEventListener('resize', onScroll)
+    window.addEventListener('resize', onResize)
     return () => {
       window.removeEventListener('mousedown', close)
       window.removeEventListener('scroll', onScroll, true)
-      window.removeEventListener('resize', onScroll)
+      window.removeEventListener('resize', onResize)
     }
   }, [open])
 
@@ -296,16 +303,22 @@ export function ChipMultiSelect({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false)
     }
-    const onScroll = () => setOpen(false)
+    // Skip scrolls inside the menu — otherwise scrolling a long option list
+    // closes the menu before the user can interact with it.
+    const onScroll = (e: Event) => {
+      if (menuRef.current?.contains(e.target as Node)) return
+      setOpen(false)
+    }
+    const onResize = () => setOpen(false)
     window.addEventListener('mousedown', close)
     window.addEventListener('keydown', onKey)
     window.addEventListener('scroll', onScroll, true)
-    window.addEventListener('resize', onScroll)
+    window.addEventListener('resize', onResize)
     return () => {
       window.removeEventListener('mousedown', close)
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('scroll', onScroll, true)
-      window.removeEventListener('resize', onScroll)
+      window.removeEventListener('resize', onResize)
     }
   }, [open])
 
