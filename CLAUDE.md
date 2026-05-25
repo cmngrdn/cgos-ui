@@ -90,6 +90,81 @@ Tokens live in `tokens.css` under `:root` (dark default) + `:root[data-theme="li
 - **No raw `cgos-ui/preview/MobileFrame` or `cgos-ui/preview/DesktopFrame` imports outside `src/components/hq/preview/` (or the equivalent wrappers folder in any consumer).** Every preview goes through `<InspectorContent>` → `<InspectorPreviewPane>` → the scaled wrappers so framing policy + viewport toggle + mobile-screen edge-to-edge treatment stay locked in. Enforced in cmngrdn by `no-restricted-imports` ESLint rule; mirror in any new consumer that builds an inspector.
 - **One atom per concept.** If you catch yourself building a second version of something already in `ui/`, stop and extend the existing atom instead.
 
+## Inspector Contract — cross-repo authority
+
+The chrome rules below are authoritative for every consumer building an inspector / drawer / sheet surface. The implementation lives in cmngrdn (`@/components/hq/inspector/*` + `src/contexts/InspectorContext.tsx`) and is the reference. Full implementation spec + per-surface migration playbook lives at `cmngrdn/docs/inspector-toggle-redesign.md`. This section captures the locked design contract — what every consumer MUST honor regardless of repo.
+
+**Locked 2026-05-16, cross-repo authority assigned 2026-05-25 after cmngrdn Phase 5 complete.**
+
+### Architectural model
+
+- **Modules are system engines.** Each `/hq/*` module is its own application layered over the same data (Pulse, Journey, Dispatch, Library, Vault, Service, Scanner, etc.). Inspectors are NOT a separate module — they're the entity-window pattern that every module composes when an operator clicks into a row.
+- **Inspectors are entity windows.** They hold ENTITY aspects (Details / Content / Preview / Variants / Activity / Thread / Linked / Settings). Drilldowns are the door between modules and inspectors.
+- **Drilldowns push onto the inspector history stack** and land in the **canonical view** of that module/entity. No duplicated views — shared components only. The Contact inspector you reach by drilling from Inquiry IS the same Contact inspector you'd open from Audience.
+
+### Chrome shape
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ [‹]  Title                  [Actions]   [⛶]   [×]        │  header
+├──────────────────────────────────────────────────────────┤
+│ [Details]  [Content]  [Preview]  [Settings]               │  tabs (≤4)
+├──────────────────────────────────────────────────────────┤
+│           body — whatever the active tab renders          │
+└──────────────────────────────────────────────────────────┘
+```
+
+- **`‹` back button** — visible when `canGoBack === true`. Pops the history stack.
+- **Title + Eyebrow** — entity name.
+- **Actions slot** — typed `InspectorAction[]`. Auto-derived View public / Copy link when `preview.previewUrl` is set. Renders as **24px icon-only squares** via `<IconButton size="sm">` + the library-row chip treatment (`border: 1px solid var(--cg-border)` + `background: var(--cg-bg-surface)` + `border-radius: var(--cg-radius-sm)`) — same atom + same visual vocabulary as `/hq/library/*` `<CardListRow>` action buttons. Labels become `aria-label` + hover `title`, never visible. `placement: 'overflow'` always folds into a ⋯ menu (no width-based reflow). Dropdown items DO render icon + label.
+- **`⛶` Expand** — universal size control. Drawer (~480px) ↔ fullscreen takeover. **Decoupled from edit mode** — expand is its own affordance, NEVER auto-fires on edit.
+- **`×` close** — clears inspector + entire stack.
+- **Tab strip** — composes `<HqTab>` (in cmngrdn at `@/components/hq/tabs/HqTab`; hoist candidate). Max 4 tabs per surface; horizontal scroll on mobile if overflow.
+
+### Routing patterns (Pattern A / Pattern B)
+
+Two patterns; chrome supports both transparently. New inspectors pick one.
+
+**Pattern A — canonical preview + edit composition.** Chrome auto-composes when you pass `preview` + `editContent`. View mode renders `viewContent ?? preview` framed; edit mode renders preview-left + editor-right via `<PreviewEditorSplit>`. Most surfaces use this (portal pages, transmissions, inquiry forms, collectibles).
+
+**Pattern B — tabbed body with per-tab routing.** Pass `content` (the tabbed body) + `canEdit`; DO NOT pass `editContent`. Body reads `activeTabId` + `mode` from `useInspector()` and renders per-tab view/edit content internally. Each tab may mount its own `<InspectorContent>` if it wants the preview/edit split. Used by surfaces with multiple top-level sub-concerns where each may have its own editor — e.g. Vault Passes `<ArtPieceInspector>` (Design / Eras / Tiers / Notifications / Analytics).
+
+### Preview slot + framePolicy
+
+The `preview` slot at `openInspector()` time declares an explicit framePolicy. Chrome owns the framing — bodies NEVER wrap previews themselves.
+
+- **`page`** (default) — visitor-facing page preview. Desktop screen + mobile viewport = iPhone frame; desktop viewport = 1280×800 (or 1440×900 when `desktopNaturalWidth: 1440`). Mobile screen = edge-to-edge in the bottom sheet (device IS the frame). Mobile/desktop viewport toggle visible on desktop only. Used by portal pages, transmissions, inquiry forms.
+- **`artifact`** — identity / card preview without a device context. Centered on a neutral surface, no chrome, no toggle. Same treatment on every screen. Used by Vault Collectibles.
+- **`desktop-only`** — surfaces that only make sense at desktop width (admin tooling, full-bleed dashboards). Always renders in desktop frame. No toggle. Reserved.
+- **`mobile-only`** — surfaces whose audience consumes them on a phone (Apple Wallet passes, iOS push notifications, future SMS conversations). Always renders in iPhone frame on desktop; edge-to-edge on mobile screens. No toggle. Used by Vault Passes.
+
+### Tab discipline
+
+Canonical role set (pick ≤4 per surface; document exceptions):
+
+1. **Overview / Identity** — summary, status, metadata. Optional; skip when the editor IS the natural landing.
+2. **Editor** (or domain-specific name — Builder / Design / Compose) — work surface. Pattern A surfaces usually skip this (edit-mode chrome covers it).
+3. **Preview** — visitor's view. Routes through `useInspector().preview` + `<InspectorContent>`.
+4. **Analytics** — data after-the-fact. Empty state until data exists.
+5. **Settings** — config knobs that aren't part of the editor.
+
+Use canonical role names where they fit. Don't invent "Stats" when "Analytics" works.
+
+### Visual treatment + container rules
+
+These rules are enforced. Breakage means drift across the platform.
+
+- **Tab active state** — rounded top + elevated `--cg-bg-elevated` background + 2px accent underline + 600 weight. Inactive = transparent + transparent underline + 500 weight + muted text.
+- **Active underline MUST touch the divider beneath the tabs row.** `<HqTab>` sets `margin-bottom: -1px` to overlap. Parent container MUST set `align-items: flex-end` (or `align-self: flex-end` on the tabs row inside). Without that, the underline floats above the line.
+- **Container background cannot match active tab background.** Container = `var(--cg-bg)` or `transparent`. NEVER `var(--cg-bg-elevated)` (that's what active tab uses; container + active tab would visually merge).
+- **All chrome heights use `--hq-chrome-height` (48px primary) or `--hq-chrome-subrow-height` (40px sub-rows).** Sidebar header, page header, inspector header, tab strips, filter strips — all on the same Y when stacked. Don't pick a one-off number.
+- **All chrome bottom borders use `var(--cg-glass-border)`.** Content surfaces use `var(--cg-border)` (heavier definition).
+- **Flex-pin shell pattern.** `.hq-module-shell` is `display: flex; flex-direction: column; height: 100%; overflow: hidden`. Direct children that aren't `.page-header` or `.hq-module-chrome` become the scrolling body. Chrome is structurally unable to scroll.
+
+### When to skip these rules
+
+You don't. If a surface needs a different chrome shape, the conversation is "should we change the rules?" not "should I roll a one-off." Bring it back to this section.
+
 ## Versioning + consumption
 
 `package.json` `version` bumps follow:
