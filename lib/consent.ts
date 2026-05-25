@@ -246,13 +246,21 @@ export function renderSmsConsentTextNodes(
   args: ConsentArgs & {
     privacyHref?: string;
     termsHref?: string;
+    /** Inline styles applied to both <a> elements. Useful for one-off
+     *  surfaces that don't have a CSS class to attach. */
     linkStyle?: React.CSSProperties;
+    /** className applied to both <a> elements. Useful when the consumer
+     *  has a pre-existing link-treatment class (e.g. feather.fm's
+     *  `.splash-link`) and wants the canonical consent string to inherit
+     *  it. Composes with `linkStyle` if both are passed. */
+    linkClassName?: string;
   }
 ): ReactNode {
   const text = buildSmsConsentText(args);
   const privacyHref = args.privacyHref ?? PRIVACY_URL;
   const termsHref = args.termsHref ?? TERMS_URL;
   const linkStyle = args.linkStyle;
+  const linkClassName = args.linkClassName;
 
   // Split on the EXACT canonical phrase "See our Privacy Policy and Terms."
   // → produces [before, after] around the phrase.
@@ -278,6 +286,7 @@ export function renderSmsConsentTextNodes(
         target: "_blank",
         rel: "noopener noreferrer",
         style: linkStyle,
+        className: linkClassName,
       },
       "Privacy Policy"
     ),
@@ -289,6 +298,7 @@ export function renderSmsConsentTextNodes(
         target: "_blank",
         rel: "noopener noreferrer",
         style: linkStyle,
+        className: linkClassName,
       },
       "Terms"
     ),
