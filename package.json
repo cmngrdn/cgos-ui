@@ -57,10 +57,6 @@
       "types": "./ui/GlassSurface.tsx",
       "import": "./ui/GlassSurface.tsx"
     },
-    "./ui/Card": {
-      "types": "./ui/Card.tsx",
-      "import": "./ui/Card.tsx"
-    },
     "./ui/Input": {
       "types": "./ui/Input.tsx",
       "import": "./ui/Input.tsx"
@@ -118,10 +114,6 @@
     "./lib/dossier": {
       "types": "./lib/dossier.ts",
       "import": "./lib/dossier.ts"
-    },
-    "./lib/modules": {
-      "types": "./lib/modules.ts",
-      "import": "./lib/modules.ts"
     },
     "./lib/consent": {
       "types": "./lib/consent.ts",
