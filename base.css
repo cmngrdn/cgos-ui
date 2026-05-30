@@ -256,3 +256,30 @@
   from { opacity: 0; transform: translateY(6px) scale(0.98); }
   to   { opacity: 1; transform: translateY(0)   scale(1); }
 }
+
+/* Skeleton shimmer — sweeps a brightened band across the placeholder fill.
+ * Used by the Skeleton atom (which sets a 200%-wide gradient background and
+ * references this keyframe inline). */
+@keyframes cg-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────
+ * Honor `prefers-reduced-motion: reduce` for the design system's own
+ * decorative animations. Deliberately SCOPED to cg-* animated surfaces
+ * (not a blanket `*` reset) — cgos-ui is conservative about global
+ * selectors since this file ships to four consumers; each app owns its
+ * own reset/motion policy. `!important` is required to override the
+ * inline `animation`/`transition` the atoms set (the one case where a
+ * CSS rule beats an inline style). JS-driven (framer-motion) tweens in
+ * consumers gate themselves via the consumer's own `useReducedMotion`. */
+@media (prefers-reduced-motion: reduce) {
+  .cg-skeleton {
+    animation: none !important;
+    background: var(--cg-surface-raise) !important;
+  }
+  .cg-collapsible-content {
+    transition: none !important;
+  }
+}

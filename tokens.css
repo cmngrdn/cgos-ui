@@ -98,6 +98,35 @@
   --cg-module-settings:     var(--cg-status-neutral); /* #6b7280 slate */
   --cg-module-admin:        var(--cg-status-danger);  /* #ef4444 red */
 
+  /* ── Data-viz palette (Pulse analytics charts) ───────────────────
+     Categorical series colors 1..6 for charts (stacked bars, multi-
+     line, distribution). Distinct hues walking the petal/iridescent
+     palette for brand cohesion; blue/orange/emerald carry the
+     colorblind-safe load, violet/magenta/gold extend. Semantic
+     reachability colors encode the audience opt-in ladder (email /
+     sms / both / neither). Tuned bright for the dark default; the
+     light block re-points them deeper so chart fills stay legible on
+     the cream background. Charts are ALSO themed per-module via an
+     `accent` prop — these are the fixed semantic/categorical palette,
+     independent of module color.
+     ─────────────────────────────────────────────────────────────── */
+  --cg-data-1:              #6dc0ff;  /* blue   — petal-blue */
+  --cg-data-2:              #ff8a3d;  /* orange — petal-orange */
+  --cg-data-3:              #34d399;  /* emerald */
+  --cg-data-4:              #b78bff;  /* violet — iridescent stop 2 */
+  --cg-data-5:              #ff5ec8;  /* magenta — iridescent stop 3 */
+  --cg-data-6:              #ffd24a;  /* gold — iridescent stop 5 */
+
+  /* Reachability ladder (audience opt-in) — fixed semantics */
+  --cg-data-reachable:      #6dc0ff;  /* email-reachable — blue */
+  --cg-data-reachable-sms:  #b78bff;  /* sms-reachable — violet */
+  --cg-data-both:           #a3e635;  /* both channels — lime (best state) */
+  --cg-data-unreachable:    #6b7280;  /* neither — neutral grey */
+
+  /* Chart chrome */
+  --cg-data-grid:           var(--cg-border);         /* axis gridlines */
+  --cg-data-track:          var(--cg-surface-raise);  /* empty bar/stack track */
+
   /* ── Typography ──────────────────────────────────────────── */
   --cg-font:                'Outfit', system-ui, -apple-system, sans-serif;
   --cg-font-mono:           'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
@@ -257,4 +286,18 @@
   --bg-bloom-h:             var(--cg-bloom-h);
   --bg-bloom-s:             var(--cg-bloom-s);
   --bg-bloom-opacity:       var(--cg-bloom-opacity);
+
+  /* Data-viz palette — deeper on the cream background so chart fills
+     clear the ~3:1 non-text contrast floor (the dark-theme brights wash
+     out on light). grid + track inherit via var() and need no override. */
+  --cg-data-1:              #2f80c4;  /* blue */
+  --cg-data-2:              #e0691c;  /* orange */
+  --cg-data-3:              #0f9d6e;  /* emerald */
+  --cg-data-4:              #7c5cd6;  /* violet */
+  --cg-data-5:              #d63aa0;  /* magenta */
+  --cg-data-6:              #c08a16;  /* gold */
+  --cg-data-reachable:      #2f80c4;  /* email */
+  --cg-data-reachable-sms:  #7c5cd6;  /* sms */
+  --cg-data-both:           #5f9e10;  /* both — deeper lime */
+  --cg-data-unreachable:    #8a8076;  /* neither — warm grey */
 }
