@@ -134,6 +134,17 @@ Two patterns; chrome supports both transparently. New inspectors pick one.
 
 **Pattern B — tabbed body with per-tab routing.** Pass `content` (the tabbed body) + `canEdit`; DO NOT pass `editContent`. Body reads `activeTabId` + `mode` from `useInspector()` and renders per-tab view/edit content internally. Each tab may mount its own `<InspectorContent>` if it wants the preview/edit split. Used by surfaces with multiple top-level sub-concerns where each may have its own editor — e.g. Vault Passes `<ArtPieceInspector>` (Design / Eras / Tiers / Notifications / Analytics).
 
+### Body composition (content-only)
+
+A tab body renders the entity's **CONTENT** — never a page surface. The chrome owns the title bar, framing, and tabs; the body owns what sits below them.
+
+- **No page header / self-title.** The chrome's title IS the title. A body that renders its own `<header><h1>` (or eyebrow + title + subtitle block) echoing the chrome title is a violation. Section sub-labels inside the body are fine; a page-level title is not.
+- **No page-width / centered container.** No `maxWidth` + `margin: auto`, no large page padding. The body fills the inspector and uses inspector-scale padding.
+- **Use a canonical tab role** (`details`/overview · `editor` · `preview` · `variants` · `activity` · `thread` · `linked` · `settings`), not an ad-hoc one.
+- **Never drop a full-page route component into a tab.** A `/hq/...` page surface carries its own header + max-width container + page padding; mounting it verbatim "sticks a page in a box." Factor the chrome out (or gate it behind an in-inspector flag/context) so the body is content-only before mounting.
+
+This applies to ANY surface opened in the inspector — preview-bearing or not, present or future. The same discipline that keeps framing in one place (above) keeps titling + chrome there too. (cmngrdn 2026-06-03: the Activity pullout's `<ActivityBody>` was de-chromed to a content-only `activity`-role body; Pulse-card pullouts render their chart chromeless via a `PulseDetailContext` so the chart's own panel title doesn't echo the chrome title — see cmngrdn CLAUDE.md § Inspector Contract for the implementation.)
+
 ### Preview slot + framePolicy
 
 The `preview` slot at `openInspector()` time declares an explicit framePolicy. Chrome owns the framing — bodies NEVER wrap previews themselves.
