@@ -168,6 +168,90 @@ export function buildEmailConsentText(args: ConsentArgs): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// Category-split consent (CTIA pattern). Short affirmative checkbox
+// labels — one per category × channel — say WHAT the fan is opting into
+// (marketing vs non-marketing). The carrier-required disclosures (rates,
+// frequency, HELP/STOP, no-sharing) live ONCE in `buildConsentFinePrint`
+// below the form, instead of being baked into every checkbox label.
+//
+// Funnel → category map (cmngrdn + feather):
+//   follow / portal / feather splash → marketing email + marketing SMS
+//   booking                          → transactional SMS (email defaults on)
+//
+// The legacy single-surface `buildSmsConsentText` / `buildEmailConsentText`
+// above are retained for the `/sms` info page until it's migrated.
+// ─────────────────────────────────────────────────────────────────────
+
+/** Marketing EMAIL opt-in checkbox label. Short + affirmative; the
+ *  carrier disclosures live in `buildConsentFinePrint`. */
+export function buildMarketingEmailConsentText(args: ConsentArgs): string {
+  const messageTypes = resolveMessageTypes(args);
+  return (
+    `I'd like to receive email updates from ${args.brandName} about ${messageTypes}. ` +
+    `You may unsubscribe at any time.`
+  );
+}
+
+/** Marketing SMS opt-in checkbox label. Short + affirmative; carrier
+ *  disclosures live in `buildConsentFinePrint`. */
+export function buildMarketingSmsConsentText(args: ConsentArgs): string {
+  return (
+    `I'd like to receive marketing texts and exclusive updates from ` +
+    `${args.brandName} at the number provided.`
+  );
+}
+
+/** Default noun phrase for transactional ("non-marketing") consent — what
+ *  the operational messages are about. Booking surfaces use the default;
+ *  other transactional surfaces pass their own `topic`. */
+export const DEFAULT_TRANSACTIONAL_TOPIC = "my appointment";
+
+function resolveTopic(args: ConsentArgs & { topic?: string }): string {
+  return args.topic?.trim() || DEFAULT_TRANSACTIONAL_TOPIC;
+}
+
+/** Non-marketing ("transactional") SMS opt-in checkbox label — e.g. the
+ *  booking flow's appointment-update texts. */
+export function buildTransactionalSmsConsentText(
+  args: ConsentArgs & { topic?: string }
+): string {
+  return (
+    `I'd like to receive non-marketing text updates about ${resolveTopic(args)} ` +
+    `at the number provided.`
+  );
+}
+
+/** Non-marketing ("transactional") EMAIL opt-in checkbox label. Not shown
+ *  on a checkbox in Phase 1 (transactional email defaults on) but used for
+ *  the Phase 2 management-toggle labels so the four dimensions read
+ *  consistently. */
+export function buildTransactionalEmailConsentText(
+  args: ConsentArgs & { topic?: string }
+): string {
+  return (
+    `I'd like to receive non-marketing email updates about ${resolveTopic(args)} ` +
+    `at the email address provided.`
+  );
+}
+
+/** Consolidated fine-print disclosure rendered ONCE below an opt-in form.
+ *  Carries the carrier-required elements (consent-not-a-condition, rate +
+ *  frequency disclosure, HELP/STOP, no-sharing) so the per-channel
+ *  checkboxes above stay short. The phrase "Privacy Policy and Terms"
+ *  appears verbatim so `renderConsentFinePrintNodes` can wrap them in
+ *  links — keep them in sync. */
+export function buildConsentFinePrint(args: ConsentArgs): string {
+  return (
+    `By submitting your information, you agree to receive updates and information ` +
+    `from ${args.brandName} and agree to our Privacy Policy and Terms. Under 18? ` +
+    `Please make sure you have parental permission. Consent is not a condition of ` +
+    `purchase. Message and data rates may apply. Message frequency varies. Reply ` +
+    `HELP for help or STOP to cancel. Mobile opt-in data is never shared with third ` +
+    `parties for marketing purposes.`
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // Outbound auto-reply messages (sent from the Twilio number after the
 // user opts in / texts a keyword)
 // ─────────────────────────────────────────────────────────────────────
@@ -303,6 +387,68 @@ export function renderSmsConsentTextNodes(
       "Terms"
     ),
     ".",
+    after
+  );
+}
+
+/** Wraps `buildConsentFinePrint` in ReactNodes, converting the literal
+ *  "Privacy Policy" and "Terms" into clickable `<a>` elements. Mirror of
+ *  `renderSmsConsentTextNodes` for the consolidated fine-print block shown
+ *  once below an opt-in form. */
+export function renderConsentFinePrintNodes(
+  args: ConsentArgs & {
+    privacyHref?: string;
+    termsHref?: string;
+    linkStyle?: React.CSSProperties;
+    linkClassName?: string;
+  }
+): ReactNode {
+  const text = buildConsentFinePrint(args);
+  const privacyHref = args.privacyHref ?? PRIVACY_URL;
+  const termsHref = args.termsHref ?? TERMS_URL;
+  const linkStyle = args.linkStyle;
+  const linkClassName = args.linkClassName;
+
+  // Split on the EXACT canonical phrase "Privacy Policy and Terms" → wraps
+  // "Privacy Policy" and "Terms" as separate links, keeping the " and "
+  // connector as plain text between them.
+  const marker = "Privacy Policy and Terms";
+  const idx = text.indexOf(marker);
+  if (idx < 0) {
+    // Defensive fallback — should never fire if the canonical string and
+    // this matcher are kept in sync.
+    return text;
+  }
+  const before = text.slice(0, idx);
+  const after = text.slice(idx + marker.length);
+
+  return createElement(
+    Fragment,
+    null,
+    before,
+    createElement(
+      "a",
+      {
+        href: privacyHref,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        style: linkStyle,
+        className: linkClassName,
+      },
+      "Privacy Policy"
+    ),
+    " and ",
+    createElement(
+      "a",
+      {
+        href: termsHref,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        style: linkStyle,
+        className: linkClassName,
+      },
+      "Terms"
+    ),
     after
   );
 }
