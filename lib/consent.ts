@@ -174,9 +174,12 @@ export function buildEmailConsentText(args: ConsentArgs): string {
 // frequency, HELP/STOP, no-sharing) live ONCE in `buildConsentFinePrint`
 // below the form, instead of being baked into every checkbox label.
 //
-// Funnel → category map (cmngrdn + feather):
+// Funnel → category map (cmngrdn + feather + reliquary):
 //   follow / portal / feather splash → marketing email + marketing SMS
-//   booking                          → transactional SMS (email defaults on)
+//   booking                          → transactional SMS + OPTIONAL marketing
+//                                      email + marketing SMS (none gate booking)
+//   reliquary tattoo inquiry         → OPTIONAL marketing email + marketing SMS
+//   cmngrdn inquiry forms            → none
 //
 // The legacy single-surface `buildSmsConsentText` / `buildEmailConsentText`
 // above are retained for the `/sms` info page until it's migrated.
