@@ -240,14 +240,15 @@ export function buildTransactionalEmailConsentText(
 /** Consolidated fine-print disclosure rendered ONCE below an opt-in form.
  *  Carries the carrier-required elements (consent-not-a-condition, rate +
  *  frequency disclosure, HELP/STOP) so the per-channel checkboxes above
- *  stay short. The phrase "Terms & Conditions" appears verbatim so
- *  `renderConsentFinePrintNodes` can wrap it in a link — keep them in sync. */
+ *  stay short. Ends in the verbatim phrase "Terms & Privacy", whose two
+ *  words `renderConsentFinePrintNodes` wraps as separate Terms + Privacy
+ *  links — keep them in sync. */
 export function buildConsentFinePrint(args: ConsentArgs): string {
   return (
     `By submitting your information, you agree to receive marketing and ` +
     `promotional messages from ${args.brandName}. Consent is not a condition ` +
     `of purchase. Message and data rates may apply. Message frequency varies. ` +
-    `Reply HELP for help or STOP to cancel. Terms & Conditions.`
+    `Reply HELP for help or STOP to cancel. Terms & Privacy.`
   );
 }
 
@@ -392,25 +393,27 @@ export function renderSmsConsentTextNodes(
 }
 
 /** Wraps `buildConsentFinePrint` in ReactNodes, converting the literal
- *  "Terms & Conditions" into a clickable `<a>` element. Mirror of
- *  `renderSmsConsentTextNodes` for the consolidated fine-print block shown
- *  once below an opt-in form. */
+ *  "Terms" and "Privacy" (the "Terms & Privacy" tail) into two separate
+ *  clickable `<a>` elements. Mirror of `renderSmsConsentTextNodes` for the
+ *  consolidated fine-print block shown once below an opt-in form. */
 export function renderConsentFinePrintNodes(
   args: ConsentArgs & {
     termsHref?: string;
+    privacyHref?: string;
     linkStyle?: React.CSSProperties;
     linkClassName?: string;
   }
 ): ReactNode {
   const text = buildConsentFinePrint(args);
   const termsHref = args.termsHref ?? TERMS_URL;
+  const privacyHref = args.privacyHref ?? PRIVACY_URL;
   const linkStyle = args.linkStyle;
   const linkClassName = args.linkClassName;
 
-  // Split on the EXACT canonical phrase "Terms & Conditions" → wraps it in a
-  // single link at the end of the disclosure, keeping the trailing period as
-  // plain text after it.
-  const marker = "Terms & Conditions";
+  // Split on the EXACT canonical phrase "Terms & Privacy" → wraps "Terms" and
+  // "Privacy" as two separate links joined by a plain " & ", keeping the
+  // trailing period as plain text after them.
+  const marker = "Terms & Privacy";
   const idx = text.indexOf(marker);
   if (idx < 0) {
     // Defensive fallback — should never fire if the canonical string and
@@ -433,7 +436,19 @@ export function renderConsentFinePrintNodes(
         style: linkStyle,
         className: linkClassName,
       },
-      "Terms & Conditions"
+      "Terms"
+    ),
+    " & ",
+    createElement(
+      "a",
+      {
+        href: privacyHref,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        style: linkStyle,
+        className: linkClassName,
+      },
+      "Privacy"
     ),
     after
   );
