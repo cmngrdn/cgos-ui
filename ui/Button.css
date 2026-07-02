@@ -75,7 +75,7 @@
   box-shadow: var(--cg-elev-2);
 }
 [data-cg-button][data-variant="primary"]:active:not(:disabled):not([data-loading]) {
-  transform: translateY(0);
+  transform: scale(0.97);
   filter: brightness(0.96);
   box-shadow: var(--cg-elev-1);
 }
@@ -93,7 +93,7 @@
   box-shadow: var(--cg-elev-2);
 }
 [data-cg-button][data-variant="ghost"]:active:not(:disabled):not([data-loading]) {
-  transform: translateY(0);
+  transform: scale(0.97);
   box-shadow: var(--cg-elev-1);
 }
 
@@ -110,7 +110,7 @@
   box-shadow: var(--cg-elev-2);
 }
 [data-cg-button][data-variant="accent"]:active:not(:disabled):not([data-loading]) {
-  transform: translateY(0);
+  transform: scale(0.97);
   box-shadow: var(--cg-elev-1);
 }
 
@@ -126,7 +126,7 @@
   box-shadow: var(--cg-elev-2);
 }
 [data-cg-button][data-variant="danger"]:active:not(:disabled):not([data-loading]) {
-  transform: translateY(0);
+  transform: scale(0.97);
   box-shadow: var(--cg-elev-1);
 }
 
@@ -163,7 +163,7 @@
   box-shadow: var(--cg-glass-shadow-floating);
 }
 [data-cg-button][data-variant="glass"]:active:not(:disabled):not([data-loading]) {
-  transform: translateY(0);
+  transform: scale(0.97);
   box-shadow: var(--cg-elev-2);
 }
 
@@ -197,6 +197,16 @@
   transform: none !important;
   filter: none !important;
   box-shadow: none !important;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────── */
+/* Neutralize the hover-lift + press-squish for users who ask for less
+ * motion; color/shadow feedback (via the base transition) stays. */
+@media (prefers-reduced-motion: reduce) {
+  [data-cg-button]:hover:not(:disabled):not([data-loading]),
+  [data-cg-button]:active:not(:disabled):not([data-loading]) {
+    transform: none;
+  }
 }
 
 /* ── Loading ────────────────────────────────────────────────── */
