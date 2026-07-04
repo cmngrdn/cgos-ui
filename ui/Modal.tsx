@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { IconButton } from './IconButton'
+import { usePresence } from './usePresence'
 
 /**
  * Modal — centered dialog atom with a glass-frosted backdrop, scroll-lock,
@@ -39,6 +40,10 @@ export interface ModalProps {
 
 const MAX_WIDTH: Record<ModalSize, number> = { sm: 420, md: 640, lg: 880, xl: 1120 }
 
+/** Exit animation duration — kept in lockstep with usePresence's unmount
+ * delay and the `cg-modal-*-out` keyframes below. */
+const EXIT_MS = 160
+
 export function Modal({
   open,
   onClose,
@@ -64,7 +69,10 @@ export function Modal({
     }
   }, [open, dismissible, onClose])
 
-  if (!open) return null
+  // Stay mounted through the exit animation, then unmount. `open` drives the
+  // enter vs. exit keyframes; `mounted` gates whether we render at all.
+  const mounted = usePresence(open, EXIT_MS)
+  if (!mounted) return null
 
   return createPortal(
     <div
@@ -84,7 +92,9 @@ export function Modal({
         justifyContent: 'center',
         padding: 'var(--cg-space-lg)',
         zIndex: 1200,
-        animation: 'cg-modal-fade 150ms var(--cg-ease)',
+        animation: open
+          ? 'cg-modal-fade 150ms var(--cg-ease)'
+          : `cg-modal-fade-out ${EXIT_MS}ms var(--cg-ease-exit) forwards`,
       }}
     >
       <div
@@ -101,7 +111,9 @@ export function Modal({
           borderRadius: 'var(--cg-radius-lg)',
           boxShadow: 'var(--cg-elev-4)',
           overflow: 'hidden',
-          animation: 'cg-modal-rise 180ms var(--cg-ease)',
+          animation: open
+            ? 'cg-modal-rise 180ms var(--cg-ease)'
+            : `cg-modal-rise-out ${EXIT_MS}ms var(--cg-ease-exit) forwards`,
         }}
       >
         {title && (
