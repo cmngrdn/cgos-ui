@@ -294,6 +294,14 @@
   .cg-collapsible-content {
     transition: none !important;
   }
+  /* Scroll-reveal blocks appear in place — no fade/rise. The Reveal atom
+     also resolves visible-instantly in JS under reduced motion; this is the
+     belt-and-suspenders CSS floor (and covers the pre-hydration paint). */
+  .cg-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
   /* Modal appears/disappears instantly — no fade/rise either direction.
      Pairs with usePresence, which unmounts on the same tick under reduced
      motion so there's nothing left to animate. */
