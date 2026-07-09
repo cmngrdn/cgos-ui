@@ -277,6 +277,20 @@
   100% { background-position: -200% 0; }
 }
 
+/* Toast enter/exit — slides in from the right edge + fades. The Toast atom
+ * keeps each item mounted for the exit duration (per-item `leaving` state)
+ * so the out-keyframe plays instead of a hard unmount. Entry decelerates
+ * (--cg-ease-entry), exit accelerates (--cg-ease-exit), matching the HIG
+ * appear/dismiss split the rest of the system uses. */
+@keyframes cg-toast-in {
+  from { opacity: 0; transform: translateX(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateX(0)    scale(1); }
+}
+@keyframes cg-toast-out {
+  from { opacity: 1; transform: translateX(0)    scale(1); }
+  to   { opacity: 0; transform: translateX(16px) scale(0.98); }
+}
+
 /* ── Reduced motion ──────────────────────────────────────────────────
  * Honor `prefers-reduced-motion: reduce` for the design system's own
  * decorative animations. Deliberately SCOPED to cg-* animated surfaces
@@ -307,6 +321,12 @@
      motion so there's nothing left to animate. */
   [data-cg-modal-backdrop],
   [data-cg-modal-surface] {
+    animation: none !important;
+  }
+  /* Toasts appear/disappear instantly — no slide either direction. The atom
+     also collapses its exit delay to 0 under reduced motion so nothing is
+     left mid-animation. */
+  [data-cg-toast] {
     animation: none !important;
   }
 }
