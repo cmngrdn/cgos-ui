@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { IconButton } from './IconButton'
 import { usePresence } from './usePresence'
@@ -18,9 +18,14 @@ import { usePresence } from './usePresence'
  * matching the Liquid Glass material vocabulary. Surface stays solid
  * (`--cg-bg-elevated`) for legibility — modals are MODAL, not floating.
  *
- * Companion CSS at `cgos-ui/ui/Modal.css` carries the focus-visible ring
- * for the close button only — everything else is inline-style. Auto-loaded
- * via `cgos-ui/index.css`.
+ * Enter/exit keyframes (`cg-modal-*`) live in `cgos-ui/base.css`, auto-loaded
+ * via `cgos-ui/index.css`; everything else is inline-style. The close button's
+ * focus ring comes from the IconButton atom.
+ *
+ * Accessibility: on open, focus moves into the dialog and is trapped (Tab /
+ * Shift-Tab cycle within it); on close, focus returns to the element that had
+ * it. The dialog is named by its `title` (via aria-labelledby) or, when
+ * titleless, by the `ariaLabel` prop.
  */
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl'
@@ -36,7 +41,26 @@ export interface ModalProps {
   dismissible?: boolean
   /** Render without the default padded body wrapper — caller controls padding. */
   bare?: boolean
+  /** Accessible name when there's no visible `title`. Ignored when `title` is
+   *  set (the title labels the dialog then). Defaults to "Dialog". */
+  ariaLabel?: string
 }
+
+// Elements that can receive keyboard focus — used to scope the Tab trap and to
+// pick the initial focus target inside the dialog.
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'area[href]',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  'button:not([disabled])',
+  'iframe',
+  'object',
+  'embed',
+  '[tabindex]:not([tabindex="-1"])',
+  '[contenteditable="true"]',
+].join(',')
 
 const MAX_WIDTH: Record<ModalSize, number> = { sm: 420, md: 640, lg: 880, xl: 1120 }
 
@@ -53,19 +77,66 @@ export function Modal({
   size = 'md',
   dismissible = true,
   bare = false,
+  ariaLabel,
 }: ModalProps) {
-  // Esc to close + scroll-lock while open.
+  const surfaceRef = useRef<HTMLDivElement>(null)
+  // The element focused before the dialog opened, restored on close.
+  const restoreFocusRef = useRef<HTMLElement | null>(null)
+  const titleId = useId()
+
+  // Esc to close + scroll-lock + focus management + Tab trap while open.
   useEffect(() => {
     if (!open) return
+
+    // Remember what had focus, then move focus into the dialog. Without this,
+    // keyboard focus stays behind the modal (WCAG 2.4.3) — the whole point of a
+    // modal is that it's the only thing interactable while up.
+    restoreFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const surface = surfaceRef.current
+    const firstFocusable = surface?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)
+    ;(firstFocusable ?? surface)?.focus()
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && dismissible) onClose()
+      if (e.key === 'Escape' && dismissible) {
+        onClose()
+        return
+      }
+      if (e.key !== 'Tab' || !surface) return
+      // Recompute each Tab so dynamic dialog content is handled. Skip elements
+      // that aren't actually rendered (display:none etc).
+      const nodes = Array.from(
+        surface.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter((el) => el.getClientRects().length > 0)
+      if (nodes.length === 0) {
+        // Nothing focusable inside — keep focus on the surface itself.
+        e.preventDefault()
+        surface.focus()
+        return
+      }
+      const first = nodes[0]
+      const last = nodes[nodes.length - 1]
+      const active = document.activeElement
+      if (e.shiftKey) {
+        if (active === first || !surface.contains(active)) {
+          e.preventDefault()
+          last.focus()
+        }
+      } else if (active === last || !surface.contains(active)) {
+        e.preventDefault()
+        first.focus()
+      }
     }
+
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', onKey)
     return () => {
       document.body.style.overflow = prevOverflow
       window.removeEventListener('keydown', onKey)
+      // Return focus to whatever triggered the dialog.
+      const toRestore = restoreFocusRef.current
+      if (toRestore && typeof toRestore.focus === 'function') toRestore.focus()
     }
   }, [open, dismissible, onClose])
 
@@ -78,7 +149,8 @@ export function Modal({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={title}
+      aria-labelledby={title ? titleId : undefined}
+      aria-label={title ? undefined : (ariaLabel ?? 'Dialog')}
       onClick={dismissible ? onClose : undefined}
       data-cg-modal-backdrop=""
       style={{
@@ -98,6 +170,8 @@ export function Modal({
       }}
     >
       <div
+        ref={surfaceRef}
+        tabIndex={-1}
         onClick={e => e.stopPropagation()}
         data-cg-modal-surface=""
         style={{
@@ -127,7 +201,7 @@ export function Modal({
               flexShrink: 0,
             }}
           >
-            <h2 className="cg-text-title" style={{ margin: 0 }}>
+            <h2 id={titleId} className="cg-text-title" style={{ margin: 0 }}>
               {title}
             </h2>
             {dismissible && (
