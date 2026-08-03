@@ -142,6 +142,10 @@ export function Modal({
 
   // Stay mounted through the exit animation, then unmount. `open` drives the
   // enter vs. exit keyframes; `mounted` gates whether we render at all.
+  /** Did this click's pointer-down land on the backdrop itself? A selection
+   *  drag that starts in a field and ends outside must not dismiss. */
+  const downOnBackdrop = useRef(false)
+
   const mounted = usePresence(open, EXIT_MS)
   if (!mounted) return null
 
@@ -151,7 +155,28 @@ export function Modal({
       aria-modal="true"
       aria-labelledby={title ? titleId : undefined}
       aria-label={title ? undefined : (ariaLabel ?? 'Dialog')}
-      onClick={dismissible ? onClose : undefined}
+      // Dismiss on the backdrop only when the gesture BEGAN there.
+      //
+      // `onClick` alone is wrong and the failure is nasty: select the text in a
+      // field and drag past the edge of the panel, and the browser fires
+      // `click` on the nearest common ancestor of the down and up targets —
+      // the backdrop — so the dialog vanishes mid-selection taking whatever was
+      // typed with it. Reported on the staffing paste dialog, where the name
+      // field is the first thing anyone edits.
+      //
+      // Tracking the pointer-down target fixes the whole class: a drag that
+      // starts inside can never dismiss, and a genuine backdrop click still
+      // does. Pointer events rather than mouse, so it holds for touch drags too.
+      onPointerDown={e => {
+        downOnBackdrop.current = e.target === e.currentTarget
+      }}
+      onClick={
+        dismissible
+          ? e => {
+              if (downOnBackdrop.current && e.target === e.currentTarget) onClose()
+            }
+          : undefined
+      }
       data-cg-modal-backdrop=""
       style={{
         position: 'fixed',
