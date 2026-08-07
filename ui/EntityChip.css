@@ -100,8 +100,15 @@
   border-color: color-mix(in srgb, var(--cg-accent) 45%, transparent);
 }
 
-[data-cg-entity-chip-body]:disabled {
+[data-cg-entity-chip-body]:disabled,
+/* No handler, so it rendered as a <span> — text, and it has to feel like text.
+   The hover lift below is suppressed for the same reason: a surface that
+   responds to the pointer is promising something it won't do. */
+[data-cg-entity-chip-body][data-static] {
   cursor: default;
+}
+[data-cg-entity-chip]:has([data-cg-entity-chip-body][data-static]):not([data-removable]):hover {
+  border-color: var(--cg-border);
 }
 [data-cg-entity-chip-body]:focus-visible,
 [data-cg-entity-chip-remove]:focus-visible {

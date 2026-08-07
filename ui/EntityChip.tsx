@@ -89,25 +89,39 @@ export function EntityChip({
       style={ROOT}
       className={className}
     >
-      <button
-        type="button"
-        data-cg-entity-chip-body=""
-        title={title}
-        disabled={disabled}
-        onClick={onClick}
-        aria-label={
-          filled
-            ? title
-              ? `${title}: ${label}`
-              : (label as string)
-            : title
-              ? `Set ${title.toLowerCase()}`
-              : placeholder
-        }
-      >
-        {icon}
-        <span data-cg-entity-chip-label="">{filled ? label : placeholder}</span>
-      </button>
+      {/* A chip with nowhere to go is TEXT, not a dead button. Rendering the
+          body as a <button> unconditionally gave every read-only chip a
+          focusable, hover-lit control that did nothing when clicked — the
+          exact promise-you-don't-keep this atom exists to stop making about
+          the ×. Read-only is a real case, not an edge one: an inherited crew
+          lead, a client that is a person rather than an organization, any chip
+          inside an inspector that only displays. */}
+      {onClick ? (
+        <button
+          type="button"
+          data-cg-entity-chip-body=""
+          title={title}
+          disabled={disabled}
+          onClick={onClick}
+          aria-label={
+            filled
+              ? title
+                ? `${title}: ${label}`
+                : (label as string)
+              : title
+                ? `Set ${title.toLowerCase()}`
+                : placeholder
+          }
+        >
+          {icon}
+          <span data-cg-entity-chip-label="">{filled ? label : placeholder}</span>
+        </button>
+      ) : (
+        <span data-cg-entity-chip-body="" data-static="" title={title}>
+          {icon}
+          <span data-cg-entity-chip-label="">{filled ? label : placeholder}</span>
+        </span>
+      )}
       {removable && (
         <button
           type="button"
