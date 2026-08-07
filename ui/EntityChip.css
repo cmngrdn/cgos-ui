@@ -1,0 +1,128 @@
+/* cgos-ui — EntityChip atom companion CSS
+ * -----------------------------------------------------------------------
+ * The chip's visual state is entirely static per tone, so unlike the
+ * ControlChip family it carries no inline styling beyond layout — hover,
+ * focus and the two tones all live here where they can be themed.
+ *
+ * Both tones re-derive their surface from `--cg-bg-elevated` / `--cg-text` via
+ * `color-mix` rather than reading a precomputed token, so a chip inside a
+ * workspace-themed scope tints with the workspace instead of freezing to the
+ * dark default. Same reason `.cg-glass` inlines its color-mix.
+ */
+
+[data-cg-entity-chip] {
+  border: 1px solid transparent;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+[data-cg-entity-chip-body],
+[data-cg-entity-chip-remove] {
+  font: inherit;
+  appearance: none;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-cg-entity-chip-body] {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* The label is the only part allowed to shrink — an over-long venue name
+   truncates rather than pushing the × off the end of the row. */
+[data-cg-entity-chip-label] {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-cg-entity-chip-remove] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Reaches the chip's full height so the hit area is the corner of the chip,
+     not a 10px glyph floating in it. */
+  align-self: stretch;
+  padding: 0 7px 1px 3px;
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0.55;
+}
+[data-cg-entity-chip-remove]:hover {
+  opacity: 1;
+}
+
+/* Body padding tightens when the × is there, so a removable chip isn't wider
+   than an identical one that simply can't be unlinked. */
+[data-cg-entity-chip][data-removable] [data-cg-entity-chip-body] {
+  padding-right: 3px;
+}
+
+/* ── neutral: chrome. A venue on a show, where the row says what it is ── */
+[data-cg-entity-chip][data-tone='neutral'] {
+  background: color-mix(in srgb, var(--cg-bg-elevated), transparent 25%);
+  border-color: var(--cg-border);
+  color: var(--cg-text);
+}
+[data-cg-entity-chip][data-tone='neutral']:hover {
+  border-color: color-mix(in srgb, var(--cg-text), transparent 65%);
+}
+/* Unset reads quiet, never wrong: a show with no venue linked yet is a billing
+   fact, not a scheduling mistake. No red, no warning glyph. */
+[data-cg-entity-chip][data-tone='neutral']:not([data-filled]) {
+  background: none;
+  border-style: dashed;
+  color: var(--cg-text-muted);
+}
+
+/* ── accent: content. The tag treatment ── */
+[data-cg-entity-chip][data-tone='accent'] {
+  background: color-mix(in srgb, var(--cg-accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--cg-accent) 25%, transparent);
+  color: var(--cg-accent);
+}
+[data-cg-entity-chip][data-tone='accent'] [data-cg-entity-chip-body] {
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+[data-cg-entity-chip][data-tone='accent']:hover {
+  border-color: color-mix(in srgb, var(--cg-accent) 45%, transparent);
+}
+
+[data-cg-entity-chip-body]:disabled {
+  cursor: default;
+}
+[data-cg-entity-chip-body]:focus-visible,
+[data-cg-entity-chip-remove]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Touch: the chip clears the 44px floor on a phone, where it is one of the
+   few things on the staffing row you aim at with a thumb. */
+@media (max-width: 767px) {
+  [data-cg-entity-chip-body] {
+    min-height: 34px;
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  [data-cg-entity-chip][data-removable] [data-cg-entity-chip-body] {
+    padding-right: 4px;
+  }
+  [data-cg-entity-chip-remove] {
+    padding: 0 10px 1px 4px;
+    font-size: 16px;
+  }
+}

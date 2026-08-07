@@ -57,6 +57,11 @@
       "import": "./ui/ControlChip.tsx"
     },
     "./ui/ControlChip.css": "./ui/ControlChip.css",
+    "./ui/EntityChip": {
+      "types": "./ui/EntityChip.tsx",
+      "import": "./ui/EntityChip.tsx"
+    },
+    "./ui/EntityChip.css": "./ui/EntityChip.css",
     "./ui/GlassSurface": {
       "types": "./ui/GlassSurface.tsx",
       "import": "./ui/GlassSurface.tsx"
