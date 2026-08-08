@@ -173,7 +173,19 @@
       "types": "./ui/Composer.tsx",
       "import": "./ui/Composer.tsx"
     },
-    "./ui/Composer.css": "./ui/Composer.css"
+    "./ui/Composer.css": "./ui/Composer.css",
+    "./lib/sms": {
+      "types": "./lib/sms.ts",
+      "import": "./lib/sms.ts"
+    },
+    "./ui/composer-core": {
+      "types": "./ui/composer-core.ts",
+      "import": "./ui/composer-core.ts"
+    },
+    "./ui/composer-detections": {
+      "types": "./ui/composer-detections.ts",
+      "import": "./ui/composer-detections.ts"
+    }
   },
   "files": [
     "tokens.css",

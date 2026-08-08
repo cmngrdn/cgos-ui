@@ -136,3 +136,79 @@
   padding: 6px 10px;
   background: var(--cg-bg-elevated);
 }
+
+/* ── HUD readout ─────────────────────────────────────────────────────────────
+ * Per cgos docs/dispatch-hud-plan.md: live, states the sent-state truth,
+ * explains the why inline, offers one-tap remediation, never gates the send.
+ * It sits between the editor and the footer so it reads as a consequence of
+ * what was typed rather than as chrome attached to the send button.
+ */
+
+.cg-composer-hud {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 10px;
+  border-top: 1px solid var(--cg-border);
+  background: var(--cg-bg-elevated);
+  font-family: var(--cg-font);
+  font-size: 11px;
+}
+
+.cg-composer-detection {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* The tone lives on a leading dot rather than colouring the whole line — a row
+   of fully-coloured text reads as an error state even when it is reporting
+   that everything is fine. */
+.cg-composer-detection-label::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  background: var(--cg-text-muted);
+}
+
+.cg-composer-detection[data-tone='success'] .cg-composer-detection-label::before {
+  background: var(--cg-status-success);
+}
+.cg-composer-detection[data-tone='warning'] .cg-composer-detection-label::before {
+  background: var(--cg-status-warning);
+}
+.cg-composer-detection[data-tone='danger'] .cg-composer-detection-label::before {
+  background: var(--cg-status-danger);
+}
+
+.cg-composer-detection-label {
+  color: var(--cg-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.cg-composer-detection-detail {
+  color: var(--cg-text-secondary);
+}
+
+.cg-composer-detection-fix {
+  all: unset;
+  cursor: pointer;
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: var(--cg-radius-sm);
+  border: 1px solid var(--cg-border);
+  color: var(--cg-text-secondary);
+  font-size: 11px;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.cg-composer-detection-fix:hover,
+.cg-composer-detection-fix:focus-visible {
+  background: var(--cg-surface-raise);
+  color: var(--cg-text);
+}

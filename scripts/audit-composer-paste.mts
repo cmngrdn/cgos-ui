@@ -1,5 +1,5 @@
 /**
- * The paste sanitiser, asserted.
+ * The Composer's pure layer, asserted — paste sanitising and mode detections.
  *
  *     npm run audit:composer
  *
@@ -16,6 +16,7 @@
  */
 import { JSDOM } from 'jsdom'
 
+import { CHANNEL_DETECTORS, smsDetector, emailDetector } from '../ui/composer-detections.ts'
 import {
   CHANNEL_CAPABILITIES,
   composerIsEmpty,
@@ -67,8 +68,39 @@ check('whitespace-only is empty', composerIsEmpty({ innerText: '   ' }), true)
 check('null element is empty', composerIsEmpty(null), true)
 check('real text is not empty', composerIsEmpty({ innerText: 'hi' }), false)
 
+// ── detections: what the engine notices per mode ────────────────────────────
+const sms = (b: string) => smsDetector(b)
+const find = (b: string, id: string) => sms(b).find((d) => d.id === id)
+
+check('empty body detects nothing (a HUD with no news is chrome)', sms('   ').length, 0)
+check('plain body reports one GSM-7 segment', find('hello there', 'sms-encoding')?.label, '1 segment · GSM-7')
+check('plain single segment reads as success, not warning', find('hello there', 'sms-encoding')?.tone, 'success')
+
+const withEmoji = 'hello there 🔥'
+check('an emoji flips the readout to UCS-2', find(withEmoji, 'sms-encoding')?.label?.includes('UCS-2'), true)
+check('and warns', find(withEmoji, 'sms-encoding')?.tone, 'warning')
+check('and names the culprit', find(withEmoji, 'sms-encoding')?.detail?.includes('emoji'), true)
+check('and offers the strip fix', Boolean(find(withEmoji, 'sms-encoding')?.fix), true)
+check(
+  'the fix actually returns to GSM-7 rather than just claiming to',
+  smsDetector(find(withEmoji, 'sms-encoding')!.fix!.apply(withEmoji))
+    .find((d) => d.id === 'sms-encoding')?.label?.includes('GSM-7'),
+  true,
+)
+check(
+  'no strip fix offered when stripping would not help',
+  find('hello there', 'sms-encoding')?.fix,
+  undefined,
+)
+check('links are counted', find('see feather.fm/signal', 'sms-links')?.label, '1 link tracked')
+
+check('email detector stays quiet on clean copy', emailDetector('hello there').length, 0)
+check('email has no segment readout — wrong fact for the transport', emailDetector('hello 🔥').length, 0)
+check('social has no detector', CHANNEL_DETECTORS.social, null)
+check('rcs shares SMS economics for now', CHANNEL_DETECTORS.rcs, smsDetector)
+
 if (failed) {
-  console.error(`\n✗ composer paste: ${failed} assertion(s) failed.\n`)
+  console.error(`\n✗ composer: ${failed} assertion(s) failed.\n`)
   process.exit(1)
 }
-console.log('✓ composer paste: sanitiser, channel enforcement and emptiness all pass.')
+console.log('✓ composer: sanitiser, channel enforcement, emptiness and per-mode detections all pass.')

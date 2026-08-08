@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react'
 
 import {
   CHANNEL_CAPABILITIES,
@@ -11,6 +11,11 @@ import {
   type ComposerCapability,
   type ComposerChannel,
 } from './composer-core'
+import {
+  CHANNEL_DETECTORS,
+  type ComposerDetection,
+  type ComposerDetector,
+} from './composer-detections'
 
 export {
   CHANNEL_CAPABILITIES,
@@ -88,7 +93,21 @@ export interface ComposerProps {
   onSubmit?: () => void
   /** Rendered at the end of the toolbar — where the emoji picker goes. */
   toolbarExtras?: ReactNode
-  /** Rendered under the editor: encoding HUD, attachments, character count. */
+  /**
+   * Overrides the channel's detector. Pass `null` to silence the readout on a
+   * surface where it would be noise (a one-line inline reply, say). Omit and
+   * the channel decides — which is the point: an SMS composer is mode-aware
+   * wherever it appears, without the surface remembering to wire it.
+   */
+  detector?: ComposerDetector | null
+  /** Applied when a detection's one-tap fix runs. Required for `fix` to render
+   *  — a fix with nowhere to write is a button that lies. */
+  onBodyRewrite?: (next: string) => void
+  /** The plain-text body, when `value` is HTML. Detections are transport facts
+   *  (segments, encoding) and must measure what actually sends, not the markup
+   *  around it. Defaults to `value`, which is correct for plain-text channels. */
+  detectionText?: string
+  /** Rendered under the readout: attachments, surface-specific extras. */
   footer?: ReactNode
   ariaLabel?: string
   /** Extra class on the root, for surface-specific sizing. */
@@ -120,6 +139,9 @@ export function Composer({
   disabled,
   onSubmit,
   toolbarExtras,
+  detector,
+  onBodyRewrite,
+  detectionText,
   footer,
   ariaLabel = 'Message body',
   className,
@@ -139,6 +161,16 @@ export function Composer({
   // produce the wrong result. `capabilities={[]}` is the machine-readable form
   // of "this transport is plain text".
   const effectivePaste = effectivePasteMode(caps, paste)
+
+  // The engine notices; the channel decides what is worth noticing. `detector`
+  // overrides, `null` silences, omitted means the channel's own.
+  const activeDetector =
+    detector !== undefined ? detector : channel ? CHANNEL_DETECTORS[channel] : null
+  const probeText = detectionText ?? value
+  const detections: ComposerDetection[] = useMemo(
+    () => (activeDetector ? activeDetector(probeText) : []),
+    [activeDetector, probeText],
+  )
 
   // Sync only on divergence. Comparing against the live DOM is what keeps the
   // caret where the operator left it — see the header.
@@ -256,6 +288,28 @@ export function Composer({
         onPaste={onPaste}
         onKeyDown={onKeyDown}
       />
+
+      {detections.length > 0 && (
+        <div className="cg-composer-hud" role="status" aria-live="polite">
+          {detections.map((d) => (
+            <div key={d.id} className="cg-composer-detection" data-tone={d.tone}>
+              <span className="cg-composer-detection-label">{d.label}</span>
+              {d.detail && (
+                <span className="cg-composer-detection-detail">{d.detail}</span>
+              )}
+              {d.fix && onBodyRewrite && (
+                <button
+                  type="button"
+                  className="cg-composer-detection-fix"
+                  onClick={() => onBodyRewrite(d.fix!.apply(probeText))}
+                >
+                  {d.fix.label}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {footer && <div className="cg-composer-footer">{footer}</div>}
     </div>
