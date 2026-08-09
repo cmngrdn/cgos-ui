@@ -98,6 +98,27 @@ function prefersReducedMotion(): boolean {
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastRecord[]>([])
+  /**
+   * Whether we are past hydration, and therefore allowed to portal.
+   *
+   * `typeof document !== 'undefined'` is the obvious guard and the wrong one:
+   * it is false while the server renders and true on the client's FIRST
+   * render, which is the render React reconciles against the server's HTML. So
+   * the server sends no viewport, the client's hydration pass has one, and
+   * every SSR'd app mounting this provider throws "Hydration failed because
+   * the server rendered HTML didn't match the client" — with a diff pointing
+   * at a `<div aria-live="polite">` nobody wrote, which is not a fun thing to
+   * chase (cmngrdn `/hq/*` carried it as an unexplained intermittent error).
+   *
+   * A state flag set in an effect is false for BOTH the server render and the
+   * hydrating render, so the two agree; the viewport appears on the commit
+   * after. Nothing is lost by the one-frame delay — the region is empty until
+   * something calls `toast()`, which cannot happen before hydration anyway.
+   */
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const nextId = useRef(1)
   // Pending auto-dismiss + removal timers, keyed by toast id, cleared on unmount.
   const timers = useRef<Map<number, ReturnType<typeof setTimeout>[]>>(new Map())
@@ -164,7 +185,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast, dismiss }}>
       {children}
-      {typeof document !== 'undefined' &&
+      {mounted &&
         createPortal(
           <div
             aria-live="polite"
