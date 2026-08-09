@@ -21,6 +21,7 @@ import {
   CHANNEL_CAPABILITIES,
   composerIsEmpty,
   effectivePasteMode,
+  isPlainTextSurface,
   sanitizePastedHtml,
 } from '../ui/composer-core.ts'
 
@@ -62,6 +63,23 @@ check('social is plain too', effectivePasteMode(CHANNEL_CAPABILITIES.social, 'ri
 check('email honours rich', effectivePasteMode(CHANNEL_CAPABILITIES.email, 'rich'), 'rich')
 check('email still honours an explicit plain', effectivePasteMode(CHANNEL_CAPABILITIES.email, 'plain'), 'plain')
 check('rcs is ready for the day it ships', CHANNEL_CAPABILITIES.rcs.includes('bold'), true)
+
+// ── what the engine hands back ──────────────────────────────────────────────
+// A contentEditable emits <div>/<br> on Enter regardless of its toolbar, so a
+// capability-less channel returning innerHTML writes literal markup into an SMS
+// body. Twilio has no HTML layer to strip it: the recipient reads the tags, and
+// the invisible characters can buy a second segment.
+check('sms hands back plain text, not markup', isPlainTextSurface(CHANNEL_CAPABILITIES.sms), true)
+check('social hands back plain text', isPlainTextSurface(CHANNEL_CAPABILITIES.social), true)
+check('email hands back markup', isPlainTextSurface(CHANNEL_CAPABILITIES.email), false)
+check('rcs hands back markup once it carries formatting', isPlainTextSurface(CHANNEL_CAPABILITIES.rcs), false)
+// The inquiry reply is paste="plain" but genuinely rich — keyed on capabilities
+// rather than paste mode precisely so this case stays HTML.
+check(
+  'a rich surface that strips paste still hands back markup',
+  isPlainTextSurface(['bold', 'italic']),
+  false,
+)
 
 // ── emptiness (the iOS stray-<br> case) ─────────────────────────────────────
 check('whitespace-only is empty', composerIsEmpty({ innerText: '   ' }), true)

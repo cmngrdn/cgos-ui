@@ -6,6 +6,7 @@ import {
   CHANNEL_CAPABILITIES,
   composerIsEmpty,
   effectivePasteMode,
+  isPlainTextSurface,
   safeHref,
   sanitizePastedHtml,
   type ComposerCapability,
@@ -76,9 +77,16 @@ export {
  */
 
 export interface ComposerProps {
-  /** Current body as HTML. Uncontrolled internally — see the header. */
+  /**
+   * Current body. HTML on a channel that carries formatting, PLAIN TEXT on one
+   * that doesn't (`sms`, `social`, or `capabilities={[]}`) — the engine reads
+   * and writes whichever the transport actually takes, so a surface never has
+   * to strip markup the composer put there. Uncontrolled internally; see the
+   * header.
+   */
   value: string
-  onChange: (html: string) => void
+  /** Receives the same representation `value` is given — see above. */
+  onChange: (next: string) => void
   /** Formatting the channel can carry. Prefer passing `channel`. */
   capabilities?: ComposerCapability[]
   /** Sets `capabilities` from CHANNEL_CAPABILITIES. Explicit `capabilities`
@@ -162,6 +170,23 @@ export function Composer({
   // of "this transport is plain text".
   const effectivePaste = effectivePasteMode(caps, paste)
 
+  // ...and the same rule governs what the engine HANDS BACK. A capability-less
+  // channel is a plain-text transport, so `value` is plain text in and plain
+  // text out — never `innerHTML`.
+  //
+  // This is not a refinement, it is the difference between working and broken.
+  // A contentEditable inserts `<div>` or `<br>` when the operator presses
+  // Enter, whatever its toolbar offers. Emitting innerHTML on an SMS surface
+  // therefore puts literal markup into `body_sms`, and Twilio has no HTML layer
+  // to strip it — the recipient reads the tags. Two newlines in a 40-character
+  // message is enough to push it into a second segment for characters nobody
+  // typed and nobody can see.
+  //
+  // The discriminator is `caps.length === 0` rather than the paste mode: the
+  // inquiry reply composer is `paste="plain"` but genuinely rich, and must keep
+  // emitting markup.
+  const plainTextOnly = isPlainTextSurface(caps)
+
   // The engine notices; the channel decides what is worth noticing. `detector`
   // overrides, `null` silences, omitted means the channel's own.
   const activeDetector =
@@ -173,16 +198,25 @@ export function Composer({
   )
 
   // Sync only on divergence. Comparing against the live DOM is what keeps the
-  // caret where the operator left it — see the header.
+  // caret where the operator left it — see the header. The comparison has to be
+  // against the SAME representation the surface holds, or a plain-text channel
+  // diverges on every keystroke (value "a\nb" never equals innerHTML "a<br>b")
+  // and rewrites the node, sending the caret back to position zero.
   useEffect(() => {
     const el = editorRef.current
-    if (el && value !== el.innerHTML) el.innerHTML = value
-  }, [value])
+    if (!el) return
+    if (plainTextOnly) {
+      if (value !== el.innerText) el.innerText = value
+      return
+    }
+    if (value !== el.innerHTML) el.innerHTML = value
+  }, [value, plainTextOnly])
 
   const emit = useCallback(() => {
     const el = editorRef.current
-    if (el) onChange(el.innerHTML)
-  }, [onChange])
+    if (!el) return
+    onChange(plainTextOnly ? el.innerText : el.innerHTML)
+  }, [onChange, plainTextOnly])
 
   const exec = useCallback(
     (cmd: string, arg?: string) => {

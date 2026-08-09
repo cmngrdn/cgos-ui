@@ -161,3 +161,22 @@ export function effectivePasteMode(
 ): 'plain' | 'rich' {
   return caps.length === 0 ? 'plain' : requested
 }
+
+/**
+ * Whether this surface's `value` is plain text rather than HTML.
+ *
+ * Same predicate as above, named separately because it governs a different and
+ * more consequential thing: what the engine HANDS BACK to the surface. A
+ * contentEditable emits `<div>`/`<br>` when Enter is pressed no matter what its
+ * toolbar offers, so a capability-less channel that returned `innerHTML` would
+ * write literal markup into an SMS body — and SMS has no HTML layer to strip
+ * it. The recipient reads the tags, and the invisible characters can buy a
+ * second segment.
+ *
+ * Keyed on capabilities, NOT on the paste mode: the inquiry reply composer is
+ * `paste="plain"` (a client's fonts shouldn't follow their email into your
+ * thread) while being genuinely rich, and must keep emitting markup.
+ */
+export function isPlainTextSurface(caps: ComposerCapability[]): boolean {
+  return caps.length === 0
+}
