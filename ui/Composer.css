@@ -1,0 +1,214 @@
+/* cgos-ui — Composer atom companion CSS
+ * -----------------------------------------------------------------------
+ * Everything here is layout and state. Sizing is deliberately NOT fixed: the
+ * editor grows with its content between a min and a max, because the surfaces
+ * differ enormously — an SMS body is a line or two, a transmission block is a
+ * paragraph, and an inquiry reply can be a page. A surface that needs a
+ * different envelope passes `className` and overrides the two custom
+ * properties below rather than restyling the internals.
+ *
+ * Colours re-derive from `--cg-bg-elevated` / `--cg-text` so a composer inside
+ * a workspace-themed scope tints with the workspace, same reasoning as
+ * EntityChip.
+ */
+
+.cg-composer {
+  /* Override these from a surface class, not the rules that read them. */
+  --cg-composer-min-height: 96px;
+  --cg-composer-max-height: 40vh;
+
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--cg-border);
+  border-radius: var(--cg-radius-md);
+  background: var(--cg-bg-surface);
+  overflow: hidden;
+}
+
+.cg-composer:focus-within {
+  border-color: var(--cg-accent);
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────────────────── */
+
+.cg-composer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--cg-border);
+  background: var(--cg-bg-elevated);
+  flex-wrap: wrap;
+}
+
+.cg-composer-tool {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: var(--cg-radius-sm);
+  font-family: var(--cg-font);
+  font-size: 13px;
+  line-height: 1;
+  color: var(--cg-text-secondary);
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.cg-composer-tool:hover,
+.cg-composer-tool:focus-visible {
+  background: var(--cg-surface-raise);
+  color: var(--cg-text);
+}
+
+.cg-composer-tool[disabled] {
+  cursor: default;
+  opacity: 0.5;
+}
+
+/* Pushes the slotted extras (emoji picker) to the trailing edge so formatting
+   reads as one group and insertion as another. */
+.cg-composer-extras {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ── Editor ──────────────────────────────────────────────────────────────── */
+
+.cg-composer-editor {
+  min-height: var(--cg-composer-min-height);
+  max-height: var(--cg-composer-max-height);
+  overflow-y: auto;
+  padding: 10px 12px;
+  font-family: var(--cg-font);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--cg-text);
+  outline: none;
+  word-break: break-word;
+}
+
+/* `:empty` alone is unreliable — a cleared contentEditable often holds a stray
+   <br>, which is the same reason emptiness is measured with innerText in the
+   component. Matching both covers it. */
+.cg-composer-editor:empty::before,
+.cg-composer-editor:has(> br:only-child)::before {
+  content: attr(data-placeholder);
+  color: var(--cg-text-muted);
+  pointer-events: none;
+}
+
+.cg-composer-editor[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* The editor holds user-authored markup, so give the allowed tags a sane
+   in-composer appearance rather than inheriting whatever the surface sets. */
+.cg-composer-editor a {
+  color: var(--cg-accent);
+  text-decoration: underline;
+}
+
+.cg-composer-editor ul,
+.cg-composer-editor ol {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.cg-composer-editor p {
+  margin: 0 0 8px 0;
+}
+
+.cg-composer-editor p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Footer (encoding HUD, attachments, counts) ──────────────────────────── */
+
+.cg-composer-footer {
+  border-top: 1px solid var(--cg-border);
+  padding: 6px 10px;
+  background: var(--cg-bg-elevated);
+}
+
+/* ── HUD readout ─────────────────────────────────────────────────────────────
+ * Per cgos docs/dispatch-hud-plan.md: live, states the sent-state truth,
+ * explains the why inline, offers one-tap remediation, never gates the send.
+ * It sits between the editor and the footer so it reads as a consequence of
+ * what was typed rather than as chrome attached to the send button.
+ */
+
+.cg-composer-hud {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 10px;
+  border-top: 1px solid var(--cg-border);
+  background: var(--cg-bg-elevated);
+  font-family: var(--cg-font);
+  font-size: 11px;
+}
+
+.cg-composer-detection {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* The tone lives on a leading dot rather than colouring the whole line — a row
+   of fully-coloured text reads as an error state even when it is reporting
+   that everything is fine. */
+.cg-composer-detection-label::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  background: var(--cg-text-muted);
+}
+
+.cg-composer-detection[data-tone='success'] .cg-composer-detection-label::before {
+  background: var(--cg-status-success);
+}
+.cg-composer-detection[data-tone='warning'] .cg-composer-detection-label::before {
+  background: var(--cg-status-warning);
+}
+.cg-composer-detection[data-tone='danger'] .cg-composer-detection-label::before {
+  background: var(--cg-status-danger);
+}
+
+.cg-composer-detection-label {
+  color: var(--cg-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.cg-composer-detection-detail {
+  color: var(--cg-text-secondary);
+}
+
+.cg-composer-detection-fix {
+  all: unset;
+  cursor: pointer;
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: var(--cg-radius-sm);
+  border: 1px solid var(--cg-border);
+  color: var(--cg-text-secondary);
+  font-size: 11px;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.cg-composer-detection-fix:hover,
+.cg-composer-detection-fix:focus-visible {
+  background: var(--cg-surface-raise);
+  color: var(--cg-text);
+}
