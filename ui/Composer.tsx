@@ -1,6 +1,14 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react'
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  type ReactNode,
+} from 'react'
 
 import {
   CHANNEL_CAPABILITIES,
@@ -97,8 +105,18 @@ export interface ComposerProps {
   paste?: 'plain' | 'rich'
   placeholder?: string
   disabled?: boolean
-  /** Fires on ⌘/Ctrl+Enter. Omit to disable the shortcut. */
+  /** Fires on the submit chord — see `submitOn`. Omit to disable it entirely. */
   onSubmit?: () => void
+  /**
+   * Which keystroke sends. `modEnter` (default) is the document convention:
+   * Enter breaks the line, ⌘/Ctrl+Enter submits — right for a broadcast body
+   * you revise before sending. `enter` is the chat convention: Enter submits,
+   * Shift+Enter breaks the line — right for a thread reply.
+   *
+   * A property of the SURFACE, not the transport: an SMS thread and an SMS
+   * broadcast are both `channel="sms"` and want opposite things.
+   */
+  submitOn?: 'modEnter' | 'enter'
   /** Rendered at the end of the toolbar — where the emoji picker goes. */
   toolbarExtras?: ReactNode
   /**
@@ -122,6 +140,27 @@ export interface ComposerProps {
   className?: string
 }
 
+/**
+ * Imperative surface, for content the TOOLBAR inserts rather than the keyboard.
+ *
+ * `toolbarExtras` exists so a surface can slot in its own control — the emoji
+ * picker is the reason it exists — and such a control needs to put a character
+ * where the caret was. That is harder than it looks and belongs here rather
+ * than in each surface:
+ *
+ * A `<textarea>` has `selectionStart`, so the old SMS composer could splice the
+ * string. A contentEditable has no such thing, and by the time a picker's
+ * `onClick` fires the editor has ALREADY lost focus and the selection has
+ * collapsed — the popover took it. So the engine remembers the last in-editor
+ * Range and restores it before inserting. Without that, every emoji lands at
+ * the end of the body no matter where the operator was typing.
+ */
+export interface ComposerHandle {
+  /** Insert at the last caret position (end of body if there was never one). */
+  insertText: (text: string) => void
+  focus: () => void
+}
+
 interface ToolButton {
   cap: ComposerCapability
   cmd: string
@@ -137,7 +176,7 @@ const BUTTONS: ToolButton[] = [
   { cap: 'orderedList', cmd: 'insertOrderedList', label: 'Numbered list', glyph: '1.' },
 ]
 
-export function Composer({
+export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Composer({
   value,
   onChange,
   capabilities,
@@ -146,6 +185,7 @@ export function Composer({
   placeholder,
   disabled,
   onSubmit,
+  submitOn = 'modEnter',
   toolbarExtras,
   detector,
   onBodyRewrite,
@@ -153,7 +193,7 @@ export function Composer({
   footer,
   ariaLabel = 'Message body',
   className,
-}: ComposerProps) {
+}, ref) {
   const editorRef = useRef<HTMLDivElement>(null)
   const caps = capabilities ?? (channel ? CHANNEL_CAPABILITIES[channel] : [])
   const showToolbar = caps.length > 0 || Boolean(toolbarExtras)
@@ -227,6 +267,63 @@ export function Composer({
     [emit],
   )
 
+  // ── Caret memory ──────────────────────────────────────────────────────────
+  // Remembered so `insertText` can put a character back where the operator was.
+  // Captured on every selection change while the editor owns the selection,
+  // because by the time a toolbar popover's onClick fires the editor has lost
+  // focus and the live selection is somewhere else entirely.
+  const savedRange = useRef<Range | null>(null)
+  useEffect(() => {
+    const onSelectionChange = () => {
+      const el = editorRef.current
+      if (!el) return
+      const sel = document.getSelection()
+      if (!sel || sel.rangeCount === 0) return
+      const range = sel.getRangeAt(0)
+      if (el.contains(range.commonAncestorContainer)) {
+        savedRange.current = range.cloneRange()
+      }
+    }
+    document.addEventListener('selectionchange', onSelectionChange)
+    return () => document.removeEventListener('selectionchange', onSelectionChange)
+  }, [])
+
+  const insertText = useCallback(
+    (text: string) => {
+      const el = editorRef.current
+      if (!el || disabled) return
+      el.focus()
+      const sel = document.getSelection()
+      const saved = savedRange.current
+      // Restore only a range still attached to this editor — a stale one whose
+      // nodes were replaced by a `value` sync would throw or insert nowhere.
+      if (sel && saved && el.contains(saved.commonAncestorContainer)) {
+        sel.removeAllRanges()
+        sel.addRange(saved)
+      } else if (sel) {
+        // Never had a caret here: append rather than silently doing nothing.
+        const end = document.createRange()
+        end.selectNodeContents(el)
+        end.collapse(false)
+        sel.removeAllRanges()
+        sel.addRange(end)
+      }
+      document.execCommand('insertText', false, text)
+      const after = document.getSelection()
+      if (after && after.rangeCount > 0) {
+        savedRange.current = after.getRangeAt(0).cloneRange()
+      }
+      emit()
+    },
+    [disabled, emit],
+  )
+
+  useImperativeHandle(
+    ref,
+    () => ({ insertText, focus: () => editorRef.current?.focus() }),
+    [insertText],
+  )
+
   const promptLink = useCallback(() => {
     const url = window.prompt('Link URL')
     const safe = safeHref(url)
@@ -259,13 +356,21 @@ export function Composer({
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (!onSubmit) return
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        e.preventDefault()
-        if (!composerIsEmpty(editorRef.current)) onSubmit()
-      }
+      if (!onSubmit || e.key !== 'Enter') return
+      const mod = e.metaKey || e.ctrlKey
+      // `enter` is the chat convention: Enter sends, Shift+Enter breaks the
+      // line. `modEnter` is the document convention: Enter breaks the line and
+      // only ⌘/Ctrl+Enter sends. Which one is right is a property of the
+      // SURFACE, not of the transport — an SMS thread and an SMS broadcast are
+      // both `channel="sms"` and want opposite things, because one is a
+      // conversation and the other is a composition you revise before sending.
+      // ⌘/Ctrl+Enter sends under both, since it never means "newline" anywhere.
+      const sends = submitOn === 'enter' ? !e.shiftKey : mod
+      if (!sends) return
+      e.preventDefault()
+      if (!composerIsEmpty(editorRef.current)) onSubmit()
     },
-    [onSubmit],
+    [onSubmit, submitOn],
   )
 
   return (
@@ -348,4 +453,4 @@ export function Composer({
       {footer && <div className="cg-composer-footer">{footer}</div>}
     </div>
   )
-}
+})
