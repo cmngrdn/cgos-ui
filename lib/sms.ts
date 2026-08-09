@@ -280,58 +280,15 @@ export function stripToGsm(body: string): string {
   return out.replace(/ {2,}/g, " ").replace(/ +\n/g, "\n");
 }
 
-// ── Sent-preview token stream ────────────────────────────────────────────────
+// ── Sent-preview token stream — REMOVED 2026-08-08 ──────────────────────────
 //
-// Models exactly what a recipient receives: links shown as their tracked short
-// form, encoding culprits highlighted. The composer maps these tokens → spans.
-
-export type SmsPreviewToken =
-  | { kind: "text"; text: string }
-  | { kind: "culprit"; text: string; label: string }
-  | { kind: "link"; raw: string };
-
-/** Walk a non-link run, emitting text tokens split by highlighted culprits. */
-function tokenizeRun(run: string, out: SmsPreviewToken[]): void {
-  let buf = "";
-  const flush = () => {
-    if (buf) {
-      out.push({ kind: "text", text: buf });
-      buf = "";
-    }
-  };
-  for (const ch of run) {
-    if (isGsmSafeChar(ch)) {
-      buf += ch;
-      continue;
-    }
-    if (EMOJI_GLUE.test(ch)) {
-      // Fold combiner into the preceding culprit so ➡ + ️ render as one "➡️".
-      const last = out[out.length - 1];
-      if (buf === "" && last && last.kind === "culprit") {
-        last.text += ch;
-        continue;
-      }
-    }
-    flush();
-    out.push({ kind: "culprit", text: ch, label: culpritLabel(ch) });
-  }
-  flush();
-}
-
-/**
- * Build the sent-preview token stream: interleaves plain text, highlighted
- * culprits, and tracked-link pills in body order. Pure + display-only.
- */
-export function buildSmsPreviewTokens(body: string): SmsPreviewToken[] {
-  if (!body) return [];
-  const links = detectLinks(body).sort((a, b) => a.start - b.start);
-  const out: SmsPreviewToken[] = [];
-  let cursor = 0;
-  for (const link of links) {
-    if (link.start > cursor) tokenizeRun(body.slice(cursor, link.start), out);
-    out.push({ kind: "link", raw: link.raw });
-    cursor = link.end;
-  }
-  if (cursor < body.length) tokenizeRun(body.slice(cursor), out);
-  return out;
-}
+// `SmsPreviewToken` / `tokenizeRun` / `buildSmsPreviewTokens` lived here and
+// fed a "How this sends" box under the SMS composer. That box is gone (see
+// cmngrdn `SmsComposerHud.tsx` for the full reasoning) and these went with it
+// rather than staying as an unused export in a shared package.
+//
+// The short version, because it generalises: a preview cannot show the fact it
+// exists to convey. An emoji looks identical whether it costs one segment or
+// two — what communicates the cost is the DETECTION saying so. And styled like
+// the field above it, the preview read as a second input and operators typed
+// into it. `findEncodingCulprits` still exists and is what the readout uses.

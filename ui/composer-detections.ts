@@ -21,7 +21,6 @@
  */
 
 import {
-  buildSmsPreviewTokens,
   detectLinks,
   findEncodingCulprits,
   findMalformedLinks,
@@ -149,4 +148,4 @@ export const CHANNEL_DETECTORS: Record<ComposerChannel, ComposerDetector | null>
   social: null,
 }
 
-export { buildSmsPreviewTokens, smsSegmentInfo }
+export { smsSegmentInfo }
