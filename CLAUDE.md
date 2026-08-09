@@ -91,6 +91,7 @@ Tokens live in `tokens.css` under `:root` (dark default) + `:root[data-theme="li
 - **Status palette:** `--cg-status-success / warning / danger / blue / purple / neutral / archived / green / red / amber / cyan / magenta`. Consumed via `types/status.ts` maps in consumer repos.
 - **Data-viz palette (Pulse charts):** `--cg-data-1..6` (categorical series colors — blue/orange/emerald/violet/magenta/gold, colorblind-aware), `--cg-data-reachable / -reachable-sms / -both / -unreachable` (fixed semantics for the audience opt-in ladder), `--cg-data-grid` + `--cg-data-track` (chart chrome). Re-pointed deeper in the light block so fills clear the ~3:1 non-text contrast floor on cream. Charts are ALSO themed per-module via an `accent` prop — these are the palette *independent* of module color. Spec: `cmngrdn/docs/pulse-analytics-design.md`.
 - **Glass system:** `--cg-glass-bg`, `--cg-glass-bg-strong`, `--cg-glass-blur`, `--cg-glass-blur-strong`, `--cg-glass-border-top` (rim highlight, `var(--cg-text) 38%`), `--cg-glass-border-strong`, `--cg-glass-radius-sm/md/lg/pill`.
+- **Fills:** `--cg-fill` / `--cg-fill-hover` / `--cg-fill-strong` — the tier BELOW glass (Apple's systemFill). A block that sits *inside* a surface: a row in a widget, a cell in a panel, a tile in a grid. Translucent by construction so the parent's glass still reads through, derived from `--cg-text` so they invert for free in light workspaces. **A fill is not a card — no border, no blur, no shadow.** See the surface-tier rule below.
 - **Elevation:** `--cg-elev-0` through `--cg-elev-5` — five-tier shadow scale.
 - **Typography classes:** `.cg-text-hero/display/title/body/small/label/label-sm/micro/mono/caption/callout`. Prefer these over inline `fontSize`/`fontWeight`.
 - **Motion scale:** durations `--cg-duration-fast/base/slow/slower` (150/220/400/600ms) + easings `--cg-ease-entry` (decelerate, *appearing* surfaces), `--cg-ease-exit` (accelerate, *dismissing* surfaces), `--cg-ease` (bidirectional state changes), `--cg-ease-emphasize` (rare HIG featured motion). **JS-readable mirror: `cgos-ui/lib/motion`** — `duration`/`durationCss` (ms number + CSS string), `ease`/`easeCss` (cubic-bezier `[x1,y1,x2,y2]` tuple for framer + CSS string), `spring` (framer `transition` presets: gentle/bouncy/snappy), and a `cssTransition(props, {d,e,delayMs})` shorthand builder. Consume from here in any framer/rAF/`element.animate()` path so JS motion never drifts from the CSS tokens. Reduced-motion is a per-surface decision — gate at the callsite (CSS atoms do it in `base.css`).
@@ -109,6 +110,23 @@ Tokens live in `tokens.css` under `:root` (dark default) + `:root[data-theme="li
 - **No chrome height that isn't `var(--hq-chrome-height)` or `var(--hq-chrome-subrow-height)`.** Sidebar header, main page header, inspector header, sub-tabs, filter strips all share these tokens so hairlines align on one Y across the app. Don't pick a different number for a one-off surface; change the token and accept the consequence everywhere.
 - **No raw `cgos-ui/preview/MobileFrame` or `cgos-ui/preview/DesktopFrame` imports outside `src/components/hq/preview/` (or the equivalent wrappers folder in any consumer).** Every preview goes through `<InspectorContent>` → `<InspectorPreviewPane>` → the scaled wrappers so framing policy + viewport toggle + mobile-screen edge-to-edge treatment stay locked in. Enforced in cmngrdn by `no-restricted-imports` ESLint rule; mirror in any new consumer that builds an inspector.
 - **One atom per concept.** If you catch yourself building a second version of something already in `ui/`, stop and extend the existing atom instead.
+- **No hand-rolled glass.** If you are writing `background: color-mix(... --cg-bg-elevated ...)` next to a `backdrop-filter` and a hairline border, you are rebuilding `<GlassSurface>` — use it. This is not hypothetical: cmngrdn shipped for months with `<BloomIndex>` reproducing the `frosted` recipe line for line, `/studios` reproducing `clear` + `tinted`, and the Home widget chassis landing on flat `--cg-bg-surface`, while the atom itself had **zero consumers in the repo**. Sitting side by side in one grid they read as three different systems, because they were.
+- **No card inside a card.** A surface contains fills, pills, chips and rows — never a second bordered/blurred/elevated surface. Using the *correct* atom in the wrong place still counts: `cg-card-interactive` nested inside a glass widget is the same mistake as hand-rolling one.
+
+## Surface tiers — glass, fill, pill
+
+Three tiers, and depth is spent once. Reaching for a lower tier than you think you need is almost always right.
+
+| Tier | What it is | Recipe | Where |
+|---|---|---|---|
+| **Glass** | The card. The thing that reads as lifted off the page. | `<GlassSurface>` — bg + blur + hairline + rim + elevation | Widgets, panels, popovers, drawers, sheets, top-level tiles |
+| **Fill** | A block inside a card. | `--cg-fill` / `-hover` / `-strong`. No border, no blur, no shadow. | Rows, cells, grid tiles, stat blocks inside a widget |
+| **Pill** | A label or small control. | Small radius + hairline + tint; may carry a border | Tags, chips, badges, counts, kbd, segment buttons |
+
+**The widget contract.** A widget is ONE surface with many things inside it and its own controls — the iOS-widget model, and what `/studios` tiles, `<BloomIndex>` and the transmission audience picker all already do correctly. Two rules follow:
+
+1. **One surface.** Everything inside is fill / pill / row. Nesting glass in glass makes both compete for the same "I am lifted" signal and neither wins — it reads as mush, which is exactly the note that produced this section.
+2. **Sized, not grown.** A widget occupies its slot; more content scrolls or pages *inside* it. A "Show all N" that expands the widget and pushes its neighbours down is document behaviour, not widget behaviour — route it to a focused pullout instead. Give the widget its own header controls (filter / period / lens) rather than letting it get taller.
 
 ## Inspector Contract — cross-repo authority
 

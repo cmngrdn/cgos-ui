@@ -242,6 +242,20 @@
   --cg-glass-radius-md:     16px;
   --cg-glass-radius-lg:     24px;
   --cg-glass-radius-pill:   999px;
+
+  /* Fills — a block INSIDE a surface: a row in a widget, a cell in a panel,
+     a tile in a grid. Apple's systemFill tier. Translucent by construction so
+     the glass underneath still reads through; derived from --cg-text so they
+     invert for free in light workspaces.
+
+     A FILL IS NOT A CARD. No border, no blur, no shadow — the surface it sits
+     in is the only card. Nesting one glass recipe inside another is what makes
+     a dashboard read mushy: the child competes with its parent for the same
+     "I am a lifted thing" signal and neither wins. Reach for a fill whenever
+     you're tempted to give something inside a card its own border+blur. */
+  --cg-fill:                color-mix(in srgb, var(--cg-text) 4%, transparent);
+  --cg-fill-hover:          color-mix(in srgb, var(--cg-text) 8%, transparent);
+  --cg-fill-strong:         color-mix(in srgb, var(--cg-text) 12%, transparent);
 }
 
 /* ============================================================
