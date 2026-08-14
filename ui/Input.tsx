@@ -14,10 +14,27 @@ import { forwardRef, type InputHTMLAttributes, type TextareaHTMLAttributes } fro
  *   sm — 32px tall, 12px font (filter-row inputs, dense chrome)
  *   md — 40px tall, 14px font (default — most form inputs)
  *
- * Variants are not exposed yet; theme-tuning happens via the underlying
- * `--cg-*` tokens. If a callsite needs a different size or visual treatment,
- * pass `style` to override per-instance — the inline style merges on top of
- * the className-derived defaults (don't use `all: unset`).
+ * **STYLING LIVES IN `Input.css`, NOT INLINE (changed 2026-08-14).** These
+ * atoms used to set their resting state in a React `style` attribute, and this
+ * docblock used to offer that as the override mechanism. Inline works for a
+ * per-instance override written in JS — and it makes stylesheet theming
+ * impossible, because an inline declaration beats any selector at any
+ * specificity. A consumer could not restyle these controls at all; cmngrdn's
+ * inspector had to reach for `!important` to soften twenty bordered field boxes.
+ *
+ * So the static declarations moved to `Input.css`, keyed off the
+ * `[data-cg-input]` / `[data-cg-textarea]` attributes these elements already
+ * carried — the same shape `Button` uses with `[data-cg-button]`. Size became
+ * `data-cg-size`; disabled became `:disabled`. Both are now things a selector
+ * can see.
+ *
+ * `style` still merges last and still wins. What changed is that a stylesheet
+ * now works too. **Anything visual added here belongs in the CSS file** — if a
+ * new prop needs to affect appearance, express it as a data attribute and style
+ * it there, or the next consumer hits the same wall.
+ *
+ * Requires `cgos-ui/index.css` (which imports `Input.css`) — without it these
+ * render unstyled rather than half-styled, which is the honest failure mode.
  */
 
 export type InputSize = 'sm' | 'md'
@@ -26,37 +43,17 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   size?: InputSize
 }
 
-const SIZE_TOKENS: Record<InputSize, { padding: string; fontSize: string }> = {
-  sm: { padding: '0.375rem 0.625rem', fontSize: '0.75rem' },
-  md: { padding: '0.625rem 0.875rem', fontSize: '0.875rem' },
-}
-
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { size = 'md', style, disabled, ...rest },
   ref,
 ) {
-  const sizeStyle = SIZE_TOKENS[size]
   return (
     <input
       ref={ref}
       data-cg-input=""
+      data-cg-size={size}
       disabled={disabled}
-      style={{
-        width: '100%',
-        padding: sizeStyle.padding,
-        background: 'var(--cg-bg)',
-        border: '1px solid var(--cg-border)',
-        borderRadius: 'var(--cg-radius-md)',
-        color: 'var(--cg-text)',
-        fontFamily: 'var(--cg-font)',
-        fontSize: sizeStyle.fontSize,
-        outline: 'none',
-        transition: 'border-color var(--cg-duration-fast) var(--cg-ease)',
-        opacity: disabled ? 'var(--cg-disabled-opacity)' : 1,
-        cursor: disabled ? 'not-allowed' : 'text',
-        boxSizing: 'border-box',
-        ...style,
-      }}
+      style={style}
       {...rest}
     />
   )
@@ -67,6 +64,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
  *
  * Same visual treatment as Input but for `<textarea>`. `rows` defaults to 3.
  * No size variant — `rows` controls vertical sizing; padding stays md.
+ *
+ * Styling lives in `Input.css`; see the Input docblock above for why.
  */
 
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -83,24 +82,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
       data-cg-textarea=""
       disabled={disabled}
       rows={rows}
-      style={{
-        width: '100%',
-        padding: '0.625rem 0.875rem',
-        background: 'var(--cg-bg)',
-        border: '1px solid var(--cg-border)',
-        borderRadius: 'var(--cg-radius-md)',
-        color: 'var(--cg-text)',
-        fontFamily: 'var(--cg-font)',
-        fontSize: '0.875rem',
-        lineHeight: 1.5,
-        outline: 'none',
-        resize: 'vertical',
-        transition: 'border-color var(--cg-duration-fast) var(--cg-ease)',
-        opacity: disabled ? 'var(--cg-disabled-opacity)' : 1,
-        cursor: disabled ? 'not-allowed' : 'text',
-        boxSizing: 'border-box',
-        ...style,
-      }}
+      style={style}
       {...rest}
     />
   )

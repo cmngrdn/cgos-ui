@@ -1,8 +1,68 @@
-/* Input + Textarea atoms — focus + placeholder + invalid pseudo-states.
+/* Input + Textarea atoms.
  *
- * Inline styles in Input.tsx handle the resting state. Pseudo-states need
- * real CSS. Auto-loaded via cgos-ui/index.css.
+ * THE RESTING STATE LIVES HERE, NOT INLINE — changed 2026-08-14, and the reason
+ * matters for every atom in this package.
+ *
+ * These two used to set their base styles in a React inline `style` attribute,
+ * with the docblock offering `style` as the override mechanism. That works for a
+ * per-instance override written in JS, and it makes STYLESHEET theming
+ * impossible: an inline declaration beats any selector at any specificity, so a
+ * consumer's CSS cannot touch the control at all. Found in cmngrdn, where an
+ * inspector wanted its fields to read as editable text rather than as twenty
+ * bordered boxes; the rule matched the element, was the only matching rule for
+ * those properties, and still lost. The only door was `!important`.
+ *
+ * An atom a consumer cannot restyle is not a design-system atom, it is a
+ * hardcoded widget. So: every static declaration moved here, keyed off the
+ * `[data-cg-input]` / `[data-cg-textarea]` attributes the elements already
+ * carried — the same shape `Button` uses with `[data-cg-button]`.
+ *
+ * `style` still works and still wins, because inline beats a stylesheet — that
+ * escape hatch is unchanged. What is new is that a stylesheet now works too.
+ *
+ * Auto-loaded via cgos-ui/index.css.
  */
+
+[data-cg-input],
+[data-cg-textarea] {
+  width: 100%;
+  background: var(--cg-bg);
+  border: 1px solid var(--cg-border);
+  border-radius: var(--cg-radius-md);
+  color: var(--cg-text);
+  font-family: var(--cg-font);
+  outline: none;
+  transition: border-color var(--cg-duration-fast) var(--cg-ease);
+  box-sizing: border-box;
+  cursor: text;
+}
+
+/* Size — was a JS lookup table baked into the inline style, so a consumer could
+   not target "the small ones". Now an attribute, which a selector can see. */
+[data-cg-input][data-cg-size="sm"] {
+  padding: 0.375rem 0.625rem;
+  font-size: 0.75rem;
+}
+
+[data-cg-input][data-cg-size="md"] {
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+}
+
+[data-cg-textarea] {
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+/* Disabled — was a ternary on the inline style. `:disabled` is the same
+   information, expressed where it can be overridden. */
+[data-cg-input]:disabled,
+[data-cg-textarea]:disabled {
+  opacity: var(--cg-disabled-opacity);
+  cursor: not-allowed;
+}
 
 [data-cg-input]:focus,
 [data-cg-textarea]:focus {
