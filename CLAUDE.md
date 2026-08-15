@@ -133,6 +133,14 @@ Three tiers, and depth is spent once. Reaching for a lower tier than you think y
 1. **One surface.** Everything inside is fill / pill / row. Nesting glass in glass makes both compete for the same "I am lifted" signal and neither wins — it reads as mush, which is exactly the note that produced this section.
 2. **Sized, not grown.** A widget occupies its slot; more content scrolls or pages *inside* it. A "Show all N" that expands the widget and pushes its neighbours down is document behaviour, not widget behaviour — route it to a focused pullout instead. Give the widget its own header controls (filter / period / lens) rather than letting it get taller.
 
+**THE RAIL IS THE CARD — so nothing inside an inspector body may be one (2026-08-15).** The same rule as the widget contract, applied to the surface it is easiest to forget about: an inspector is already glass, so everything in its body is fill or pill. Two atoms break this today and both should be fixed HERE rather than overridden per-consumer:
+
+- **`<PulseSummaryCard>` composes `.cg-card-interactive`** — and by its own docblock it "lives inside an entity inspector's Details tab", i.e. its only home is the one place the tier forbids. Measured in cmngrdn's Dispatch rail: radius 16, an opaque `#181824` at 70%, a 1px border. That made it the loudest object in a body whose sections had just been flattened to bands, and it shipped that way on all TEN of its consumers. **`<JourneySummaryCard>` has the same chrome** and therefore the same defect, unmeasured only because it has fewer consumers.
+- **The fix keeps the hover lift and the focus ring.** Those say "this is a door", which is true and is the card's only load-bearing behaviour. What goes is the claim to be a separate SURFACE: fill background, transparent border, radius down to 8, no shadow, no blur.
+- **Interim state:** cmngrdn demotes both from `inspector-body.css` behind `NEXT_PUBLIC_HQ_INSPECTOR_BODY`, because that layer is flag-gated and reversible while the atom is shared with surfaces that have not adopted the standard. When every consumer is on it, move the recipe into the atoms and delete the override. **Do not add more class names to that override list** — a private module class that is secretly a card should be fixed at its own definition instead (cmngrdn's `.aud-card` is the worked example).
+
+**The corollary for atom authors: an atom whose only home is inside another surface must be built for that surface.** If you find yourself writing a card because the component feels important, check where it actually renders first.
+
 ## Inspector Contract — cross-repo authority
 
 The chrome rules below are authoritative for every consumer building an inspector / drawer / sheet surface. The implementation lives in cmngrdn (`@/components/hq/inspector/*` + `src/contexts/InspectorContext.tsx`) and is the reference. Full implementation spec + per-surface migration playbook lives at `cmngrdn/docs/inspector-toggle-redesign.md`. This section captures the locked design contract — what every consumer MUST honor regardless of repo.
@@ -209,15 +217,68 @@ The `preview` slot at `openInspector()` time declares an explicit framePolicy. C
 
 ### Tab discipline
 
-Canonical role set (pick ≤4 per surface; document exceptions):
+**≤4 tabs per surface. Always seeking to simplify, lessen, or merge.** The cap is
+the goal, not a budget to spend — a fifth tab is a signal that two of the first
+four are the same idea wearing different labels.
 
-1. **Overview / Identity** — summary, status, metadata. Optional; skip when the editor IS the natural landing.
-2. **Editor** (or domain-specific name — Builder / Design / Compose) — work surface. Pattern A surfaces usually skip this (edit-mode chrome covers it).
-3. **Preview** — visitor's view. Routes through `useInspector().preview` + `<InspectorContent>`.
-4. **Analytics** — data after-the-fact. Empty state until data exists.
-5. **Settings** — config knobs that aren't part of the editor.
+**Different entities need different compartments, so the SET is fixed and the
+SELECTION is per-entity.** A portal page's four and a contact's four have no
+obligation to match; what they must not do is invent a role outside this table.
 
-Use canonical role names where they fit. Don't invent "Stats" when "Analytics" works.
+`TabRole` is the enforced union in cmngrdn `src/contexts/InspectorContext.tsx`.
+**This table and that union are one thing — change both in the same commit, and
+keep the file's docblock listing exactly what the union holds.** They drifted
+apart once (see the drift note below) and the cost was a doc naming two roles
+that would not compile while hiding six that would.
+
+| Role | The record's… | The test | Notes |
+|---|---|---|---|
+| `details` | identity — what it IS | Always. The landing tab. | Universal (89 uses). Analytics lives here as a `<PulseSummaryCard>` drilldown, never as its own tab. |
+| `content` | material — what it's MADE OF | The stuff is substantial enough to be its own place (portal modules, room tracks, crew documents) rather than a field. | |
+| `preview` | outward face — what a visitor or recipient sees | There is a real external render. | Routes through `useInspector().preview` + `<InspectorContent>`. |
+| `timeline` | history — what has HAPPENED to it, and what was SAID | Anything chronological. Events and messages interleave in one stream. | **Replaces `thread` + `activity`.** See the merge note. |
+| `linked` | roster — other records it relates to, **count varying** | Apply the anchor-vs-roster test (`cmngrdn/docs/inspector-archetypes.md`): does the count vary per record? If it's a fixed 1–3, it is an ANCHOR and belongs in the body's relation strip, not in a tab. | |
+| `variants` | alternates — other versions of ITSELF | Same entity, different edition (pass eras, tiers). Not other entities — that's `linked`. | Single-use today (Vault Passes); merge candidate with `content`. |
+| `settings` | configuration that isn't the editor | Knobs a visitor never sees and the editor doesn't own. | Under review — the platform direction is Settings as a header gear, which returns a slot to every surface at once. |
+
+**Retired vocabulary.** `editor` — Pattern A's edit-mode chrome IS the editor, so
+the role never existed in the union and no surface declared one. `analytics` —
+never declared, and no tab anywhere is even *labelled* Analytics; after-the-fact
+data ships as the `<PulseSummaryCard>` drilldown inside `details`. Both appeared
+in this section before 2026-08-15 and neither was real.
+
+**Under review, not yet canonical.** `availability` + `notifications` exist in the
+union and are used by exactly one surface (cmngrdn `AppointmentTypesSection`).
+They are plausibly `settings` sub-sections. Resolve when that surface is reworked
+— do not add a third narrow single-use role in the meantime.
+
+#### The `thread` + `activity` → `timeline` merge
+
+Two roles asking one question ("what happened, in order") forced surfaces to
+spend two slots on one idea, and pushed at least one over the cap:
+
+- cmngrdn `useRoomInspector` declares **five** — `details · content · thread ·
+  activity · settings`. The merge is what brings it back to four.
+- Inquiries declares `details · activity · thread`; Contacts declares
+  `details · thread · linked`.
+
+A contact's real timeline is one interleaved stream — inquiry received,
+appointment booked, SMS sent, reply received — not two tabs the reader has to
+join by eye. The atoms for it already exist and are voice-agnostic
+(`ActivityFeed` / `ActivityCard` in cmngrdn, hoist candidates), so the caller
+resolves operator-voice vs member-voice and the stream stays one component.
+
+Pair the merge with the anchor-vs-roster rule above: once fixed relations move
+out of `linked` and into the body's relation strip, a contact reads
+`details · timeline` with slots to spare rather than three tabs and no room.
+
+#### Drift note (2026-08-15)
+
+This section, cmngrdn's `CLAUDE.md`, the `TabRole` union, and that union's own
+docblock had four different answers — the docblock said "eight roles" over a
+ten-member union, and this table listed five roles of which two did not exist.
+**When you add a role, update the union, its docblock, and this table together,
+and record why the role could not be an existing one.**
 
 ### Visual treatment + container rules
 
