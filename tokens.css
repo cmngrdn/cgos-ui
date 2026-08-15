@@ -97,6 +97,23 @@
   --cg-module-workspace:    var(--cg-petal-blue);     /* #6dc0ff sky blue */
   --cg-module-settings:     var(--cg-status-neutral); /* #6b7280 slate */
   --cg-module-admin:        var(--cg-status-danger);  /* #ef4444 red */
+  /* Three modules shipped their accent as a hardcoded hex in each app's own
+     registry and never got a token (2026-08-15). Added so `lib/activity`
+     — and anything else reaching for a module accent — can compose the
+     cascade instead of copying a literal. */
+  --cg-module-library:      #d97706;                  /* amber — what you make */
+  --cg-module-audience:     #fb7185;                  /* rose — who you know */
+  --cg-module-scanner:      #06b6d4;                  /* cyan — the door */
+
+  /* ── Channel accents ─────────────────────────────────────────────
+     Dispatch owns BOTH email and SMS, and a timeline that paints them
+     one colour makes a broadcast and a text indistinguishable at a
+     glance — which is what prompted `lib/activity`. So the two media
+     take SIBLING hues: Dispatch's own indigo for email, the petal sky
+     for SMS. Related without being the same.
+     ───────────────────────────────────────────────────────────────── */
+  --cg-channel-email:       var(--cg-module-dispatch); /* #3d5afe indigo */
+  --cg-channel-sms:         var(--cg-petal-blue);      /* #6dc0ff sky */
 
   /* ── Data-viz palette (Pulse analytics charts) ───────────────────
      Categorical series colors 1..6 for charts (stacked bars, multi-
