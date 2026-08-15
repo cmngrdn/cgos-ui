@@ -42,8 +42,8 @@
  * 2. **EXCEPT where one module carries two media you must tell apart.**
  *    Dispatch owns both email and SMS; painting them the same indigo made a
  *    broadcast and a text indistinguishable at a glance, which is what
- *    prompted this. They take SIBLING hues — deep indigo and sky — so they
- *    read as related without reading as identical.
+ *    prompted this. Blue for mail, green for a text — the convention every
+ *    phone already taught, so it costs no learning.
  *
  * Failures are the third case: they take STATUS tones, because a bounce is a
  * state and not a fact about which module you are in (see the status-vs-brand
@@ -247,6 +247,38 @@ export const ACTIVITY: Record<ActivityKind, ActivityDef> = {
 
   "unknown": { icon: Question, tone: "neutral", label: "Activity" },
 };
+
+/**
+ * THE CHANNEL GLYPH, for surfaces that aren't rendering an activity row.
+ *
+ * The platform had drifted to three answers before this existed: the
+ * transmissions list drew `Envelope` + `ChatCircle`, the audience composer drew
+ * `EnvelopeSimple` bold + `DeviceMobile` fill, and the activity registry drew a
+ * fourth pair. A channel picker and a timeline row are different components
+ * but they are the same FACT, so they resolve it here.
+ *
+ * `DeviceMobile` lost deliberately: it draws the DEVICE, and the thing being
+ * chosen is a medium — you can read a text on a watch. `ChatCircle` says
+ * message, and it pairs with the green.
+ */
+export function channelIcon(
+  channel: "email" | "sms",
+  size = 14,
+): ReactNode {
+  return activityIcon(channel === "sms" ? "sms.sent" : "email.sent", size);
+}
+
+/** The channel's colour, for the same non-row surfaces. */
+export function channelColor(channel: "email" | "sms"): string {
+  return activityColor(channel === "sms" ? "sms.sent" : "email.sent");
+}
+
+/** The icon COMPONENT rather than a rendered node — for callers that hand a
+ *  component to something else (a thumbnail slot, a `<ModuleIconChip>`), which
+ *  is most of the non-row surfaces. */
+export function channelGlyph(channel: "email" | "sms"): PhosphorIcon {
+  return activityDef(channel === "sms" ? "sms.sent" : "email.sent").icon;
+}
 
 /** Resolve a kind, tolerating a string that isn't one. */
 export function activityDef(kind: ActivityKind | string): ActivityDef {

@@ -108,12 +108,21 @@
   /* ── Channel accents ─────────────────────────────────────────────
      Dispatch owns BOTH email and SMS, and a timeline that paints them
      one colour makes a broadcast and a text indistinguishable at a
-     glance — which is what prompted `lib/activity`. So the two media
-     take SIBLING hues: Dispatch's own indigo for email, the petal sky
-     for SMS. Related without being the same.
+     glance — which is what prompted `lib/activity`.
+
+     They took sibling BLUES first, and that was wrong for a reason worth
+     keeping: a sibling pair still has to be learned, and this pair does
+     not need learning. Blue for mail, green for a text is already in
+     everybody's pocket. Borrow it.
      ───────────────────────────────────────────────────────────────── */
   --cg-channel-email:       var(--cg-module-dispatch); /* #3d5afe indigo */
-  --cg-channel-sms:         var(--cg-petal-blue);      /* #6dc0ff sky */
+  /* GREEN, not a blue sibling. Every phone on earth has taught people that a
+     green bubble is a text and a blue one isn't, so borrowing that costs no
+     teaching at all — where two shades of blue had to be learned. Deliberately
+     #34c759 (hue ~142, true green) rather than --cg-status-success #34d399
+     (hue ~157, emerald): they sit adjacent in a feed, one meaning "a text" and
+     the other "it worked", and 15 degrees is what keeps them apart. */
+  --cg-channel-sms:         #34c759;                   /* message green */
 
   /* ── Data-viz palette (Pulse analytics charts) ───────────────────
      Categorical series colors 1..6 for charts (stacked bars, multi-
