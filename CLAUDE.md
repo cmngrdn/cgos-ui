@@ -225,6 +225,26 @@ four are the same idea wearing different labels.
 SELECTION is per-entity.** A portal page's four and a contact's four have no
 obligation to match; what they must not do is invent a role outside this table.
 
+**DON'T BUILD THE COMPARTMENT UNTIL IT HAS SOMETHING IN IT — and settle that by
+COUNTING (2026-08-16).** Asked whether the tag inspector wanted `details` +
+`linked`, the answer came from production row counts, not taste: `unlock_rules`
+**0**, `workspace_segments` **0**, `intake_forms.auto_tags` **1** across the whole
+workspace. So a `details` tab there is a name, a count and three empty dependency
+lists — and **a tag ships with ONE tab**, `linked`, because a tag IS its members.
+
+This is the same defect as a tab labelled with a `· soon` suffix, or a
+placeholder tab describing a future version of the thing beside it: *an empty
+room with a sign on the door reads as broken, where its absence reads as
+nothing.* It recurs — the same surface had a placeholder `linked` tab pulled
+once already before it grew a speculative `details`.
+
+**The useful half is what to do with the rare-but-real case.** The one dependency
+that DID exist moved into the chrome, where it changes a decision: the tag's
+glance band reads *"Auto-applied by {form} — deleting won't stop it coming
+back"*, and the delete confirm repeats it. **A one-tab surface is a correct
+outcome, not a failure to fill the cap** — and it drops the tab strip entirely,
+which is what lets the roster have the whole panel.
+
 `TabRole` is the enforced union in cmngrdn `src/contexts/InspectorContext.tsx`.
 **This table and that union are one thing — change both in the same commit, and
 keep the file's docblock listing exactly what the union holds.** They drifted
