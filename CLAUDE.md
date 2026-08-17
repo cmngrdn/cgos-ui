@@ -201,7 +201,7 @@ A tab body renders the entity's **CONTENT** — never a page surface. The chrome
 
 - **No page header / self-title.** The chrome's title IS the title. A body that renders its own `<header><h1>` (or eyebrow + title + subtitle block) echoing the chrome title is a violation. Section sub-labels inside the body are fine; a page-level title is not.
 - **No page-width / centered container.** No `maxWidth` + `margin: auto`, no large page padding. The body fills the inspector and uses inspector-scale padding.
-- **Use a canonical tab role** (`details`/overview · `editor` · `preview` · `variants` · `activity` · `thread` · `linked` · `settings`), not an ad-hoc one.
+- **Use a canonical tab role** from the table below — do NOT re-list them here. This line held a second copy for months and drifted: it named `editor` and `activity` and `thread` (two retired, one superseded) while omitting `content`, `timeline`, `notifications` and `email`. One list, one place.
 - **Never drop a full-page route component into a tab.** A `/hq/...` page surface carries its own header + max-width container + page padding; mounting it verbatim "sticks a page in a box." Factor the chrome out (or gate it behind an in-inspector flag/context) so the body is content-only before mounting.
 
 This applies to ANY surface opened in the inspector — preview-bearing or not, present or future. The same discipline that keeps framing in one place (above) keeps titling + chrome there too. (cmngrdn 2026-06-03: the Activity pullout's `<ActivityBody>` was de-chromed to a content-only `activity`-role body; Pulse-card pullouts render their chart chromeless via a `PulseDetailContext` so the chart's own panel title doesn't echo the chrome title — see cmngrdn CLAUDE.md § Inspector Contract for the implementation.)
@@ -259,7 +259,9 @@ that would not compile while hiding six that would.
 | `timeline` | history — what has HAPPENED to it, and what was SAID | Anything chronological. Events and messages interleave in one stream. | **Replaces `thread` + `activity`.** See the merge note. |
 | `linked` | roster — other records it relates to, **count varying** | Apply the anchor-vs-roster test (`cmngrdn/docs/inspector-archetypes.md`): does the count vary per record? If it's a fixed 1–3, it is an ANCHOR and belongs in the body's relation strip, not in a tab. | |
 | `variants` | alternates — other versions of ITSELF | Same entity, different edition (pass eras, tiers). Not other entities — that's `linked`. | Single-use today (Vault Passes); merge candidate with `content`. |
+| `email` | two-way correspondence BY EMAIL, with the composer in it | The entity carries a real mail thread you reply to in place. **Not a synonym for `timeline`.** | Added 2026-08-16 when cmngrdn's inquiry `thread` was renamed. See the split note below. |
 | `settings` | configuration that isn't the editor | Knobs a visitor never sees and the editor doesn't own. | Under review — the platform direction is Settings as a header gear, which returns a slot to every surface at once. |
+| `notifications` | outbound — what this record SENDS, and when | The entity fires messages of its own, and they have bodies you author. Not "it has a notify toggle". | Resolved 2026-08-16 (see below). One declarer today (services); passes are the case that should join it. |
 
 **Retired vocabulary.** `editor` — Pattern A's edit-mode chrome IS the editor, so
 the role never existed in the union and no surface declared one. `analytics` —
@@ -267,10 +269,55 @@ never declared, and no tab anywhere is even *labelled* Analytics; after-the-fact
 data ships as the `<PulseSummaryCard>` drilldown inside `details`. Both appeared
 in this section before 2026-08-15 and neither was real.
 
-**Under review, not yet canonical.** `availability` + `notifications` exist in the
-union and are used by exactly one surface (cmngrdn `AppointmentTypesSection`).
-They are plausibly `settings` sub-sections. Resolve when that surface is reworked
-— do not add a third narrow single-use role in the meantime.
+#### `email` vs `timeline` — why the merge stops at the inbox (2026-08-16)
+
+`timeline` exists because a relationship is ONE sequence, and cmngrdn's contact
+proved it by making the CONVERSATION the substrate and drawing events into it.
+That works because SMS is HTML *we* author, so an event card and a message
+bubble are the same material.
+
+**Inbound Gmail is not.** It is a foreign document — inline font sizes, table
+widths, its own background colours, authored at 600px — so interleaving small
+event cards between full-width foreign documents reads as documents with debris
+between them rather than as one stream. The merge is right up to the point the
+other party controls the rendering.
+
+It is named for the MEDIUM rather than the shape on purpose: "Thread" and
+"Timeline" are near-synonyms to a reader, so a tab row carrying both said
+nothing about which to open. "Email" also names where what you type actually
+goes — out of the workspace, into a real person's inbox.
+
+**Open:** `cmngrdn/docs/inspector-archetypes.md` §9. A `thread` that carries a
+COMPOSER still cannot fold into `timeline` until its composer can live in the
+chrome footer — a timeline is READ and a thread is WRITTEN.
+
+#### `availability` + `notifications` — resolved 2026-08-16, and they split
+
+Both were used by exactly one surface (cmngrdn's service editor) and both were
+"plausibly `settings` sub-sections". Reworking that surface split them, because
+**the test for canonical is not how sensible a role reads — it is whether a
+SECOND entity would plausibly declare it, and both questions had already been
+answered elsewhere in the same module:**
+
+- **`availability` RETIRED.** The booking CALENDAR is the other entity that owns
+  availability, and it renders `<AvailabilityEditor>` as a SECTION inside its
+  `details` body. The platform had already decided this shape once, one file
+  away. Supporting measurement: of the six fields that tab held, four carry ONE
+  distinct value across all 11 services in the production network — nobody has
+  ever changed padding-before — so it was a compartment with nothing in it.
+  Folded into `details` as a "Scheduling" group.
+- **`notifications` KEPT**, and the deciding argument is the `settings` gear.
+  `settings` is headed for a header gear, which is the right home for chrome
+  configuration and the wrong one for substantive per-entity content. A
+  service's four message editors ARE its content; behind a gear they would be
+  buried. The pass inspector filing `NotificationsTabBody` under `settings` is
+  therefore the case that should MOVE, not the precedent to follow.
+
+**The generalisable half:** when deciding whether a narrow role survives, look
+for the sibling entity that owns the same concept and see what IT did — and ask
+whether the content is configuration (gear) or the entity's own material (tab).
+Frequency of use is the weaker signal; both of these had exactly one declarer
+and they still split.
 
 #### The `thread` + `activity` → `timeline` merge
 
