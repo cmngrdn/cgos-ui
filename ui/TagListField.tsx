@@ -49,9 +49,16 @@ export interface TagListFieldProps {
   onChange: (next: string[]) => void
   /**
    * Slug-normalize one tag. REQUIRED — see the note above on why this atom
-   * does not ship its own. Return `''` to reject the input.
+   * does not ship its own.
+   *
+   * Returns the normalized tag, or a falsy value to REJECT the input. The
+   * return type is deliberately wide: cmngrdn's `normalizeTag` returns
+   * `string | null` and cgos's returns `str | None`, and an atom that demanded
+   * a bare `string` would force every caller to write `?? ''` — which is the
+   * adapter layer that eventually becomes a second normalization contract.
+   * The atom fits the platform helper, not the other way round.
    */
-  normalize: (raw: string) => string
+  normalize: (raw: string) => string | null | undefined
   disabled?: boolean
   /** Shown while the list is empty; a shorter one is used once it isn't. */
   placeholder?: string
