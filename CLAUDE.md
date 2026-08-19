@@ -14,10 +14,18 @@ The rule, in order of preference:
 0. **A NEW ATOM IS NOT REACHABLE UNTIL IT IS IN `exports`.** `package.json` lists every
    subpath explicitly (`"./ui/Button"`, `"./ui/Button.css"`, …), so a file added under `ui/`
    and shipped in a tagged release still fails to resolve in every consumer:
-   `TS2307: Cannot find module 'cgos-ui/ui/X'`. Nothing in this repo catches it — the file is
-   present, the build here passes, and the failure appears only in a consumer AFTER the tag has
-   been cut and pinned. `TagListField` shipped in v0.51.0 that way and needed v0.51.1 the same
-   minute. **Add the atom AND its companion `.css` to `exports` in the same commit as the file.**
+   `TS2307: Cannot find module 'cgos-ui/ui/X'`. The file is present, this repo has no build to
+   fail, and the breakage appears only in a consumer AFTER the tag has been cut and pinned —
+   the most expensive possible place to find a one-line omission. `TagListField` shipped in
+   v0.51.0 that way and needed v0.51.1 the same minute. **Add the atom AND its companion `.css`
+   to `exports` in the same commit as the file.**
+
+   **`npm run audit:exports` now enforces this**, in CI on every push and PR
+   (`.github/workflows/exports.yml` — pure node, no install, ~1s). It checks both directions:
+   an atom with no entry, an entry pointing at the wrong file, and an entry pointing at a file
+   that no longer exists. Verified against the known-bad case rather than trusted on a green
+   tick — remove `TagListField` from the map and it fails with the exact message a consumer
+   would have hit.
 
 2. **Second choice — the atom lives in a consumer, but is documented here.** When the component bundles project-specific behavior (a download endpoint, an auth header fetch, a cgos API call) that can't reasonably live in cgos-ui, the component stays in the consumer repo. But it MUST get a row in the "Atom inventory" table below, marked with its home repo. The visual contract is locked here regardless of where the code lives. If the visual part can be split out as a pure-presentation badge atom, do that — keep the badge here, compose the data wrapper in the consumer.
 3. **Never — silent duplication.** Two copies of the same UI element across repos with slightly-drifted styles is the failure mode every section of this doc exists to prevent.

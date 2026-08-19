@@ -1,0 +1,32 @@
+# The one thing this repo cannot catch by itself.
+#
+# cgos-ui has no build step, so a broken export map produces no error here —
+# it produces `TS2307: Cannot find module` in every consumer, after the tag is
+# cut and after somebody bumps their pin. That is the most expensive place to
+# find a one-line omission.
+#
+# Deliberately cheap: pure node, no `npm ci`, no dependencies, ~1s. Per the
+# CI-minutes lesson in cmngrdn's CLAUDE.md, `cancel-in-progress` is not
+# optional — pushing three times while iterating must not run three builds to
+# completion when only the last result can matter.
+name: Exports
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: exports-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/audit-exports.mjs
