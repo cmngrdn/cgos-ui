@@ -1,8 +1,29 @@
 # cgos-ui — Common Garden design system package
 
-Shared design tokens, atoms, and visual primitives consumed by **cgos** (FastAPI backend + frozen Vite dashboard), **cmngrdn** (Next.js HQ + public site — the active surface), **feather** (feather.fm), and **reliquary** (reliquaryarchives.com).
+Shared design tokens, atoms, and visual primitives consumed by **cgos** (FastAPI backend — the Vite dashboard was deleted 2026-06-03), **cmngrdn** (Next.js HQ + public site — the active surface), **feather** (feather.fm), and **reliquary** (reliquaryarchives.com).
 
 This file is the conventions doc for working **inside** this repo. For consumption patterns + install instructions see [README.md](README.md). For the multi-phase unification history see [`cgos/docs/design-system-unification-plan.md`](https://github.com/cmngrdn/cgos/blob/main/docs/design-system-unification-plan.md).
+
+## Authority — where each kind of claim lives
+
+Common Garden runs on **per-claim authority, not one hierarchy.** A document may hold
+reasoning (a human's — it does not drift), system facts (the code's — generated), and
+third-party facts (nobody's here — dated, never generated).
+
+| Question | Owner |
+|---|---|
+| Why CGOS exists, what must remain true | [**Vision v9 Part I · Philosophy**](https://docs.google.com/document/d/1mqEflqbXe245xc8b0dLoy-IzMO4jEkfd9lsO1QDbOqA/edit) — human-owned, on the Drive. States no facts by construction. |
+| What is true *right now* — counts, costs, what is live | [`cgos/docs/state-of-system.md`](https://github.com/cmngrdn/cgos/blob/main/docs/state-of-system.md) — **Vision v9 Part II, generated.** Never quote a figure from prose when this has it. |
+| What Feather wants prioritised now | [`cgos/OPS.md`](https://github.com/cmngrdn/cgos/blob/main/OPS.md) — current intent only |
+| What is built, blocked, technically next | [`cgos/SCOPE.md`](https://github.com/cmngrdn/cgos/blob/main/SCOPE.md) — the buildboard |
+| This repo's conventions and invariants | **this file** — locally authoritative, and it references authority rather than restating it |
+| Live facts | the code and the database. Always. |
+
+> **OPS chooses the destination. SCOPE determines the technically valid route.**
+
+If OPS names an outcome and SCOPE shows a prerequisite must land first, doing the
+prerequisite **fulfils** OPS rather than contradicting it. Neither overrides a measured
+fact. Full reasoning: [`documentation-authority-plan.md`](https://github.com/cmngrdn/cgos/blob/main/docs/documentation-authority-plan.md).
 
 ## Design authority — read this first
 
