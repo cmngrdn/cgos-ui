@@ -98,9 +98,10 @@ export const FEATHER_CREATIVE: LegalEntity = {
   legalName: "Feather Creative, LLC",
   brandName: "Feather",
   origin: "https://feather.fm",
-  // Entity-domain inbox, not the personal one. A legal page's contact should
-  // route to the company, and it survives a change of who reads it.
-  supportEmail: "inquiries@feathercreative.co",
+  // Entity-domain inbox on the `contact@` convention shared with
+  // contact@cmngrdn.com — not a personal address. A legal page's contact
+  // routes to the company and survives a change of who reads it.
+  supportEmail: "contact@feathercreative.co",
   businessDescription:
     "an independent music and media practice releasing original recordings and creative work",
   jurisdiction: "the State of Tennessee",
@@ -114,7 +115,7 @@ export const MERCEDES_CREATIVE: LegalEntity = {
   // Mercedes Creative's own inbox — NOT contact@cmngrdn.com. A page whose whole
   // job is establishing this entity as the controller cannot route its privacy
   // requests to the platform's inbox.
-  supportEmail: "inquiries@mercedescreative.com",
+  supportEmail: "contact@mercedescreative.com",
   businessDescription:
     "a multi-disciplinary tattoo and creative practice in Nashville, Tennessee",
   jurisdiction: "the State of Tennessee",
@@ -125,7 +126,7 @@ export const AMERICAN_HORSE: LegalEntity = {
   legalName: "American Horse Labor Co., Inc.",
   brandName: "American Horse Labor Company",
   origin: "https://americanhorselabor.com",
-  supportEmail: "inquiries@americanhorselabor.com",
+  supportEmail: "contact@americanhorselabor.com",
   businessDescription:
     "a production labor and stagehand staffing company serving venues, promoters, and production clients",
   jurisdiction: "the State of Minnesota",
