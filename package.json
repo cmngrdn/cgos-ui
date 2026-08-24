@@ -225,6 +225,7 @@
   },
   "devDependencies": {
     "jsdom": "^26.0.0",
+    "react": "^19.2.8",
     "tsx": "^4.19.2"
   },
   "peerDependencies": {
