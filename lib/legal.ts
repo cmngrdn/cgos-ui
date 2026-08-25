@@ -79,6 +79,20 @@ export interface LegalEntity {
   jurisdiction: string;
   /** Which platform data-role sentence applies to this door. */
   dataRole: "joint" | "processor-and-joint";
+  /**
+   * True when this entity's A2P campaign registers OFFLINE opt-in paths — a
+   * printed consent form and a scripted verbal disclosure — alongside the web
+   * form and the keyword.
+   *
+   * ⚠️ This is not a feature flag. It must equal what the entity's campaign
+   * actually filed in its registered message flow, because the disclosure it
+   * drives is rendered on the very pages that flow cites. Reliquary registers
+   * four paths and Feather registers two, so a single hardcoded count made one
+   * of them contradict its own registration — which is exactly the mismatch a
+   * carrier reviewer cross-checks. Changing it means resubmitting the campaign
+   * in the same pass.
+   */
+  inPersonOptIn?: boolean;
 }
 
 /** The platform itself. Common Garden is the ISV every other entity's
@@ -120,6 +134,10 @@ export const MERCEDES_CREATIVE: LegalEntity = {
     "a multi-disciplinary tattoo and creative practice in Nashville, Tennessee",
   jurisdiction: "the State of Tennessee",
   dataRole: "joint",
+  // Campaign CYGZTP2 registers four opt-in paths. The studio is a physical
+  // room with clients in it, so paper and verbal consent are real routes here
+  // in a way they are not for a purely online door.
+  inPersonOptIn: true,
 };
 
 export const AMERICAN_HORSE: LegalEntity = {
@@ -209,15 +227,25 @@ export const SMS_MINIMUM_AGE = 13;
 /** Opening identification line. Names the registered entity AND the
  *  brand, which is what lets a carrier reviewer connect the campaign
  *  registration to the page they are looking at. */
-export function buildEntityIdentification(entity: LegalEntity): string {
+export function buildEntityIdentification(
+  entity: LegalEntity,
+  opts?: { documentKind?: "policy" | "program" },
+): string {
   const sameName = entity.legalName === entity.brandName;
   const dba = sameName ? "" : ` (doing business as "${entity.brandName}")`;
-  return (
-    `${entity.legalName}${dba} ("we," "our," or "us") is ` +
-    `${entity.businessDescription}. This policy describes how we collect, ` +
-    `use, and protect personal data in connection with ${entity.brandName} ` +
-    `and the services offered at ${entity.origin.replace(/^https?:\/\//, "")}.`
-  );
+  const host = entity.origin.replace(/^https?:\/\//, "");
+  // The second sentence sets the document's scope, so it has to be true of the
+  // document it is on. "This policy describes how we collect…personal data" is
+  // right on /privacy and /terms and plainly wrong on an SMS program page,
+  // which is not a policy and does not describe data handling — it describes a
+  // messaging program. Same mandated identification, honest framing.
+  const scope =
+    opts?.documentKind === "program"
+      ? `This page describes the text messaging program we operate for ` +
+        `${entity.brandName} and the services offered at ${host}.`
+      : `This policy describes how we collect, use, and protect personal data ` +
+        `in connection with ${entity.brandName} and the services offered at ${host}.`;
+  return `${entity.legalName}${dba} ("we," "our," or "us") is ${entity.businessDescription}. ${scope}`;
 }
 
 /**
@@ -251,12 +279,21 @@ export function buildPlatformRelationship(entity: LegalEntity): string {
   return base;
 }
 
-/** How a person opts in. Both methods, named explicitly — carriers check
- *  that the documented flow matches what the opt-in page actually does. */
+/**
+ * How a person opts in. Every method named explicitly — carriers check that the
+ * documented flow matches what the opt-in page actually does, and this text is
+ * rendered on the pages the campaign's registered message flow cites.
+ *
+ * The COUNT is derived from `entity.inPersonOptIn` rather than fixed, because
+ * it is a per-entity fact. This sentence used to open "in two ways" for
+ * everyone, which was true of Feather's registration and false of Reliquary's —
+ * her campaign registers four, so her own privacy policy contradicted her own
+ * message flow. A hardcoded count in a shared builder is a claim about every
+ * entity that will ever use it.
+ */
 export function buildOptInDisclosure(entity: LegalEntity): string {
-  return (
-    `You may opt in to receive SMS messages from ${entity.brandName} in two ` +
-    `ways. Web form opt-in: by entering your mobile number and checking the ` +
+  const online =
+    `Web form opt-in: by entering your mobile number and checking the ` +
     `dedicated SMS consent checkbox on our signup form. The checkbox is ` +
     `unchecked by default, is never required to submit the form or as a ` +
     `condition of any purchase, and is displayed together with the specific ` +
@@ -264,7 +301,26 @@ export function buildOptInDisclosure(entity: LegalEntity): string {
     `Keyword opt-in: by texting ${OPT_IN_KEYWORDS[0]} to our published number. ` +
     `You will then receive a confirmation message identifying ${entity.brandName}, ` +
     `stating that message frequency varies, stating that message and data rates ` +
-    `may apply, and providing HELP and STOP instructions.`
+    `may apply, and providing HELP and STOP instructions.`;
+
+  if (!entity.inPersonOptIn) {
+    return (
+      `You may opt in to receive SMS messages from ${entity.brandName} in two ` +
+      `ways. ${online}`
+    );
+  }
+
+  return (
+    `You may opt in to receive SMS messages from ${entity.brandName} in four ` +
+    `ways. ${online} Written opt-in: by completing a printed consent form in ` +
+    `person, which states the message types, that frequency varies, that ` +
+    `message and data rates may apply, HELP and STOP instructions, and links ` +
+    `to our Terms and this Privacy Policy, and which you sign and date. The ` +
+    `signed form is retained. Verbal opt-in: by giving consent in person after ` +
+    `a member of staff reads a scripted disclosure covering who is texting ` +
+    `you, the message types, how often, that message and data rates may apply, ` +
+    `that consent is not required to book, and how to stop. Verbal consent is ` +
+    `logged with the date, your name and number, and who took it.`
   );
 }
 
