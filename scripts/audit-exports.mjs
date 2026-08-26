@@ -87,6 +87,42 @@ for (const key of Object.keys(exp)) {
   }
 }
 
+// lib/ has the same failure mode as ui/ and was not checked. A module can be
+// written, tested, committed and TAGGED, and still be unreachable from every
+// consumer — Node resolves a subpath ONLY if the exports map names it, so the
+// import fails with "Cannot find module" long after the release looks done.
+// That is not hypothetical: lib/sms-body.ts shipped in v0.54.0 and could not be
+// imported until v0.54.1, and this audit passed both times because it only ever
+// checked the direction that was already covered (every ENTRY resolves), never
+// the one that bites (every MODULE is entered).
+// .tsx counts — lib/activity.tsx is a lib module that happens to render.
+const libFiles = readdirSync(join(ROOT, "lib")).filter(
+  (f) => /\.tsx?$/.test(f) && !f.endsWith(".d.ts") && !/\.test\.tsx?$/.test(f),
+);
+const libKeys = new Set(
+  Object.keys(exp)
+    .filter((k) => k.startsWith("./lib/"))
+    .map((k) => k.replace(/^\.\/lib\//, "")),
+);
+for (const file of libFiles) {
+  const bare = file.replace(/\.tsx?$/, "");
+  if (!libKeys.has(bare)) {
+    problems.push(
+      `lib/${file} has no "./lib/${bare}" entry — it is unreachable from every ` +
+        `consumer no matter what version it ships in.`,
+    );
+  }
+}
+for (const key of Object.keys(exp)) {
+  if (!key.startsWith("./lib/")) continue;
+  const target = exp[key]?.import ?? exp[key];
+  if (typeof target !== "string") continue;
+  const name = target.replace(/^\.\/lib\//, "");
+  if (!libFiles.includes(name)) {
+    problems.push(`"${key}" points at lib/${name}, which does not exist.`);
+  }
+}
+
 if (problems.length) {
   console.error("\n[exports] cgos-ui export map is out of step with ui/:\n");
   for (const p of problems) console.error(`  ✗ ${p}`);
@@ -94,7 +130,8 @@ if (problems.length) {
     "\n  Add the entry to `exports` in package.json, in the SAME commit as the\n" +
       "  file. The shape is:\n\n" +
       '    "./ui/Thing":     { "types": "./ui/Thing.tsx", "import": "./ui/Thing.tsx" },\n' +
-      '    "./ui/Thing.css": "./ui/Thing.css"\n',
+      '    "./ui/Thing.css": "./ui/Thing.css"\n' +
+      '    "./lib/thing":    { "types": "./lib/thing.ts",  "import": "./lib/thing.ts" }\n',
   );
   process.exit(1);
 }
