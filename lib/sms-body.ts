@@ -25,7 +25,12 @@ const GSM = new Set(
 // Each of these costs TWO septets (an escape byte, then the character).
 const GSM_EXT = new Set("^{}\\[~]|€")
 
-const TAG = /\{([a-z_]+)\}/g
+// BOTH BRACE STYLES, DOUBLES FIRST — mirrors `awen/sms_body.py` exactly, and
+// `test_sms_body_mirror.py` is what keeps them one thing. Ordering matters:
+// singles first would turn `{{service}}` into `{6 Hour Session}` and leave a
+// stray brace. `{single}` is the canon; `{{double}}` is accepted so an operator
+// who learned it on crew's system emails cannot silently get it wrong here.
+const TAG = /\{\{\s*([a-z_]+)\s*\}\}|\{([a-z_]+)\}/g
 const SENTENCE_END = ".!?"
 
 /** merge tag -> the key the booking template data already carries. */
@@ -66,7 +71,9 @@ export function renderSmsBody(
 ): string {
   if (!template || !template.trim()) return ""
 
-  let out = template.replace(TAG, (whole, key: string) => {
+  let out = template.replace(TAG, (whole, dbl: string, sgl: string) => {
+    // Exactly one branch ever matches.
+    const key = dbl || sgl
     if (!(key in context)) return whole
     const val = context[key]
     return val === null || val === undefined ? "" : String(val).trim()
