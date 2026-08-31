@@ -93,6 +93,20 @@ export interface LegalEntity {
    * in the same pass.
    */
   inPersonOptIn?: boolean;
+  /**
+   * What the verbal-consent script says consent is NOT a condition of, as a
+   * bare verb phrase completing "consent is not required to …".
+   *
+   * Defaults to "book", which is true of a studio taking appointments and
+   * plainly false of an employer: the coercion a regulator looks for in
+   * employee consent is not about booking anything. AHLC says "work".
+   *
+   * ⚠️ Defaulted rather than required ON PURPOSE. Mercedes Creative's campaign
+   * (CYGZTP2) is VERIFIED against a page carrying the "book" wording, so the
+   * default must keep her rendered output byte-identical — a change here would
+   * silently alter the page her approved registration cites.
+   */
+  optInNotRequiredTo?: string;
 }
 
 /** The platform itself. Common Garden is the ISV every other entity's
@@ -161,6 +175,22 @@ export const AMERICAN_HORSE: LegalEntity = {
   // AHLC is the only door where Common Garden is BOTH: a processor for
   // employment records and a joint controller for the identity layer.
   dataRole: "processor-and-joint",
+  // Crew reach the call list by more than one road, and the campaign must
+  // register the ones that actually happen. Some apply at /careers/apply and
+  // tick the box; some are added by a scheduler standing next to them at a
+  // dock. Feather, 2026-08-31: crew are sometimes texted about shifts before
+  // ADP onboarding completes, which rules out treating onboarding consent as
+  // the only path — the application is the earliest point at which AHLC holds
+  // the number and has not yet texted.
+  //
+  // ⚠️ THIS FLAG IS A CLAIM ABOUT THE REGISTRATION, NOT A PREFERENCE. It makes
+  // buildOptInDisclosure describe FOUR paths. The campaign's registered
+  // message flow must describe the same four, or the page and the filing
+  // disagree — which is the 30909 "CTA could not be verified" rejection this
+  // network has already taken once. Confirm before submitting.
+  inPersonOptIn: true,
+  // "…consent is not required to work" — an employer, not a studio.
+  optInNotRequiredTo: "work",
 };
 
 // ─────────────────────────────────────────────────────────────────────
@@ -329,7 +359,8 @@ export function buildOptInDisclosure(entity: LegalEntity): string {
     `signed form is retained. Verbal opt-in: by giving consent in person after ` +
     `a member of staff reads a scripted disclosure covering who is texting ` +
     `you, the message types, how often, that message and data rates may apply, ` +
-    `that consent is not required to book, and how to stop. Verbal consent is ` +
+    `that consent is not required to ${entity.optInNotRequiredTo ?? "book"}, ` +
+    `and how to stop. Verbal consent is ` +
     `logged with the date, your name and number, and who took it.`
   );
 }
