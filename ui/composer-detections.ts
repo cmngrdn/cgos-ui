@@ -21,11 +21,15 @@
  */
 
 import {
+  bodyLimitInfo,
   detectLinks,
   findEncodingCulprits,
   findMalformedLinks,
+  rcsSegmentInfo,
   smsSegmentInfo,
   stripToGsm,
+  trimToBodyLimit,
+  TWILIO_BODY_LIMIT,
 } from '../lib/sms'
 import type { ComposerChannel } from './composer-core'
 
@@ -62,6 +66,12 @@ export type ComposerDetector = (body: string) => ComposerDetection[]
 export const smsDetector: ComposerDetector = (body) => {
   if (!body.trim()) return []
   const out: ComposerDetection[] = []
+
+  // FIRST, because it is the only one that means "this will not send at all".
+  // A segment count above a body that cannot leave is the readout that failed
+  // on 2026-08-31: accurate, prominent, and describing a message with no future.
+  const ceiling = ceilingDetection(body)
+  if (ceiling) out.push(ceiling)
 
   const info = smsSegmentInfo(body)
   const isUcs2 = info.encoding === 'UCS-2'
@@ -137,13 +147,101 @@ export const emailDetector: ComposerDetector = (body) => {
 }
 
 /**
+ * The ceiling — the ONE detection a surface is expected to gate on.
+ *
+ * Everything else here is a cost the operator may knowingly accept: two
+ * segments for an emoji is a choice. This is not a choice. Over 1,600 the
+ * Twilio API 4xxs (error 21617), no Message is created, and the send fails
+ * entirely — so the detection exists to explain a Send button that is already
+ * disabled, not to warn about one that still works.
+ *
+ * It stays a DETECTION rather than becoming a blocking mechanism because the
+ * contract at the top of this file is that detections cannot block, and that
+ * contract is worth more than the convenience of breaking it once. The gate
+ * belongs at the send call site; this is how the gate explains itself.
+ *
+ * Its `fix` is TRIM, never SPLIT. A fix's signature is `(body) => body` — one
+ * string in, one out — and splitting produces many. That is not a limitation
+ * to work around: a fix rewrites what the operator is holding, while a split
+ * creates new sends they have not agreed to yet. Split belongs to a surface
+ * that can ask.
+ */
+function ceilingDetection(body: string): ComposerDetection | null {
+  const info = bodyLimitInfo(body)
+  if (!info.over) return null
+  return {
+    id: 'body-limit',
+    tone: 'danger',
+    label: `${info.length} characters · ${info.excess} over the limit`,
+    detail:
+      `Twilio rejects any message body over ${TWILIO_BODY_LIMIT} characters, on SMS and RCS alike ` +
+      `— this cannot send as one message.`,
+    fix: {
+      label: `Trim to ${TWILIO_BODY_LIMIT}`,
+      apply: (b: string) => trimToBodyLimit(b),
+    },
+  }
+}
+
+/**
+ * RCS: one message, no Unicode cliff, and the same US bill.
+ *
+ * WAS `smsDetector`, WHICH LIED. `CHANNEL_DETECTORS` mapped `rcs` straight at
+ * the SMS detector under the note "same transport economics until RCS billing
+ * says otherwise". Billing is the half that IS the same — the US carriers
+ * charge per 160-character segment on both rails. Encoding is the half that is
+ * not, and borrowing the SMS detector made the composer assert two false
+ * things about RCS: that an emoji forces a 70-character-per-segment Unicode
+ * mode, and that stripping emoji would save money. RCS is UTF-8. It would have
+ * offered to destroy content the rail carries perfectly well, to buy nothing.
+ *
+ * So what it reports is what actually differs: the message arrives whole.
+ */
+export const rcsDetector: ComposerDetector = (body) => {
+  if (!body.trim()) return []
+  const out: ComposerDetection[] = []
+
+  const ceiling = ceilingDetection(body)
+  if (ceiling) out.push(ceiling)
+
+  const info = rcsSegmentInfo(body)
+  out.push({
+    id: 'rcs-length',
+    tone: ceiling ? 'neutral' : 'success',
+    label: `${info.effectiveLength} characters · one message`,
+    detail:
+      info.billedSegments > 1
+        ? `RCS delivers this unsegmented, but US carriers still bill ${info.billedSegments} segments.`
+        : undefined,
+  })
+
+  const links = detectLinks(body)
+  const malformed = findMalformedLinks(body)
+  if (links.length || malformed.length) {
+    out.push({
+      id: 'rcs-links',
+      tone: malformed.length ? 'danger' : 'neutral',
+      label: [
+        links.length ? `${links.length} link${links.length === 1 ? '' : 's'} tracked` : '',
+        malformed.length ? `${malformed.length} malformed` : '',
+      ]
+        .filter(Boolean)
+        .join(' · '),
+      detail: malformed.length ? malformed.join(', ') : undefined,
+    })
+  }
+
+  return out
+}
+
+/**
  * Which detector runs in which mode. `social` is empty until per-platform
  * limits land — an empty detector renders no HUD at all, which is correct:
  * a readout with nothing to report is chrome.
  */
 export const CHANNEL_DETECTORS: Record<ComposerChannel, ComposerDetector | null> = {
   sms: smsDetector,
-  rcs: smsDetector, // same transport economics until RCS billing says otherwise
+  rcs: rcsDetector,
   email: emailDetector,
   social: null,
 }
