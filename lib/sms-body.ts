@@ -119,14 +119,27 @@ export function smsSegments(body: string): number {
     for (const c of body) units += GSM_EXT.has(c) ? 2 : 1
     return units <= 160 ? 1 : Math.ceil(units / 153)
   }
-  const units = [...body].length
+  // ⚠️ UTF-16 CODE UNITS, NOT CODE POINTS — `body.length`, never
+  // `[...body].length`. A carrier counts a UCS-2 segment in 16-bit units, so a
+  // non-BMP character (every emoji) is a surrogate pair costing TWO. Spreading
+  // the string iterates code points and reported half the real cost: 40 emoji
+  // measured 40 against a 70-unit budget (1 segment) when the truth is 80 (2).
+  //
+  // Invisible for two years because only a non-BMP character separates the two
+  // readings and the shared fixture had none. `lib/sms.ts` was right all along.
+  const units = body.length
   return units <= 70 ? 1 : Math.ceil(units / 67)
 }
 
 /** What the editor shows under the box. */
 export function describeSms(body: string) {
   return {
-    characters: body.length,
+    // CODE POINTS here, deliberately unlike `smsSegments` above. This is the
+    // human-facing count — what the operator typed — so one emoji is one
+    // character even though it costs two units of segment budget. Python's
+    // `len()` is code points, so `[...body].length` is what keeps the mirror
+    // exact; `body.length` diverged silently, unasserted, until 2026-08-31.
+    characters: [...body].length,
     encoding: smsEncoding(body),
     segments: smsSegments(body),
     empty: !body.trim(),
