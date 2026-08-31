@@ -16,7 +16,7 @@
  */
 import { JSDOM } from 'jsdom'
 
-import { CHANNEL_DETECTORS, smsDetector, emailDetector } from '../ui/composer-detections.ts'
+import { CHANNEL_DETECTORS, smsDetector, rcsDetector, emailDetector } from '../ui/composer-detections.ts'
 import {
   CHANNEL_CAPABILITIES,
   composerIsEmpty,
@@ -115,7 +115,33 @@ check('links are counted', find('see feather.fm/signal', 'sms-links')?.label, '1
 check('email detector stays quiet on clean copy', emailDetector('hello there').length, 0)
 check('email has no segment readout — wrong fact for the transport', emailDetector('hello 🔥').length, 0)
 check('social has no detector', CHANNEL_DETECTORS.social, null)
-check('rcs shares SMS economics for now', CHANNEL_DETECTORS.rcs, smsDetector)
+check('rcs has its own detector — it does NOT share SMS encoding', CHANNEL_DETECTORS.rcs, rcsDetector)
+
+// ── The 1,600 ceiling, and the two rails ───────────────────────────────────
+//
+// These lock the reasoning in `lib/sms.ts`, because every one of them was false
+// on 2026-08-31 and each was individually invisible.
+
+const rcsFind = (body: string, id: string) => rcsDetector(body).find((d) => d.id === id)
+
+// Fired on BOTH rails: the ceiling is a Twilio API limit, not a transport one.
+check('sms flags the ceiling', find('a'.repeat(1601), 'body-limit')?.tone, 'danger')
+check('rcs flags the ceiling too', rcsFind('a'.repeat(1601), 'body-limit')?.tone, 'danger')
+check('exactly at the ceiling is fine', find('a'.repeat(1600), 'body-limit'), undefined)
+
+// The ceiling leads, because it is the only detection meaning "will not send".
+check('ceiling is reported first', smsDetector('a'.repeat(1601))[0]?.id, 'body-limit')
+
+// Its fix must produce a body that actually sends — trimming to 1,600 RAW
+// characters can still be over once links are rewritten.
+const trimmed = find('a'.repeat(2000), 'body-limit')!.fix!.apply('a'.repeat(2000))
+check('the trim fix yields a sendable body', find(trimmed, 'body-limit'), undefined)
+
+// RCS is UTF-8. The old mapping asserted a Unicode cliff that does not exist
+// and offered to delete emoji to buy nothing.
+check('rcs never offers to strip emoji', rcsFind('🎉'.repeat(40), 'rcs-length')?.fix, undefined)
+check('rcs reports one message', rcsFind('🎉'.repeat(40), 'rcs-length')?.label.includes('one message'), true)
+check('sms still reports the UCS-2 cliff', find('🎉'.repeat(40), 'sms-encoding')?.label.includes('UCS-2'), true)
 
 if (failed) {
   console.error(`\n✗ composer: ${failed} assertion(s) failed.\n`)
