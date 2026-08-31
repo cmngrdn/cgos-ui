@@ -141,7 +141,17 @@ export const MERCEDES_CREATIVE: LegalEntity = {
 };
 
 export const AMERICAN_HORSE: LegalEntity = {
-  legalName: "American Horse Labor Co., Inc.",
+  // Confirmed against the entity's own filing 2026-08-31, when the Twilio
+  // secondary Customer Profile went in as "American Horse Labor Company" and
+  // disagreed with this line. This file and the AHLC ⇄ CG DPA draft both said
+  // "American Horse Labor Co., Inc."; both were wrong, and neither had ever
+  // been checked against the registration. A2P brand vetting matches this
+  // character-for-character, so the disagreement would have surfaced as a
+  // failed vetting and another 10–15 day cycle.
+  //
+  // The site's "American Horse Labor Co." is a DBA and stays as it is — a
+  // trading name is allowed to be shorter than the registered one.
+  legalName: "American Horse Labor Company",
   brandName: "American Horse Labor Company",
   origin: "https://americanhorselabor.com",
   supportEmail: "contact@americanhorselabor.com",
