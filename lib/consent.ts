@@ -252,6 +252,47 @@ export function buildConsentFinePrint(args: ConsentArgs): string {
   );
 }
 
+/** Default for what consent is NOT a condition of, completing
+ *  "Consent is not a condition of …". "purchase" is the CTIA-standard
+ *  phrasing and is right for any commerce-shaped funnel. */
+export const DEFAULT_NOT_A_CONDITION_OF = "purchase";
+
+/**
+ * Consolidated CTIA disclosure for a form that offers ONLY non-marketing
+ * (transactional) SMS — the sibling of `buildConsentFinePrint`.
+ *
+ * WHY A SECOND BUILDER RATHER THAN A FLAG. `buildConsentFinePrint` opens
+ * "you agree to receive marketing and promotional messages", which is
+ * false on a form that offers neither. The schema route correctly refused
+ * to render it there — and nothing replaced it, so a transactional-only
+ * opt-in page carried NO disclosure at all: no frequency, no rate notice,
+ * no HELP/STOP, no Terms or Privacy link. Every one of those is carrier-
+ * required at the point of opt-in. Measured on AHLC's crew application
+ * 2026-08-31, which is the page its A2P campaign will cite as its CTA.
+ *
+ * `notAConditionOf` is parameterised because the coercion a reviewer looks
+ * for depends on the relationship. "Not a condition of purchase" is the
+ * right sentence for a booking and a meaningless one for a job applicant,
+ * where the thing not to condition consent on is the job.
+ *
+ * Ends in the verbatim phrase "Terms & Privacy" so
+ * `renderConsentFinePrintNodes` can split it into two links, exactly as it
+ * does for the marketing version — keep the marker identical.
+ */
+export function buildTransactionalFinePrint(
+  args: ConsentArgs & { topic?: string; notAConditionOf?: string }
+): string {
+  const notCond =
+    args.notAConditionOf?.trim() || DEFAULT_NOT_A_CONDITION_OF;
+  return (
+    `By submitting your information, you agree to receive non-marketing ` +
+    `text messages from ${args.brandName} about ${resolveTopic(args)}. ` +
+    `Consent is not a condition of ${notCond}. Message and data rates may ` +
+    `apply. Message frequency varies. Reply HELP for help or STOP to ` +
+    `cancel. Terms & Privacy.`
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // Outbound auto-reply messages (sent from the Twilio number after the
 // user opts in / texts a keyword)
