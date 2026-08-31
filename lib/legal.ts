@@ -93,6 +93,37 @@ export interface LegalEntity {
    * in the same pass.
    */
   inPersonOptIn?: boolean;
+  /**
+   * What the verbal-consent script says consent is NOT a condition of, as a
+   * bare verb phrase completing "consent is not required to …".
+   *
+   * Defaults to "book", which is true of a studio taking appointments and
+   * plainly false of an employer: the coercion a regulator looks for in
+   * employee consent is not about booking anything. AHLC says "work".
+   *
+   * ⚠️ Defaulted rather than required ON PURPOSE. Mercedes Creative's campaign
+   * (CYGZTP2) is VERIFIED against a page carrying the "book" wording, so the
+   * default must keep her rendered output byte-identical — a change here would
+   * silently alter the page her approved registration cites.
+   */
+  optInNotRequiredTo?: string;
+  /**
+   * Where verbal consent is actually taken, completing "by giving consent …".
+   * Defaults to "in person".
+   *
+   * A studio takes it at a front desk with the client in the room. A staffing
+   * dispatcher takes it on the phone, while booking someone onto a call — that
+   * is the normal case, not an edge one. Registering "in person" while doing it
+   * by phone describes a flow that does not happen, which is the CTA mismatch
+   * this whole module exists to prevent.
+   */
+  verbalOptInSetting?: string;
+  /**
+   * Who reads the scripted disclosure, completing "after … reads". Defaults to
+   * "a member of staff". Named per entity because the registered flow should
+   * describe a role a reviewer could actually ask about.
+   */
+  verbalOptInTaker?: string;
 }
 
 /** The platform itself. Common Garden is the ISV every other entity's
@@ -141,7 +172,17 @@ export const MERCEDES_CREATIVE: LegalEntity = {
 };
 
 export const AMERICAN_HORSE: LegalEntity = {
-  legalName: "American Horse Labor Co., Inc.",
+  // Confirmed against the entity's own filing 2026-08-31, when the Twilio
+  // secondary Customer Profile went in as "American Horse Labor Company" and
+  // disagreed with this line. This file and the AHLC ⇄ CG DPA draft both said
+  // "American Horse Labor Co., Inc."; both were wrong, and neither had ever
+  // been checked against the registration. A2P brand vetting matches this
+  // character-for-character, so the disagreement would have surfaced as a
+  // failed vetting and another 10–15 day cycle.
+  //
+  // The site's "American Horse Labor Co." is a DBA and stays as it is — a
+  // trading name is allowed to be shorter than the registered one.
+  legalName: "American Horse Labor Company",
   brandName: "American Horse Labor Company",
   origin: "https://americanhorselabor.com",
   supportEmail: "contact@americanhorselabor.com",
@@ -151,6 +192,27 @@ export const AMERICAN_HORSE: LegalEntity = {
   // AHLC is the only door where Common Garden is BOTH: a processor for
   // employment records and a joint controller for the identity layer.
   dataRole: "processor-and-joint",
+  // Crew reach the call list by more than one road, and the campaign must
+  // register the ones that actually happen. Some apply at /careers/apply and
+  // tick the box; some are added by a scheduler standing next to them at a
+  // dock. Feather, 2026-08-31: crew are sometimes texted about shifts before
+  // ADP onboarding completes, which rules out treating onboarding consent as
+  // the only path — the application is the earliest point at which AHLC holds
+  // the number and has not yet texted.
+  //
+  // ⚠️ THIS FLAG IS A CLAIM ABOUT THE REGISTRATION, NOT A PREFERENCE. It makes
+  // buildOptInDisclosure describe FOUR paths. The campaign's registered
+  // message flow must describe the same four, or the page and the filing
+  // disagree — which is the 30909 "CTA could not be verified" rejection this
+  // network has already taken once. Confirm before submitting.
+  inPersonOptIn: true,
+  // "…consent is not required to work" — an employer, not a studio.
+  optInNotRequiredTo: "work",
+  // Crew consent is taken while someone is being booked onto a call, which
+  // happens on the phone as often as on a dock. Both are registered because
+  // both happen.
+  verbalOptInSetting: "in person or by phone",
+  verbalOptInTaker: "a scheduler or crew lead",
 };
 
 // ─────────────────────────────────────────────────────────────────────
@@ -316,10 +378,13 @@ export function buildOptInDisclosure(entity: LegalEntity): string {
     `person, which states the message types, that frequency varies, that ` +
     `message and data rates may apply, HELP and STOP instructions, and links ` +
     `to our Terms and this Privacy Policy, and which you sign and date. The ` +
-    `signed form is retained. Verbal opt-in: by giving consent in person after ` +
-    `a member of staff reads a scripted disclosure covering who is texting ` +
+    `signed form is retained. Verbal opt-in: by giving consent ` +
+    `${entity.verbalOptInSetting ?? "in person"} after ` +
+    `${entity.verbalOptInTaker ?? "a member of staff"} reads a scripted ` +
+    `disclosure covering who is texting ` +
     `you, the message types, how often, that message and data rates may apply, ` +
-    `that consent is not required to book, and how to stop. Verbal consent is ` +
+    `that consent is not required to ${entity.optInNotRequiredTo ?? "book"}, ` +
+    `and how to stop. Verbal consent is ` +
     `logged with the date, your name and number, and who took it.`
   );
 }
