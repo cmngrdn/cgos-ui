@@ -101,10 +101,10 @@ export interface LegalEntity {
    * plainly false of an employer: the coercion a regulator looks for in
    * employee consent is not about booking anything. AHLC says "work".
    *
-   * ⚠️ Defaulted rather than required ON PURPOSE. Mercedes Creative's campaign
-   * (CYGZTP2) is VERIFIED against a page carrying the "book" wording, so the
-   * default must keep her rendered output byte-identical — a change here would
-   * silently alter the page her approved registration cites.
+   * ⚠️ Defaulted rather than required ON PURPOSE. An entity with an already
+   * approved campaign has it verified against a page carrying the "book"
+   * wording, so the default must keep that rendered output byte-identical — a
+   * change here would silently alter the page an approved registration cites.
    */
   optInNotRequiredTo?: string;
   /**
@@ -165,9 +165,9 @@ export const MERCEDES_CREATIVE: LegalEntity = {
     "a multi-disciplinary tattoo and creative practice in Nashville, Tennessee",
   jurisdiction: "the State of Tennessee",
   dataRole: "joint",
-  // Campaign CYGZTP2 registers four opt-in paths. The studio is a physical
-  // room with clients in it, so paper and verbal consent are real routes here
-  // in a way they are not for a purely online door.
+  // This entity's campaign registers four opt-in paths. The studio is a
+  // physical room with clients in it, so paper and verbal consent are real
+  // routes here in a way they are not for a purely online door.
   inPersonOptIn: true,
 };
 
