@@ -45,6 +45,14 @@ export const BOOKING_TAGS: Record<string, string> = {
   reschedule_url: "reschedule_url",
   cancel_url: "cancel_url",
   review_url: "review_link_url",
+  // Added when the booking EMAILS became blocks: the details table needs a tag
+  // per cell, and the two operator-facing moments name the client and the old
+  // slot. Mirrors `BOOKING_TAGS` in awen/sms_body.py.
+  client_name: "client_name",
+  reason: "reason",
+  old_date: "old_date",
+  old_time: "old_time",
+  gcal_url: "gcal_url",
 }
 
 /** The moments a booking can text about, and the column each body lives in. */
@@ -153,5 +161,26 @@ export function bookingSmsContext(
   const td = templateData || {}
   const out: Record<string, unknown> = {}
   for (const [tag, key] of Object.entries(BOOKING_TAGS)) out[tag] = td[key] ?? ""
+
+  // ⚠️ `first_name` FALLS BACK TO "there", and `duration`/`deposit` are
+  // FORMATTED rather than mapped. All three exist because the booking emails
+  // became blocks: the greeting is now a block reading `Hi {first_name},` (the
+  // templates used to branch to "Hi there," inside Python, where no operator
+  // could see or change it), and the details table showed "60 min" and
+  // "$100.00 USD", never "60" and "100.0". Mirrors `booking_sms_context` in
+  // awen/sms_body.py — a preview built on this that resolved fewer tags than
+  // the send does would render `{duration}` verbatim beside a segment count,
+  // which is precisely the "settings box that lies with a number attached"
+  // this file exists to prevent.
+  out.first_name = String(td.first_name ?? "").trim() || "there"
+
+  const minutes = td.duration_minutes
+  out.duration = minutes ? `${minutes} min` : ""
+
+  const rawDeposit = Number(td.deposit_paid ?? 0)
+  const deposit = Number.isFinite(rawDeposit) ? rawDeposit : 0
+  const currency = String(td.currency ?? "usd").toUpperCase()
+  out.deposit = deposit > 0 ? `$${deposit.toFixed(2)} ${currency}` : ""
+
   return out
 }
