@@ -18,7 +18,10 @@ import { createPortal } from 'react-dom'
  *                      on/off toggles, 'rect' (default) for filters
  *  - ChipSelect      — single-select dropdown. Menu closes on pick. Reserve for
  *                      truly mutually-exclusive choices (sort field, lens
- *                      All/Own/Held, view mode).
+ *                      All/Own/Held, view mode). Pass `clearable={false}` when
+ *                      it edits a SETTING rather than a filter — a setting has
+ *                      no "unset", so the "All …" row offers a state the caller
+ *                      cannot store.
  *  - ChipMultiSelect — multi-select dropdown with checkbox affordance + auto
  *                      search-within when options > 8. Menu stays open on
  *                      toggle. Use for every filter where 2+ selections make
@@ -104,6 +107,18 @@ export interface ChipSelectProps {
   labelFor?: (v: string) => string
   shape?: 'pill' | 'rect'
   noBorder?: boolean
+  /**
+   * Offer the "All {label}" row that clears the selection. TRUE by default,
+   * because the first use of this atom — and most since — is a filter, where
+   * "no filter" is a real answer and removing it would strand anyone who had
+   * narrowed the list.
+   *
+   * FALSE for a chip that edits a SETTING rather than a filter. A booking
+   * notification's send time has no unset: the row fires at some point or it
+   * does not exist, so a clear option offers a state the caller cannot store
+   * and reads as nonsense on the way past — "All 2 days after".
+   */
+  clearable?: boolean
 }
 
 /** Dropdown chip — opens a portal-rendered menu on click. */
@@ -115,6 +130,7 @@ export function ChipSelect({
   labelFor,
   shape,
   noBorder,
+  clearable = true,
 }: ChipSelectProps) {
   const [open, setOpen] = useState(false)
   const btnRef = useRef<HTMLButtonElement>(null)
@@ -201,14 +217,16 @@ export function ChipSelect({
               animation: 'cg-modal-rise 140ms var(--cg-ease-entry)',
             }}
           >
-            <MenuItem
-              label={`All ${label.toLowerCase()}`}
-              selected={value === ''}
-              onClick={() => {
-                onChange('')
-                setOpen(false)
-              }}
-            />
+            {clearable && (
+              <MenuItem
+                label={`All ${label.toLowerCase()}`}
+                selected={value === ''}
+                onClick={() => {
+                  onChange('')
+                  setOpen(false)
+                }}
+              />
+            )}
             {options.map(opt => (
               <MenuItem
                 key={opt}
