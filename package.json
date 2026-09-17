@@ -182,6 +182,10 @@
       "types": "./lib/sms.ts",
       "import": "./lib/sms.ts"
     },
+    "./lib/menu-placement": {
+      "types": "./lib/menu-placement.ts",
+      "import": "./lib/menu-placement.ts"
+    },
     "./lib/sms-body": {
       "types": "./lib/sms-body.ts",
       "import": "./lib/sms-body.ts"
