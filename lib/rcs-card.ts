@@ -253,6 +253,11 @@ export interface RcsCardCheckOptions {
    * `media_url`; unknown (`null`/absent) is not checked.
    */
   mediaType?: string | null
+  /**
+   * The send is "text, then card", so the card's own words become the second
+   * message's SMS fallback and have their own ceiling. cgos `send_problem`.
+   */
+  textFirst?: boolean
 }
 
 /**
@@ -340,6 +345,19 @@ export function validateRcsCard(
       issues.push({ kind: 'shape', field, message: 'Only a reply button can say whether it needs a reply.' })
     }
   })
+  if (opts.textFirst) {
+    // The fallback is the card flattened, so a card comfortably inside its own
+    // 1,600 can still put the second message over Twilio's ceiling, which
+    // refuses the whole message (21617). cgos refuses it at Send.
+    const derived = cardFallbackText({ title, body, buttons }, smsText ?? '')
+    if (derived.length > RCS_CARD_LIMITS.body) {
+      issues.push({
+        kind: 'send',
+        field: 'card',
+        message: `The text phones without RCS get instead of the card is ${derived.length.toLocaleString()} characters; the limit is ${RCS_CARD_LIMITS.body.toLocaleString()}. Shorten the card.`,
+      })
+    }
+  }
   const known = new Set<string>(RCS_MERGE_TAGS)
   const leftovers: [string, string][] = [
     ['The SMS text', smsText ?? ''],
@@ -359,6 +377,83 @@ export function validateRcsCard(
     }
   }
   return issues
+}
+
+// ── The send shape (cgos plan §14/§15) ──────────────────────────────────────
+
+/**
+ * How a transmission's SMS leg goes out. Stored as TWO facts, not one — the
+ * card already answers "is there a card", and a second column saying it again
+ * would drift from it:
+ *
+ *   text            rcs_card null or `off: true`   (`sms_text_first` ignored)
+ *   card            card on                        `sms_text_first` false
+ *   text_then_card  card on                        `sms_text_first` TRUE
+ *
+ * `text_then_card` sends TWO messages to each recipient, a moment apart: the
+ * personal line, then the card. Feather, seeing a card on his own phone:
+ * "it feels very marketing. It doesn't feel like a person sent that." His
+ * words inside a branded object read as a brand; a plain text reads as him.
+ */
+export type SendShape = 'text' | 'card' | 'text_then_card'
+
+export const SEND_SHAPE_LABEL: Record<SendShape, string> = {
+  text: 'Text',
+  card: 'Card',
+  text_then_card: 'Text, then card',
+}
+
+export const SEND_SHAPE_HINT: Record<SendShape, string> = {
+  text: 'Your message, with its link. One message.',
+  card: 'A card with artwork and buttons, instead of the text.',
+  text_then_card: 'Your message first, then the card a moment later. Two messages.',
+}
+
+/** How many messages each recipient gets on the SMS leg. */
+export function shapeMessageCount(shape: SendShape): number {
+  return shape === 'text_then_card' ? 2 : 1
+}
+
+export function sendShape(card: RcsCard | null | undefined, textFirst?: boolean | null): SendShape {
+  if (!isCardOn(card)) return 'text'
+  return textFirst ? 'text_then_card' : 'card'
+}
+
+/**
+ * What phones WITHOUT RCS receive as the second message of a "text, then card"
+ * send: the card flattened — its title, its text, then each link button's URL,
+ * unless the SMS text already carries that URL.
+ *
+ * A card template must carry a `twilio/text` part or a non-RCS phone receives
+ * nothing at all. In a card-only send that part is the SMS text, which is
+ * right because the card IS the message; here the SMS text has already been
+ * read as message one, so reusing it would text the same words twice.
+ *
+ * MIRROR of cgos `rcs_content.card_fallback_text`. The composer shows this
+ * exact string, because it is what half the audience reads and nothing else
+ * on screen would say so.
+ */
+export function cardFallbackText(
+  card: Pick<RcsCard, 'title' | 'body' | 'buttons'>,
+  smsBody: string,
+): string {
+  const parts = [(card.title ?? '').trim(), (card.body ?? '').trim()].filter(Boolean)
+  const said = smsBody ?? ''
+  for (const b of card.buttons ?? []) {
+    if (b.type !== 'url') continue
+    const url = (b.value ?? '').trim()
+    if (url && !said.includes(url) && !parts.includes(url)) parts.push(url)
+  }
+  return parts.join('\n').trim()
+}
+
+/** The `twilio/text` the send builds for this shape. cgos `fallback_body_for`. */
+export function fallbackBodyFor(
+  card: Pick<RcsCard, 'title' | 'body' | 'buttons'>,
+  smsBody: string,
+  textFirst: boolean,
+): string {
+  return textFirst ? cardFallbackText(card, smsBody) : (smsBody ?? '')
 }
 
 /**
