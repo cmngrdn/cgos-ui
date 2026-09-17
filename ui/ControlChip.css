@@ -27,8 +27,22 @@
   padding: 0;
 }
 
+[data-cg-chip],
 [data-cg-chip-segment] {
   cursor: pointer;
+}
+
+/* A fixed value (a sent record, a read-only viewer) on a dropdown chip. The
+ * chosen value stays legible — it is the record — but the chevron goes,
+ * because a chevron promises a menu that will not open. */
+[data-cg-chip]:disabled {
+  cursor: not-allowed;
+}
+[data-cg-chip]:disabled:not([data-active]) {
+  opacity: var(--cg-disabled-opacity);
+}
+[data-cg-chip]:disabled [data-cg-chip-chevron] {
+  display: none;
 }
 
 /* A fixed choice (a sent record, a read-only viewer). The chosen segment keeps
