@@ -15,6 +15,11 @@
  * It is a DEPICTION of a phone's card, so it belongs inside a preview frame
  * (an iPhone frame, a thread), never as a surface in an inspector rail.
  * Resting state lives in `RcsCardPreview.css`, keyed off `data-cg-rcs-card`.
+ *
+ * `embedded`: the card sits in a message stream that is already inside a
+ * surface (an HQ SMS thread in the inspector rail). It drops to the fill tier
+ * (no border, no elevated background) so it reads as one message among the
+ * bubbles rather than a card inside a card.
  */
 
 import { useState } from 'react'
@@ -26,6 +31,8 @@ import {
 
 export interface RcsCardPreviewProps {
   card: Pick<RcsCard, 'media_url' | 'title' | 'body' | 'height' | 'orientation' | 'buttons'>
+  /** Fill tier, for a card drawn inside a surface (a thread in a rail). */
+  embedded?: boolean
   className?: string
 }
 
@@ -65,7 +72,7 @@ function ButtonGlyph({ type }: { type: RcsButtonType }) {
   )
 }
 
-export function RcsCardPreview({ card, className }: RcsCardPreviewProps) {
+export function RcsCardPreview({ card, embedded, className }: RcsCardPreviewProps) {
   const media = (card.media_url ?? '').trim()
   // Keyed on the URL, so a new image gets a fresh chance to load.
   const [failedUrl, setFailedUrl] = useState<string | null>(null)
@@ -77,6 +84,7 @@ export function RcsCardPreview({ card, className }: RcsCardPreviewProps) {
     <div
       data-cg-rcs-card=""
       data-cg-orientation={card.orientation ?? RCS_CARD_DEFAULTS.orientation}
+      {...(embedded ? { 'data-cg-embedded': '' } : {})}
       className={className}
     >
       {media && (

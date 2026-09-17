@@ -21,6 +21,16 @@
   font-family: var(--cg-font);
 }
 
+/* Embedded: the card is one message in a stream that already sits inside a
+   surface (an HQ thread in the inspector rail). Fill tier — no border, no
+   elevated background — and the thread bubble's radius, so it reads as a
+   message rather than a card inside a card. */
+[data-cg-rcs-card][data-cg-embedded] {
+  border-color: transparent;
+  border-radius: var(--cg-radius-lg);
+  background: var(--cg-fill);
+}
+
 [data-cg-rcs-card-media] {
   position: relative;
   flex: none;
