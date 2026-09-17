@@ -27,6 +27,20 @@
   padding: 0;
 }
 
+[data-cg-chip-segment] {
+  cursor: pointer;
+}
+
+/* A fixed choice (a sent record, a read-only viewer). The chosen segment keeps
+ * its accent, because it is the record of what was chosen; the others recede.
+ * Nothing hovers or responds — a native disabled button fires no click. */
+[data-cg-chip-segment]:disabled {
+  cursor: not-allowed;
+}
+[data-cg-chip-segment]:disabled:not([data-active]) {
+  opacity: var(--cg-disabled-opacity);
+}
+
 /* Menu item hover — surface-hover bg, swept color override */
 [data-cg-chip-menu-item]:hover {
   background: var(--cg-bg-surface-hover);
@@ -45,4 +59,28 @@
 [data-cg-chip-menu-search]:focus-visible {
   outline: none;
   border-color: var(--cg-accent-dim);
+}
+
+/* Touch: a chip is 28px tall by design (the filter-row tier) and a segment
+ * inside a 28px group is 22px — both under the 44px a finger needs. The consent switches on a contact were the
+ * measured case (2026-09-17). The VISIBLE chip keeps its size — the row it
+ * sits in is sized for 28 — and the hit area grows vertically through a
+ * pseudo-element. Vertical only: chips sit in horizontal rows a few px apart,
+ * and a sideways extension would hand the neighbour's taps to this chip.
+ * `:where()` keeps the positioning at zero specificity so a consumer that
+ * positions a chip itself still wins. */
+@media (pointer: coarse) {
+  :where([data-cg-chip], [data-cg-chip-segment]) {
+    position: relative;
+  }
+  [data-cg-chip]::after,
+  [data-cg-chip-segment]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+    height: max(100%, 44px);
+    transform: translateY(-50%);
+  }
 }

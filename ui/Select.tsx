@@ -30,18 +30,16 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
 
 const SIZE_TOKENS: Record<
   SelectSize,
-  { padding: string; fontSize: string; height: string; chevronSize: number; chevronRight: string }
+  { padding: string; height: string; chevronSize: number; chevronRight: string }
 > = {
   sm: {
     padding: '0 1.75rem 0 0.625rem',
-    fontSize: '0.75rem',
     height: '32px',
     chevronSize: 12,
     chevronRight: '0.5rem',
   },
   md: {
     padding: '0 2rem 0 0.875rem',
-    fontSize: '0.875rem',
     height: '40px',
     chevronSize: 14,
     chevronRight: '0.625rem',
@@ -65,6 +63,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       <select
         ref={ref}
         data-cg-select=""
+        data-cg-size={size}
         disabled={disabled}
         style={{
           width: '100%',
@@ -75,7 +74,6 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
           borderRadius: 'var(--cg-radius-md)',
           color: 'var(--cg-text)',
           fontFamily: 'var(--cg-font)',
-          fontSize: sizeStyle.fontSize,
           outline: 'none',
           appearance: 'none',
           WebkitAppearance: 'none',

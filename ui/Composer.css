@@ -108,6 +108,18 @@
   cursor: default;
 }
 
+/* iOS zooms the whole page into any focused editable whose computed font-size
+   is under 16px, and never zooms back out. At 13px that fired on every reply
+   and every transmission body on a phone — the page jumped sideways the moment
+   the caret landed, which reads as the layout breaking. Keyed on the POINTER,
+   not the viewport width: a narrow desktop window has no zoom to prevent and
+   keeps the denser size, and a tablet in landscape still has a finger. */
+@media (pointer: coarse) {
+  .cg-composer-editor {
+    font-size: 16px;
+  }
+}
+
 /* The editor holds user-authored markup, so give the allowed tags a sane
    in-composer appearance rather than inheriting whatever the surface sets. */
 .cg-composer-editor a {

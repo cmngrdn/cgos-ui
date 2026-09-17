@@ -9,6 +9,8 @@ import {
   type CSSProperties,
 } from 'react'
 import { createPortal } from 'react-dom'
+import { placeMenuFor, type MenuPlacement } from '../lib/menu-placement'
+import { isCoarsePointer } from '../lib/pointer'
 
 /**
  * ControlChip — pill / segmented-control atom family.
@@ -135,18 +137,19 @@ export function ChipSelect({
   const [open, setOpen] = useState(false)
   const btnRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
-  const [pos, setPos] = useState<{ top: number; left: number; minWidth: number }>({
+  const [pos, setPos] = useState<MenuPlacement>({
     top: 0,
     left: 0,
     minWidth: 140,
+    maxHeight: 320,
   })
   const active = value !== ''
 
-  // Measure button and position the menu beneath it.
+  // Measure the button and place the menu — below it, or above it when the
+  // room below is short (a filter near the foot of a phone screen).
   useLayoutEffect(() => {
     if (!open || !btnRef.current) return
-    const r = btnRef.current.getBoundingClientRect()
-    setPos({ top: r.bottom + 4, left: r.left, minWidth: Math.max(140, r.width) })
+    setPos(placeMenuFor(btnRef.current, 140, 320))
   }, [open])
 
   // Close on outside click — mousedown so we beat the menu item's click.
@@ -204,8 +207,11 @@ export function ChipSelect({
             style={{
               position: 'fixed',
               top: pos.top,
+              bottom: pos.bottom,
               left: pos.left,
               minWidth: pos.minWidth,
+              maxHeight: pos.maxHeight,
+              overflowY: 'auto',
               background: 'var(--cg-glass-bg)',
               WebkitBackdropFilter: 'var(--cg-glass-blur)',
               backdropFilter: 'var(--cg-glass-blur)',
@@ -288,23 +294,25 @@ export function ChipMultiSelect({
   const btnRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
-  const [pos, setPos] = useState<{ top: number; left: number; minWidth: number }>({
+  const [pos, setPos] = useState<MenuPlacement>({
     top: 0,
     left: 0,
     minWidth: 180,
+    maxHeight: 480,
   })
   const active = value.length > 0
   const showSearch = options.length > searchThreshold
 
   useLayoutEffect(() => {
     if (!open || !btnRef.current) return
-    const r = btnRef.current.getBoundingClientRect()
-    setPos({ top: r.bottom + 4, left: r.left, minWidth: Math.max(180, r.width) })
+    setPos(placeMenuFor(btnRef.current, 180, Math.min(window.innerHeight * 0.7, 480)))
   }, [open])
 
-  // Focus search input when opening so users can type immediately.
+  // Focus the search input when opening so a keyboard user can type at once.
+  // NOT on a finger: focusing raises the on-screen keyboard, which covers half
+  // the options the person opened the menu to tap (2026-09-17).
   useEffect(() => {
-    if (open && showSearch && searchRef.current) {
+    if (open && showSearch && searchRef.current && !isCoarsePointer()) {
       searchRef.current.focus()
     }
     if (!open) setQuery('')
@@ -389,10 +397,11 @@ export function ChipMultiSelect({
             style={{
               position: 'fixed',
               top: pos.top,
+              bottom: pos.bottom,
               left: pos.left,
               minWidth: pos.minWidth,
               maxWidth: '320px',
-              maxHeight: 'min(70vh, 480px)',
+              maxHeight: pos.maxHeight,
               display: 'flex',
               flexDirection: 'column',
               background: 'var(--cg-glass-bg)',
@@ -588,10 +597,13 @@ export interface ChipSegmentProps {
   active: boolean
   onClick: () => void
   title?: string
+  /** The choice is fixed (a sent record, a read-only viewer). The chosen
+   *  segment stays legible, the others recede, and nothing responds. */
+  disabled?: boolean
   children: ReactNode
 }
 
-export function ChipSegment({ active, onClick, title, children }: ChipSegmentProps) {
+export function ChipSegment({ active, onClick, title, disabled, children }: ChipSegmentProps) {
   const groupSize = useContext(ChipGroupSizeContext)
   const tokens = GROUP_SIZE_TOKENS[groupSize]
   return (
@@ -599,6 +611,7 @@ export function ChipSegment({ active, onClick, title, children }: ChipSegmentPro
       type="button"
       onClick={onClick}
       title={title}
+      disabled={disabled}
       data-cg-chip-segment=""
       data-cg-size={groupSize}
       {...(active ? { 'data-active': '' } : {})}
@@ -614,7 +627,7 @@ export function ChipSegment({ active, onClick, title, children }: ChipSegmentPro
         fontFamily: 'var(--cg-font)',
         background: active ? 'var(--cg-accent-subtle)' : 'transparent',
         color: active ? 'var(--cg-accent)' : 'var(--cg-text-secondary)',
-        cursor: 'pointer',
+        // cursor lives in ControlChip.css, so `:disabled` can change it.
         transition: 'background var(--cg-duration-fast), color var(--cg-duration-fast)',
       }}
     >

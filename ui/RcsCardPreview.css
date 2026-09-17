@@ -1,0 +1,146 @@
+/* cgos-ui — RcsCardPreview companion CSS
+ * -----------------------------------------------------------------------
+ * The whole resting state lives here so a consumer can re-theme the card
+ * (a light phone frame, a dark one) without fighting inline styles.
+ *
+ * The media box carries the RATIO of Google's crop height to the card width
+ * (RCS_MEDIA_HEIGHT_DP / RCS_CARD_WIDTH_DP in lib/rcs-card.ts): 112, 168 and
+ * 264 over 296. Keep them in step with that file.
+ */
+
+[data-cg-rcs-card] {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 296px;
+  overflow: hidden;
+  border-radius: var(--cg-radius-xl);
+  border: 1px solid var(--cg-glass-border);
+  background: var(--cg-bg-elevated);
+  color: var(--cg-text);
+  font-family: var(--cg-font);
+}
+
+/* Embedded: the card is one message in a stream that already sits inside a
+   surface (an HQ thread in the inspector rail). Fill tier — no border, no
+   elevated background — and the thread bubble's radius, so it reads as a
+   message rather than a card inside a card. */
+[data-cg-rcs-card][data-cg-embedded] {
+  border-color: transparent;
+  border-radius: var(--cg-radius-lg);
+  background: var(--cg-fill);
+}
+
+[data-cg-rcs-card-media] {
+  position: relative;
+  flex: none;
+  width: 100%;
+  /* A flex item's automatic minimum size is its content, and the image's own
+     height would win over aspect-ratio: every height rendered as the image's
+     natural shape. min-height 0 + an absolutely placed image lets the ratio
+     decide, which is the whole point of the preview. */
+  min-height: 0;
+  overflow: hidden;
+  aspect-ratio: 296 / 264;
+  background: var(--cg-fill-strong);
+}
+
+[data-cg-rcs-card-media][data-cg-height="MEDIUM"] {
+  aspect-ratio: 296 / 168;
+}
+
+[data-cg-rcs-card-media][data-cg-height="SHORT"] {
+  aspect-ratio: 296 / 112;
+}
+
+[data-cg-rcs-card-media] img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+[data-cg-rcs-card-media-empty] {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--cg-text-muted);
+}
+
+[data-cg-rcs-card-text] {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+}
+
+[data-cg-rcs-card-title] {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+[data-cg-rcs-card-body] {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--cg-text-secondary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+[data-cg-rcs-card-actions] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 14px 12px;
+}
+
+/* A card with no text still needs air above its chips. */
+[data-cg-rcs-card-media] + [data-cg-rcs-card-actions] {
+  padding-top: 12px;
+}
+
+[data-cg-rcs-card-action] {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  padding: 5px 11px;
+  border-radius: var(--cg-radius-full);
+  border: 1px solid var(--cg-border);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--cg-accent);
+}
+
+[data-cg-rcs-card-action-label] {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[data-cg-rcs-card][data-cg-orientation="HORIZONTAL"] {
+  display: grid;
+  grid-template-columns: 40% 1fr;
+  max-width: 296px;
+}
+
+[data-cg-rcs-card][data-cg-orientation="HORIZONTAL"] [data-cg-rcs-card-media] {
+  grid-row: span 2;
+  aspect-ratio: auto;
+  height: 100%;
+  min-height: 112px;
+}
+
+[data-cg-rcs-card][data-cg-orientation="HORIZONTAL"] [data-cg-rcs-card-actions] {
+  padding-top: 0;
+}
