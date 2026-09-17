@@ -20,7 +20,8 @@
  * NULL still means "never built" — the only state a composer auto-builds in.
  *
  * Mirrors cgos `rcs_content.card_problem` (shape) and `send_problem` (what
- * only matters at send: keyword titles, merge tags).
+ * only matters at send: keyword titles, merge tags). A reply button's
+ * `needs_reply` (absent = true) feeds only the inbox's "Needs reply" filter.
  */
 
 import { OPT_IN_KEYWORDS, STOP_KEYWORDS } from './legal'
@@ -38,6 +39,13 @@ export interface RcsCardButton {
   type: RcsButtonType
   /** https URL for `url`, E.164 for `call`, unused for `reply`. */
   value?: string
+  /**
+   * Reply buttons only. Does a tap on this button put the conversation in the
+   * inbox's "Needs reply" filter? Absent means YES. Taps always show in the
+   * thread and in "who answered"; this decides only the filter. cgos refuses
+   * it on a link or call button (plan §13).
+   */
+  needs_reply?: boolean
 }
 
 export interface RcsCard {
@@ -212,6 +220,22 @@ export interface RcsCardIssue {
   kind: 'shape' | 'send'
 }
 
+/** Does a tap on this button await an answer? Absent means yes; only a reply
+ *  button can say no. cgos `rcs_content.tap_awaits_reply`. */
+export function buttonNeedsReply(b: Pick<RcsCardButton, 'type' | 'needs_reply'>): boolean {
+  return b.type === 'reply' && b.needs_reply !== false
+}
+
+/**
+ * The button with a new type. `needs_reply` belongs to reply buttons, so it
+ * goes when the button stops being one (the database refuses it elsewhere).
+ */
+export function withButtonType(b: RcsCardButton, type: RcsButtonType): RcsCardButton {
+  const next: RcsCardButton = { ...b, type }
+  if (type !== 'reply') delete next.needs_reply
+  return next
+}
+
 /** A card that goes out: present and not switched off. */
 export function isCardOn(card: RcsCard | null | undefined): card is RcsCard {
   return !!card && card.off !== true
@@ -309,6 +333,12 @@ export function validateRcsCard(
     if (b.type === 'call' && !isE164(b.value)) {
       issues.push({ kind: 'shape', field, message: 'A call button needs a number like +16125550123.' })
     }
+    const needsReply: unknown = b.needs_reply
+    if (needsReply !== undefined && needsReply !== null && typeof needsReply !== 'boolean') {
+      issues.push({ kind: 'shape', field, message: '"Needs a reply" must be on or off.' })
+    } else if (b.type !== 'reply' && typeof needsReply === 'boolean') {
+      issues.push({ kind: 'shape', field, message: 'Only a reply button can say whether it needs a reply.' })
+    }
   })
   const known = new Set<string>(RCS_MERGE_TAGS)
   const leftovers: [string, string][] = [
@@ -351,6 +381,8 @@ export function parseRcsCard(raw: unknown): RcsCard | null {
           title: str(x.title) ?? '',
           type,
           ...(str(x.value) !== undefined ? { value: str(x.value) } : {}),
+          // Kept on reply buttons only: cgos refuses it anywhere else.
+          ...(type === 'reply' && typeof x.needs_reply === 'boolean' ? { needs_reply: x.needs_reply } : {}),
         }]
       })
     : []
