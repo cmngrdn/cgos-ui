@@ -23,7 +23,14 @@
 
 [data-cg-rcs-card-media] {
   position: relative;
+  flex: none;
   width: 100%;
+  /* A flex item's automatic minimum size is its content, and the image's own
+     height would win over aspect-ratio: every height rendered as the image's
+     natural shape. min-height 0 + an absolutely placed image lets the ratio
+     decide, which is the whole point of the preview. */
+  min-height: 0;
+  overflow: hidden;
   aspect-ratio: 296 / 264;
   background: var(--cg-fill-strong);
 }
@@ -37,6 +44,8 @@
 }
 
 [data-cg-rcs-card-media] img {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
