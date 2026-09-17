@@ -163,6 +163,16 @@ export function rcsImageTypeProblem(contentType: string | null | undefined): str
 }
 
 /** `{tag}` or `{{tag}}` anywhere in the text. */
+/**
+ * Emoji detection matching cgos `rcs_content.has_emoji`: pictographs and other
+ * symbols, the presentation selector, the joiner, skin tones, flags and tags.
+ */
+const EMOJI_RE = /[\p{Extended_Pictographic}\p{So}\u200D\u20E3\uFE0E\uFE0F\u{1F1E6}-\u{1F1FF}\u{1F3FB}-\u{1F3FF}\u{E0020}-\u{E007F}]/u
+
+export function hasEmoji(text: string | null | undefined): boolean {
+  return EMOJI_RE.test(text ?? '')
+}
+
 export function hasMergeTag(text: string | null | undefined): boolean {
   return /\{\{\s*[a-z_]+\s*\}\}|\{[a-z_]+\}/.test(text ?? '')
 }
@@ -282,6 +292,10 @@ export function validateRcsCard(
       })
     } else if (/[{}]/.test(label)) {
       issues.push({ kind: 'send', field, message: "A button label can't use merge tags." })
+    } else if (hasEmoji(label)) {
+      // Twilio refuses the whole card: "Button Title text cannot contain emojis"
+      // (400, found 2026-09-17). Emoji stay fine in the card's title and text.
+      issues.push({ kind: 'send', field, message: 'Twilio doesn\'t allow emoji in button labels. Use words; emoji can go in the card text.' })
     }
     if (!RCS_BUTTON_ID_RE.test(b.id ?? '')) {
       issues.push({ kind: 'shape', field, message: 'Button id must be lowercase letters, numbers, _ or -.' })
