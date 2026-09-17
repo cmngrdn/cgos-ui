@@ -359,7 +359,7 @@ export function validateRcsCard(
     // The fallback is the card flattened, so a card comfortably inside its own
     // 1,600 can still put the second message over Twilio's ceiling, which
     // refuses the whole message (21617). cgos refuses it at Send.
-    const derived = cardFallbackText({ title, body, buttons }, smsText ?? '')
+    const derived = cardFallbackText({ title, body, buttons })
     if (derived.length > RCS_CARD_LIMITS.body) {
       issues.push({
         kind: 'send',
@@ -431,8 +431,12 @@ export function sendShape(card: RcsCard | null | undefined, textFirst?: boolean 
 
 /**
  * What phones WITHOUT RCS receive as the second message of a "text, then card"
- * send: the card flattened — its title, its text, then each link button's URL,
- * unless the SMS text already carries that URL.
+ * send: the card flattened — its title, its text, then every link button's URL.
+ *
+ * ⚠️ The link is REPEATED even when the message already carried it. The first
+ * cut suppressed a duplicate link, which reads well in a composer and produced
+ * a fragment on a phone — a title and a tagline with nothing to tap. A second
+ * message has to stand on its own, because it may be the one a person reads.
  *
  * A card template must carry a `twilio/text` part or a non-RCS phone receives
  * nothing at all. In a card-only send that part is the SMS text, which is
@@ -445,14 +449,14 @@ export function sendShape(card: RcsCard | null | undefined, textFirst?: boolean 
  */
 export function cardFallbackText(
   card: Pick<RcsCard, 'title' | 'body' | 'buttons'>,
-  smsBody: string,
 ): string {
   const parts = [(card.title ?? '').trim(), (card.body ?? '').trim()].filter(Boolean)
-  const said = smsBody ?? ''
   for (const b of card.buttons ?? []) {
     if (b.type !== 'url') continue
     const url = (b.value ?? '').trim()
-    if (url && !said.includes(url) && !parts.includes(url)) parts.push(url)
+    // Only a link already inside the CARD's own words is skipped; one the SMS
+    // body carried is repeated on purpose (see above).
+    if (url && !parts.includes(url)) parts.push(url)
   }
   return parts.join('\n').trim()
 }
@@ -463,7 +467,7 @@ export function fallbackBodyFor(
   smsBody: string,
   textFirst: boolean,
 ): string {
-  return textFirst ? cardFallbackText(card, smsBody) : (smsBody ?? '')
+  return textFirst ? cardFallbackText(card) : (smsBody ?? '')
 }
 
 /**
