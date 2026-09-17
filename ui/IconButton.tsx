@@ -16,6 +16,8 @@ import {
  *  - subtle          — same hover behavior, slightly stronger default fg
  *  - accent          — accent fg, accent-tinted hover bg
  *  - danger          — danger fg, danger-tinted hover bg
+ *  - overlay         — round scrim, for a control sitting ON imagery (the ×
+ *                      on an uploaded photo); the scrim is its resting state
  *
  * Sizes:
  *  - xs (16px) — chip-internal × close, dense table affordance.
@@ -32,7 +34,7 @@ import {
  * styling (hover, active, focus, disabled). Auto-loaded via `cgos-ui/index.css`.
  */
 
-export type IconButtonVariant = 'ghost' | 'subtle' | 'accent' | 'danger'
+export type IconButtonVariant = 'ghost' | 'subtle' | 'accent' | 'danger' | 'overlay'
 export type IconButtonSize = 'xs' | 'sm' | 'md' | 'lg'
 
 interface IconButtonProps

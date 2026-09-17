@@ -133,3 +133,25 @@
     font-size: 16px;
   }
 }
+
+/* Touch: the × unlinks a venue, client or lead, and it sat beside the body
+ * that OPENS the record — at ~22px wide on a phone, a thumb aimed at one
+ * landed on the other (2026-09-17). On a finger the × is 44px wide, and its
+ * hit area reaches 44px tall through a pseudo-element so the chip keeps its
+ * row height. Nothing extends sideways: the body is to the left and the next
+ * chip is a few px to the right, and both must keep their own taps. */
+@media (pointer: coarse) {
+  [data-cg-entity-chip-remove] {
+    position: relative;
+    min-width: 44px;
+  }
+  [data-cg-entity-chip-remove]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+    height: max(100%, 44px);
+    transform: translateY(-50%);
+  }
+}

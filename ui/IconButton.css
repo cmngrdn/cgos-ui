@@ -96,8 +96,22 @@
   background: color-mix(in srgb, var(--cg-status-danger) 12%, transparent);
 }
 
-/* xs: hover is color-swap only — surface tint reads too heavy at 16×16 */
-[data-cg-icon-button][data-size="xs"]:hover:not(:disabled):not([data-active]) {
+/* overlay: sits ON imagery (the × on an uploaded photo). The scrim is what
+   keeps the glyph legible over any picture, so it is the resting state, not a
+   hover. Round, because it floats over content rather than sitting in a row.
+   Replaces three hand-rolled copies in cmngrdn (2026-09-17). */
+[data-cg-icon-button][data-variant="overlay"] {
+  background: var(--cg-bg-overlay);
+  color: var(--cg-text);
+  border-radius: 999px;
+}
+[data-cg-icon-button][data-variant="overlay"]:hover:not(:disabled):not([data-active]) {
+  background: color-mix(in srgb, var(--cg-bg-overlay), var(--cg-text) 16%);
+}
+
+/* xs: hover is color-swap only — surface tint reads too heavy at 16×16. An
+   overlay keeps its scrim, which is what makes it readable at all. */
+[data-cg-icon-button][data-size="xs"]:not([data-variant="overlay"]):hover:not(:disabled):not([data-active]) {
   background: transparent;
 }
 
@@ -128,4 +142,28 @@
   opacity: var(--cg-disabled-opacity);
   cursor: not-allowed;
   transform: none !important;
+}
+
+/* ── Touch hit area ─────────────────────────────────────────── */
+
+/* Every size is under the 44px a finger needs (xs is 16). On a coarse pointer
+   the hit area is at least 44×44, centred, through a pseudo-element — the
+   visible button keeps its size, because the rows and corners it sits in are
+   sized for it. Where two small buttons sit closer than the extension, the
+   later one takes the overlap; keep touch-facing icon rows spaced for that.
+   `:where()` holds the positioning at zero specificity so a consumer that
+   positions the button (an overlay pinned to an image corner) still wins. */
+@media (pointer: coarse) {
+  :where([data-cg-icon-button]) {
+    position: relative;
+  }
+  [data-cg-icon-button]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
 }

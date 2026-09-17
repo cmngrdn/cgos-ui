@@ -46,3 +46,22 @@
   outline: none;
   border-color: var(--cg-accent-dim);
 }
+
+/* Touch: a chip is 28px tall by design (the filter-row tier), which is 16px
+ * under the 44px a finger needs. The consent switches on a contact were the
+ * measured case (2026-09-17). The VISIBLE chip keeps its size — the row it
+ * sits in is sized for 28 — and the hit area grows vertically through a
+ * pseudo-element. Vertical only: chips sit in horizontal rows a few px apart,
+ * and a sideways extension would hand the neighbour's taps to this chip.
+ * `:where()` keeps the positioning at zero specificity so a consumer that
+ * positions a chip itself still wins. */
+@media (pointer: coarse) {
+  :where([data-cg-chip]) {
+    position: relative;
+  }
+  [data-cg-chip]::after {
+    content: '';
+    position: absolute;
+    inset: -8px 0;
+  }
+}
