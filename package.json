@@ -1,6 +1,6 @@
 {
   "name": "cgos-ui",
-  "version": "0.60.0",
+  "version": "0.61.0",
   "description": "Shared design tokens, atoms, and visual primitives for the Common Garden ecosystem (cgos dashboard + cmngrdn + feather + reliquary).",
   "type": "module",
   "license": "UNLICENSED",
@@ -223,6 +223,19 @@
     "./ui/DeliveryBadge": {
       "types": "./ui/DeliveryBadge.tsx",
       "import": "./ui/DeliveryBadge.tsx"
+    },
+    "./ui/MessageAttachment": {
+      "types": "./ui/MessageAttachment.tsx",
+      "import": "./ui/MessageAttachment.tsx"
+    },
+    "./ui/MessageAttachment.css": "./ui/MessageAttachment.css",
+    "./lib/message-media": {
+      "types": "./lib/message-media.ts",
+      "import": "./lib/message-media.ts"
+    },
+    "./lib/vcard": {
+      "types": "./lib/vcard.ts",
+      "import": "./lib/vcard.ts"
     }
   },
   "files": [

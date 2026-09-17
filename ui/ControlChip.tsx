@@ -61,7 +61,7 @@ const BASE: CSSProperties = {
   fontFamily: 'var(--cg-font)',
   borderRadius: '6px',
   whiteSpace: 'nowrap',
-  cursor: 'pointer',
+  // cursor lives in ControlChip.css, so `:disabled` can change it.
   transition:
     'border-color var(--cg-duration-fast), background var(--cg-duration-fast), color var(--cg-duration-fast)',
   boxSizing: 'border-box',
@@ -121,6 +121,9 @@ export interface ChipSelectProps {
    * and reads as nonsense on the way past — "All 2 days after".
    */
   clearable?: boolean
+  /** The value is fixed (a sent record, a read-only viewer): the chip still
+   *  shows it, but doesn't open. */
+  disabled?: boolean
 }
 
 /** Dropdown chip — opens a portal-rendered menu on click. */
@@ -133,6 +136,7 @@ export function ChipSelect({
   shape,
   noBorder,
   clearable = true,
+  disabled = false,
 }: ChipSelectProps) {
   const [open, setOpen] = useState(false)
   const btnRef = useRef<HTMLButtonElement>(null)
@@ -194,12 +198,14 @@ export function ChipSelect({
             ? { border: 'none', background: 'transparent', color: 'var(--cg-text-secondary)' }
             : activeStyle(active)),
         }}
+        disabled={disabled}
+        {...(active ? { 'data-active': '' } : {})}
         onClick={() => setOpen(o => !o)}
       >
         {display}
         <Chevron />
       </button>
-      {open &&
+      {open && !disabled &&
         createPortal(
           <div
             ref={menuRef}
@@ -261,6 +267,8 @@ export interface ChipMultiSelectProps {
   /** Render a search-within input when options.length exceeds this. Default 8. */
   searchThreshold?: number
   searchPlaceholder?: string
+  /** The selection is fixed: the chip shows it but doesn't open. */
+  disabled?: boolean
 }
 
 /**
@@ -288,6 +296,7 @@ export function ChipMultiSelect({
   shape,
   searchThreshold = 8,
   searchPlaceholder = 'Search…',
+  disabled = false,
 }: ChipMultiSelectProps) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -380,14 +389,16 @@ export function ChipMultiSelect({
           borderRadius: shapeRadius(shape),
           ...activeStyle(active),
         }}
+        disabled={disabled}
+        {...(active ? { 'data-active': '' } : {})}
         onClick={() => setOpen(o => !o)}
         aria-haspopup="listbox"
-        aria-expanded={open}
+        aria-expanded={open && !disabled}
       >
         {display}
         <Chevron />
       </button>
-      {open &&
+      {open && !disabled &&
         createPortal(
           <div
             ref={menuRef}
@@ -746,6 +757,7 @@ function CheckIconSmall() {
 function Chevron() {
   return (
     <svg
+      data-cg-chip-chevron=""
       width="9"
       height="9"
       viewBox="0 0 12 12"
