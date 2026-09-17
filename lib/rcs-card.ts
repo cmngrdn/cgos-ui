@@ -127,9 +127,19 @@ export const REPLY_RESERVED_WORDS: ReadonlySet<string> = new Set([
 ])
 
 /**
- * The tags a CARD send fills in (as Content variables; a missing first name
- * becomes "there"). The plain SMS path fills NONE, so on a text-only send
- * `{first_name}` goes out as typed. cgos `rcs_content.MERGE_TAGS`.
+ * The tags a TRANSMISSION fills in, on every path (cgos `rcs_content.MERGE_TAGS`).
+ * A missing first name becomes "there".
+ *
+ * They used to fill only on a card send — the plain path substituted none, so
+ * the same body gave two answers depending on whether the card was on. Since
+ * 2026-09-17 cgos fills them on the plain SMS leg, the email blocks, the email
+ * subject and every test send too (plan §16), so a composer may offer them
+ * whatever shape is selected.
+ *
+ * These are the TRANSMISSION tags. Booking, inquiry and welcome copy have their
+ * own vocabularies, because they have facts a blast does not; what is shared
+ * across all of them is the `{single}` syntax and leaving an unknown tag
+ * visible, not the tag set.
  */
 export const RCS_MERGE_TAGS = ['first_name', 'workspace_name'] as const
 
@@ -349,7 +359,7 @@ export function validateRcsCard(
     // The fallback is the card flattened, so a card comfortably inside its own
     // 1,600 can still put the second message over Twilio's ceiling, which
     // refuses the whole message (21617). cgos refuses it at Send.
-    const derived = cardFallbackText({ title, body, buttons }, smsText ?? '')
+    const derived = cardFallbackText({ title, body, buttons })
     if (derived.length > RCS_CARD_LIMITS.body) {
       issues.push({
         kind: 'send',
@@ -421,8 +431,12 @@ export function sendShape(card: RcsCard | null | undefined, textFirst?: boolean 
 
 /**
  * What phones WITHOUT RCS receive as the second message of a "text, then card"
- * send: the card flattened — its title, its text, then each link button's URL,
- * unless the SMS text already carries that URL.
+ * send: the card flattened — its title, its text, then every link button's URL.
+ *
+ * ⚠️ The link is REPEATED even when the message already carried it. The first
+ * cut suppressed a duplicate link, which reads well in a composer and produced
+ * a fragment on a phone — a title and a tagline with nothing to tap. A second
+ * message has to stand on its own, because it may be the one a person reads.
  *
  * A card template must carry a `twilio/text` part or a non-RCS phone receives
  * nothing at all. In a card-only send that part is the SMS text, which is
@@ -435,14 +449,14 @@ export function sendShape(card: RcsCard | null | undefined, textFirst?: boolean 
  */
 export function cardFallbackText(
   card: Pick<RcsCard, 'title' | 'body' | 'buttons'>,
-  smsBody: string,
 ): string {
   const parts = [(card.title ?? '').trim(), (card.body ?? '').trim()].filter(Boolean)
-  const said = smsBody ?? ''
   for (const b of card.buttons ?? []) {
     if (b.type !== 'url') continue
     const url = (b.value ?? '').trim()
-    if (url && !said.includes(url) && !parts.includes(url)) parts.push(url)
+    // Only a link already inside the CARD's own words is skipped; one the SMS
+    // body carried is repeated on purpose (see above).
+    if (url && !parts.includes(url)) parts.push(url)
   }
   return parts.join('\n').trim()
 }
@@ -453,7 +467,7 @@ export function fallbackBodyFor(
   smsBody: string,
   textFirst: boolean,
 ): string {
-  return textFirst ? cardFallbackText(card, smsBody) : (smsBody ?? '')
+  return textFirst ? cardFallbackText(card) : (smsBody ?? '')
 }
 
 /**
