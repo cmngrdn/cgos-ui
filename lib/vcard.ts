@@ -11,9 +11,26 @@
  *     https link.
  *
  * THE PHOTO IS THE ONE VALUE THAT REACHES THE DOM AS A URL, so it is only
- * ever an `https:` link or a `data:image/(jpeg|png|gif|webp)` URI built here.
- * A card that says `PHOTO;VALUE=uri:javascript:…` has no photo.
+ * ever a `data:image/(jpeg|png|gif|webp)` URI built here, or — only when the
+ * caller says the card is its own — an `https:` link. A card that says
+ * `PHOTO;VALUE=uri:javascript:…` has no photo.
+ *
+ * ⚠️ A REMOTE PHOTO IS OFF BY DEFAULT. Drawing `PHOTO;VALUE=uri:https://…`
+ * as an `<img>` fetches the sender's URL from the operator's browser, which
+ * hands whoever sent the card the operator's IP address, browser and the
+ * moment they opened the thread — a tracking pixel in a contact card. So a
+ * card somebody SENT us shows only an inline photo. `{ remotePhoto: true }`
+ * is for a card the workspace wrote itself (its own contact card, one it
+ * attached to an outbound text), where the link is the workspace's own.
  */
+
+export interface ParseVCardOptions {
+  /**
+   * Allow an `https:` PHOTO/LOGO link. Only for a card the workspace itself
+   * made — never for one that arrived in a text. Default false.
+   */
+  remotePhoto?: boolean
+}
 
 export interface VCardSummary {
   /** FN, else N assembled as "Given Family", else ORG. */
@@ -22,7 +39,7 @@ export interface VCardSummary {
   /** In file order, as written ("+1 612 555 0100"). */
   phones: string[]
   emails: string[]
-  /** A safe image URL, or null. */
+  /** An inline image URI (or, for the workspace's own card, https), or null. */
   photo: string | null
 }
 
@@ -149,7 +166,7 @@ function sniffImage(base64: string): string | null {
   return null
 }
 
-function safePhoto(line: Line): string | null {
+function safePhoto(line: Line, remotePhoto: boolean): string | null {
   const value = line.value.trim()
   const enc = (line.params.ENCODING ?? '').toUpperCase()
   if (enc === 'B' || enc === 'BASE64') {
@@ -163,7 +180,7 @@ function safePhoto(line: Line): string | null {
     const type = PHOTO_TYPES[dataUri[1].toLowerCase()]
     return `data:${type};base64,${dataUri[2].replace(/\s+/g, '')}`
   }
-  if (/^https:\/\/[^\s"'<>]+$/i.test(value)) return value
+  if (remotePhoto && /^https:\/\/[^\s"'<>]+$/i.test(value)) return value
   return null
 }
 
@@ -171,8 +188,15 @@ function safePhoto(line: Line): string | null {
  * The first card in `text`, summarised; null when there is no card in it.
  * A second card in the same file is ignored — a contact card for a text is
  * one person or one business.
+ *
+ * Pass `{ remotePhoto: true }` only for the workspace's own card; see the
+ * note at the top of this file.
  */
-export function parseVCard(text: string | null | undefined): VCardSummary | null {
+export function parseVCard(
+  text: string | null | undefined,
+  options: ParseVCardOptions = {},
+): VCardSummary | null {
+  const remotePhoto = options.remotePhoto === true
   if (!text || !/BEGIN:VCARD/i.test(text)) return null
   let inCard = false
   let fn: string | null = null
@@ -224,7 +248,7 @@ export function parseVCard(text: string | null | undefined): VCardSummary | null
       case 'LOGO': {
         // The first PHOTO wins; a LOGO fills in only until one arrives.
         if (photoIsPortrait || (photo && line.name === 'LOGO')) break
-        const p = safePhoto(line)
+        const p = safePhoto(line, remotePhoto)
         if (p) {
           photo = p
           photoIsPortrait = line.name === 'PHOTO'
