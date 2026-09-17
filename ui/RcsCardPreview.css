@@ -14,7 +14,7 @@
   width: 100%;
   max-width: 296px;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: var(--cg-radius-xl);
   border: 1px solid var(--cg-glass-border);
   background: var(--cg-bg-elevated);
   color: var(--cg-text);
@@ -94,7 +94,7 @@
   gap: 5px;
   max-width: 100%;
   padding: 5px 11px;
-  border-radius: 999px;
+  border-radius: var(--cg-radius-full);
   border: 1px solid var(--cg-border);
   font-size: 12px;
   font-weight: 500;

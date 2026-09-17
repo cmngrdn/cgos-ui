@@ -87,11 +87,5 @@ export function placeMenuFor(
   })
 }
 
-/** True when a finger is the pointer — a menu should not raise the keyboard. */
-export function isCoarsePointer(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(pointer: coarse)').matches
-  )
-}
+/** Moved to `lib/pointer` (v0.60.0); re-exported so existing imports keep working. */
+export { isCoarsePointer } from './pointer'

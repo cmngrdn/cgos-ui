@@ -19,3 +19,23 @@
   outline-offset: 3px;
   border-radius: var(--cg-radius-sm);
 }
+
+/* Touch: the track is 32×18 (sm 26×14), well under the 44px a finger needs.
+ * On a coarse pointer the hit area is at least 44×44, centred, through a
+ * pseudo-element; the switch keeps its size. A labelled toggle is already
+ * wider than 44, so only its height grows. `:where()` keeps the positioning at
+ * zero specificity so a consumer that positions the toggle still wins. */
+@media (pointer: coarse) {
+  :where([data-cg-toggle]) {
+    position: relative;
+  }
+  [data-cg-toggle]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}

@@ -125,6 +125,43 @@ export const REPLY_RESERVED_WORDS: ReadonlySet<string> = new Set([
  */
 export const RCS_MERGE_TAGS = ['first_name', 'workspace_name'] as const
 
+/**
+ * The image types a card can carry. cgos HEADs the image before it builds a
+ * template and refuses anything else (`rcs_content._IMAGE_TYPES`), so a WebP
+ * page image is a send that fails at the button.
+ */
+export const RCS_IMAGE_TYPES: readonly string[] = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+
+const IMAGE_TYPE_NAME: Record<string, string> = {
+  'image/webp': 'WebP',
+  'image/avif': 'AVIF',
+  'image/heic': 'HEIC',
+  'image/heif': 'HEIF',
+  'image/svg+xml': 'SVG',
+  'image/bmp': 'BMP',
+  'image/tiff': 'TIFF',
+  'image/x-icon': 'an icon',
+  'image/vnd.microsoft.icon': 'an icon',
+}
+
+/**
+ * What is wrong with a card image of this content type, in the operator's
+ * words, or null when it is fine. `null`/empty means UNKNOWN (the check
+ * couldn't run) and is not a problem here: cgos will say so at send.
+ */
+export function rcsImageTypeProblem(contentType: string | null | undefined): string | null {
+  const t = (contentType ?? '').split(';')[0].trim().toLowerCase()
+  if (!t || RCS_IMAGE_TYPES.includes(t)) return null
+  const need = 'RCS cards need JPEG, PNG or GIF.'
+  if (!t.startsWith('image/')) {
+    return t === 'text/html'
+      ? `The image link opens a web page, not an image. ${need}`
+      : `The image link isn't an image (${t}). ${need}`
+  }
+  const name = IMAGE_TYPE_NAME[t] ?? t.slice('image/'.length).toUpperCase()
+  return `This image is ${name}; ${need}`
+}
+
 /** `{tag}` or `{{tag}}` anywhere in the text. */
 export function hasMergeTag(text: string | null | undefined): boolean {
   return /\{\{\s*[a-z_]+\s*\}\}|\{[a-z_]+\}/.test(text ?? '')
@@ -175,11 +212,25 @@ export function isStorableRcsCard(card: RcsCard | null): boolean {
   return !card || validateRcsCard(card).every((i) => i.kind !== 'shape')
 }
 
+export interface RcsCardCheckOptions {
+  /**
+   * The content type the card image answered with (a HEAD through the link
+   * preview), when known. A type cgos refuses is a `send` issue on
+   * `media_url`; unknown (`null`/absent) is not checked.
+   */
+  mediaType?: string | null
+}
+
 /**
  * Everything cgos would refuse, in the operator's words. Empty = sendable.
- * Pass the SMS text to also check it for `{{…}}` Twilio can't fill.
+ * Pass the SMS text to also check it for `{{…}}` Twilio can't fill, and the
+ * image's content type to check that too.
  */
-export function validateRcsCard(card: RcsCard, smsText?: string): RcsCardIssue[] {
+export function validateRcsCard(
+  card: RcsCard,
+  smsText?: string,
+  opts: RcsCardCheckOptions = {},
+): RcsCardIssue[] {
   const issues: RcsCardIssue[] = []
   // cgos: `off` must be a boolean, and a card switched off is kept unchecked.
   const off: unknown = card.off
@@ -200,6 +251,9 @@ export function validateRcsCard(card: RcsCard, smsText?: string): RcsCardIssue[]
   }
   if (media && !isHttpsUrl(media)) {
     issues.push({ kind: 'shape', field: 'media_url', message: 'The image needs an https link.' })
+  } else if (media) {
+    const typeProblem = rcsImageTypeProblem(opts.mediaType)
+    if (typeProblem) issues.push({ kind: 'send', field: 'media_url', message: typeProblem })
   }
   const filled = [title, body, media].filter(Boolean).length + (buttons.length > 0 ? 1 : 0)
   if (!title && !body) {

@@ -27,6 +27,20 @@
   padding: 0;
 }
 
+[data-cg-chip-segment] {
+  cursor: pointer;
+}
+
+/* A fixed choice (a sent record, a read-only viewer). The chosen segment keeps
+ * its accent, because it is the record of what was chosen; the others recede.
+ * Nothing hovers or responds — a native disabled button fires no click. */
+[data-cg-chip-segment]:disabled {
+  cursor: not-allowed;
+}
+[data-cg-chip-segment]:disabled:not([data-active]) {
+  opacity: var(--cg-disabled-opacity);
+}
+
 /* Menu item hover — surface-hover bg, swept color override */
 [data-cg-chip-menu-item]:hover {
   background: var(--cg-bg-surface-hover);

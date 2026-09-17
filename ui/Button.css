@@ -253,3 +253,22 @@
 [data-cg-button][data-size="sm"] [data-cg-button-icon] svg { width: 14px; height: 14px; }
 [data-cg-button][data-size="md"] [data-cg-button-icon] svg { width: 16px; height: 16px; }
 [data-cg-button][data-size="lg"] [data-cg-button-icon] svg { width: 18px; height: 18px; }
+
+/* ── Touch hit area ─────────────────────────────────────────── */
+
+/* xs is 24px tall, sm 32, md 40 and a `link` button is its text — all under
+   the 44px a finger needs. On a coarse pointer the hit area is at least 44×44,
+   centred, through a pseudo-element; the visible button keeps its size,
+   because the rows it sits in are sized for it. Same rule as IconButton. The
+   button is already `position: relative` (the loading spinner needs it). */
+@media (pointer: coarse) {
+  [data-cg-button]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}

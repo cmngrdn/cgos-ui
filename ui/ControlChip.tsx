@@ -9,11 +9,8 @@ import {
   type CSSProperties,
 } from 'react'
 import { createPortal } from 'react-dom'
-import {
-  isCoarsePointer,
-  placeMenuFor,
-  type MenuPlacement,
-} from '../lib/menu-placement'
+import { placeMenuFor, type MenuPlacement } from '../lib/menu-placement'
+import { isCoarsePointer } from '../lib/pointer'
 
 /**
  * ControlChip — pill / segmented-control atom family.
@@ -600,10 +597,13 @@ export interface ChipSegmentProps {
   active: boolean
   onClick: () => void
   title?: string
+  /** The choice is fixed (a sent record, a read-only viewer). The chosen
+   *  segment stays legible, the others recede, and nothing responds. */
+  disabled?: boolean
   children: ReactNode
 }
 
-export function ChipSegment({ active, onClick, title, children }: ChipSegmentProps) {
+export function ChipSegment({ active, onClick, title, disabled, children }: ChipSegmentProps) {
   const groupSize = useContext(ChipGroupSizeContext)
   const tokens = GROUP_SIZE_TOKENS[groupSize]
   return (
@@ -611,6 +611,7 @@ export function ChipSegment({ active, onClick, title, children }: ChipSegmentPro
       type="button"
       onClick={onClick}
       title={title}
+      disabled={disabled}
       data-cg-chip-segment=""
       data-cg-size={groupSize}
       {...(active ? { 'data-active': '' } : {})}
@@ -626,7 +627,7 @@ export function ChipSegment({ active, onClick, title, children }: ChipSegmentPro
         fontFamily: 'var(--cg-font)',
         background: active ? 'var(--cg-accent-subtle)' : 'transparent',
         color: active ? 'var(--cg-accent)' : 'var(--cg-text-secondary)',
-        cursor: 'pointer',
+        // cursor lives in ControlChip.css, so `:disabled` can change it.
         transition: 'background var(--cg-duration-fast), color var(--cg-duration-fast)',
       }}
     >
