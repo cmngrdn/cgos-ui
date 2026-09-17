@@ -15,6 +15,10 @@
  * follows the link in the message (a changed link rebuilds it), FALSE once a
  * human has edited any field. cgos ignores it.
  *
+ * `off: true` is a card the operator switched off: its fields are kept so
+ * switching it back on restores them, and it is neither sent nor validated.
+ * NULL still means "never built" — the only state a composer auto-builds in.
+ *
  * Mirrors cgos `rcs_content.card_problem` (shape) and `send_problem` (what
  * only matters at send: keyword titles, merge tags).
  */
@@ -38,6 +42,7 @@ export interface RcsCardButton {
 
 export interface RcsCard {
   auto?: boolean
+  off?: boolean
   media_url?: string
   title?: string
   body?: string
@@ -160,6 +165,11 @@ export interface RcsCardIssue {
   kind: 'shape' | 'send'
 }
 
+/** A card that goes out: present and not switched off. */
+export function isCardOn(card: RcsCard | null | undefined): card is RcsCard {
+  return !!card && card.off !== true
+}
+
 /** True when the database would accept this card as stored. */
 export function isStorableRcsCard(card: RcsCard | null): boolean {
   return !card || validateRcsCard(card).every((i) => i.kind !== 'shape')
@@ -171,6 +181,12 @@ export function isStorableRcsCard(card: RcsCard | null): boolean {
  */
 export function validateRcsCard(card: RcsCard, smsText?: string): RcsCardIssue[] {
   const issues: RcsCardIssue[] = []
+  // cgos: `off` must be a boolean, and a card switched off is kept unchecked.
+  const off: unknown = card.off
+  if (off !== undefined && off !== null && typeof off !== 'boolean') {
+    return [{ kind: 'shape', field: 'card', message: 'off must be true or false.' }]
+  }
+  if (off === true) return issues
   const title = (card.title ?? '').trim()
   const body = (card.body ?? '').trim()
   const media = (card.media_url ?? '').trim()
@@ -275,6 +291,7 @@ export function parseRcsCard(raw: unknown): RcsCard | null {
     r.orientation === 'VERTICAL' || r.orientation === 'HORIZONTAL' ? r.orientation : undefined
   return {
     ...(typeof r.auto === 'boolean' ? { auto: r.auto } : {}),
+    ...(typeof r.off === 'boolean' ? { off: r.off } : {}),
     ...(str(r.media_url) !== undefined ? { media_url: str(r.media_url) } : {}),
     ...(str(r.title) !== undefined ? { title: str(r.title) } : {}),
     ...(str(r.body) !== undefined ? { body: str(r.body) } : {}),
