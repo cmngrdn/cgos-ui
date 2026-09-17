@@ -84,3 +84,14 @@
 [data-cg-textarea][aria-invalid="true"] {
   border-color: var(--cg-status-danger);
 }
+
+/* iOS zooms the page into a focused field whose text is under 16px and does not
+   zoom back out — at 12px (sm) and 14px (md) that fired on every search box and
+   form field on a phone (2026-09-17). On a finger every field is 16px; heights
+   come from padding, so a touch field grows a few px. Same rule as Composer. */
+@media (pointer: coarse) {
+  [data-cg-input],
+  [data-cg-textarea] {
+    font-size: 16px;
+  }
+}

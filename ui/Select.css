@@ -4,6 +4,14 @@
  * need real CSS. Auto-loaded via cgos-ui/index.css.
  */
 
+/* Font size lives here, not inline, so the touch rule at the end can reach it. */
+[data-cg-select][data-cg-size="sm"] {
+  font-size: 0.75rem;
+}
+[data-cg-select][data-cg-size="md"] {
+  font-size: 0.875rem;
+}
+
 [data-cg-select]:focus {
   border-color: var(--cg-accent-dim);
 }
@@ -24,4 +32,12 @@
    * this — its native picker takes over. */
   background: var(--cg-bg-elevated);
   color: var(--cg-text);
+}
+
+/* iOS zooms the page into a focused control whose text is under 16px and does
+   not zoom back out. On a finger every select is 16px; the height is unchanged. */
+@media (pointer: coarse) {
+  [data-cg-select] {
+    font-size: 16px;
+  }
 }
