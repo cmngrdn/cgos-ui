@@ -127,9 +127,19 @@ export const REPLY_RESERVED_WORDS: ReadonlySet<string> = new Set([
 ])
 
 /**
- * The tags a CARD send fills in (as Content variables; a missing first name
- * becomes "there"). The plain SMS path fills NONE, so on a text-only send
- * `{first_name}` goes out as typed. cgos `rcs_content.MERGE_TAGS`.
+ * The tags a TRANSMISSION fills in, on every path (cgos `rcs_content.MERGE_TAGS`).
+ * A missing first name becomes "there".
+ *
+ * They used to fill only on a card send — the plain path substituted none, so
+ * the same body gave two answers depending on whether the card was on. Since
+ * 2026-09-17 cgos fills them on the plain SMS leg, the email blocks, the email
+ * subject and every test send too (plan §16), so a composer may offer them
+ * whatever shape is selected.
+ *
+ * These are the TRANSMISSION tags. Booking, inquiry and welcome copy have their
+ * own vocabularies, because they have facts a blast does not; what is shared
+ * across all of them is the `{single}` syntax and leaving an unknown tag
+ * visible, not the tag set.
  */
 export const RCS_MERGE_TAGS = ['first_name', 'workspace_name'] as const
 
