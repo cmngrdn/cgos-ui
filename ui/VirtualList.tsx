@@ -198,9 +198,20 @@ export function VirtualList({
   // (That page is also getting no virtualization for the same reason: the
   // ResizeObserver measures the full list as the viewport, so every row mounts.
   // Worth fixing where it happens, not here — this only makes the scroll land.)
+  // ⚠️ ONLY WHEN THE SELECTION MOVES. With `count` in the deps this re-scrolled
+  // on every list change: arrow to row 3, mouse-scroll down to row 60, and a
+  // single inbound message arriving (count +1) yanked the view back to row 3
+  // under the operator's hands. The selection is the only thing that should
+  // move the viewport, so the effect compares against what it last scrolled to
+  // and does nothing when that has not changed. `count` and `rowHeight` stay in
+  // the deps because the ARITHMETIC needs them; the ref is what stops them
+  // being triggers.
+  const scrolledTo = useRef<number | null>(null)
   useLayoutEffect(() => {
     const el = containerRef.current
     if (!el || scrollToIndex == null || rowHeight <= 0) return
+    if (scrolledTo.current === scrollToIndex) return
+    scrolledTo.current = scrollToIndex
     const scroller = scrollParent(el)
     if (!scroller) return
 
@@ -231,6 +242,12 @@ export function VirtualList({
     if (scroller === el) setScrollTop(clamped)
   }, [scrollToIndex, rowHeight, count])
 
+  // Clearing the selection forgets where we scrolled, so re-selecting the same
+  // row scrolls to it again rather than being mistaken for "already there".
+  useEffect(() => {
+    if (scrollToIndex == null) scrolledTo.current = null
+  }, [scrollToIndex])
+
   const rows: ReactNode[] = []
   for (let i = startIndex; i < endIndex; i++) {
     rows.push(renderRow(i))
@@ -248,12 +265,21 @@ export function VirtualList({
         ...style,
       }}
     >
+      {/* ⚠️ `flexShrink: 0` IS LOAD-BEARING. These spacers stand in for every row
+          that is not rendered — `afterPad` is routinely tens of thousands of
+          pixels — and a consumer whose class makes this container a flex column
+          will shrink them to ZERO to fit, taking the scrollable range with
+          them. Measured 2026-09-19 on Audience, whose `.aud-list` sets
+          `display: flex`: 1,804 rows, `afterPad` should have been ~114,000px
+          and rendered at 0, so the list could not scroll past its second
+          screen. The atom defends its own geometry rather than trusting every
+          consumer to know this. */}
       {beforePad > 0 && (
-        <div style={{ height: beforePad }} aria-hidden="true" />
+        <div style={{ height: beforePad, flexShrink: 0 }} aria-hidden="true" />
       )}
       {rows}
       {afterPad > 0 && (
-        <div style={{ height: afterPad }} aria-hidden="true" />
+        <div style={{ height: afterPad, flexShrink: 0 }} aria-hidden="true" />
       )}
     </div>
   )

@@ -55,6 +55,38 @@ const PASTE_ALLOWED_TAGS = new Set([
 ])
 
 /**
+ * Tags that survive AUTHORED html — a quick-reply template, not a paste.
+ *
+ * ⚠️ THE TWO ARE DIFFERENT PROBLEMS AND THE PASTE LIST IS THE WRONG ANSWER TO
+ * THE SECOND. A paste is arbitrary markup from somebody else's page, and
+ * flattening it to running prose is a FEATURE — nobody meant to bring a table
+ * across. A template is markdown the workspace wrote, rendered by `marked`, and
+ * flattening it destroys what its author built.
+ *
+ * Measured before widening: Reliquary's ONE production template, "Booking
+ * Instructions" — the one Sadie sends every client — carries a heading and a
+ * horizontal rule, both of which the paste list drops. Sanitising it through
+ * that list turned her numbered booking steps into an unbroken paragraph.
+ *
+ * WHAT IS STILL REFUSED IS THE PART THAT MATTERS: `DROP_WITH_CONTENTS`
+ * (script/style/iframe/…) applies unchanged, every attribute is still stripped
+ * except a safe `href`, and there is still no `span`, `font`, `div` or `style`
+ * — so a template cannot smuggle script, event handlers or hardcoded colours
+ * either. This adds structure, never capability.
+ *
+ * `IMG` is here with `src` handled exactly as `A`'s `href` is: through
+ * `safeHref`, so a `javascript:` or `data:` source becomes nothing rather than
+ * a live element.
+ */
+const AUTHORED_ALLOWED_TAGS = new Set([
+  ...PASTE_ALLOWED_TAGS,
+  'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+  'BLOCKQUOTE', 'HR', 'PRE', 'CODE',
+  'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD',
+  'IMG',
+])
+
+/**
  * Tags removed WITH their contents, rather than unwrapped to text.
  *
  * Unwrapping is right for everything else — a `<div>` or `<span>` is chrome
@@ -89,6 +121,18 @@ export function safeHref(raw: string | null): string | null {
  * execute before a single tag was inspected.
  */
 export function sanitizePastedHtml(html: string, doc?: Document): string {
+  return sanitizeHtml(html, PASTE_ALLOWED_TAGS, doc)
+}
+
+/**
+ * The same reduction for AUTHORED html — see `AUTHORED_ALLOWED_TAGS` for why it
+ * is a different list and not a looser one.
+ */
+export function sanitizeAuthoredHtml(html: string, doc?: Document): string {
+  return sanitizeHtml(html, AUTHORED_ALLOWED_TAGS, doc)
+}
+
+function sanitizeHtml(html: string, allowed: Set<string>, doc?: Document): string {
   const target =
     doc ??
     (typeof document !== 'undefined'
@@ -115,11 +159,15 @@ export function sanitizePastedHtml(html: string, doc?: Document): string {
 
       walk(el)
 
-      if (!PASTE_ALLOWED_TAGS.has(el.tagName)) {
+      if (!allowed.has(el.tagName)) {
         el.replaceWith(...Array.from(el.childNodes))
         continue
       }
+      // Read the two url attributes BEFORE stripping, so the strip can be
+      // total and the safe value put back afterwards.
       const href = el.tagName === 'A' ? safeHref(el.getAttribute('href')) : null
+      const src = el.tagName === 'IMG' ? safeHref(el.getAttribute('src')) : null
+      const alt = el.tagName === 'IMG' ? el.getAttribute('alt') : null
       for (const attr of Array.from(el.attributes)) el.removeAttribute(attr.name)
       if (el.tagName === 'A') {
         // An anchor whose href didn't survive becomes its own text rather than
@@ -129,6 +177,18 @@ export function sanitizePastedHtml(html: string, doc?: Document): string {
           el.setAttribute('rel', 'noopener noreferrer')
         } else {
           el.replaceWith(...Array.from(el.childNodes))
+        }
+      }
+      if (el.tagName === 'IMG') {
+        // An image whose src didn't survive is REMOVED, not unwrapped: it has
+        // no child nodes, so unwrapping leaves nothing either way, and a
+        // srcless `<img>` renders as a broken-image glyph in the recipient's
+        // client. `safeHref` is what refuses `javascript:` and `data:`.
+        if (src) {
+          el.setAttribute('src', src)
+          if (alt) el.setAttribute('alt', alt)
+        } else {
+          el.remove()
         }
       }
     }

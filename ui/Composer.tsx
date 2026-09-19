@@ -16,6 +16,7 @@ import {
   effectivePasteMode,
   isPlainTextSurface,
   safeHref,
+  sanitizeAuthoredHtml,
   sanitizePastedHtml,
   type ComposerCapability,
   type ComposerChannel,
@@ -190,12 +191,15 @@ export interface ComposerHandle {
    * The same, for markup. A rich channel's quick-reply templates are HTML, and
    * inserting them as TEXT would put the tags in the message.
    *
-   * ⚠️ IT IS SANITISED ON THE WAY IN, through the same allowlist a paste goes
-   * through. A template comes from the workspace's own library and is therefore
-   * trusted-ish, which is exactly the reasoning that makes an unsanitised path
-   * survive until something else starts using it. Refused outright on a
-   * plain-text channel: there is no markup layer on SMS, so the honest failure
-   * is to do nothing rather than to insert visible tags.
+   * ⚠️ SANITISED ON THE WAY IN, but through the AUTHORED list, not the paste
+   * one. A paste is arbitrary markup from somebody else's page and flattening
+   * it is a feature; a template is markdown the workspace wrote and flattening
+   * it destroys what its author built. Reliquary's one production template
+   * carries a heading and a rule, and the paste list turned Sadie's numbered
+   * booking steps into an unbroken paragraph. What is still refused is the part
+   * that matters — script, style, every attribute but a safe `href`/`src`.
+   * Refused outright on a plain-text channel: there is no markup layer on SMS,
+   * so the honest failure is to do nothing rather than insert visible tags.
    */
   insertHtml: (html: string) => void
   /**
@@ -392,7 +396,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
         sel.removeAllRanges()
         sel.addRange(end)
       }
-      document.execCommand('insertHTML', false, sanitizePastedHtml(html))
+      document.execCommand('insertHTML', false, sanitizeAuthoredHtml(html))
       const after = document.getSelection()
       if (after && after.rangeCount > 0) {
         savedRange.current = after.getRangeAt(0).cloneRange()
@@ -420,7 +424,18 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
     const sel = window.getSelection()
     // A collapsed selection makes createLink a silent no-op in Safari, so
     // insert the URL as its own visible label instead of doing nothing.
-    if (!sel || sel.isCollapsed) exec('insertHTML', `<a href="${safe}">${safe}</a>`)
+    // ⚠️ BOTH HALVES ARE ESCAPED, and the deleted `ComposerToolbar` did this
+    // too — the escaping left with it. `safeHref` vets the SCHEME, not the
+    // characters: a `"` in the url closes the attribute, and an unescaped `&`
+    // in the visible label makes `?a=1&copy=2` render as `©=2`.
+    if (!sel || sel.isCollapsed) {
+      const attr = safe.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+      const label = safe
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+      exec('insertHTML', `<a href="${attr}">${label}</a>`)
+    }
     else exec('createLink', safe)
   }, [exec])
 
@@ -430,7 +445,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
       if (effectivePaste === 'rich') {
         const html = e.clipboardData.getData('text/html')
         if (html) {
-          document.execCommand('insertHTML', false, sanitizePastedHtml(html))
+          document.execCommand('insertHTML', false, sanitizeAuthoredHtml(html))
           emit()
           return
         }
