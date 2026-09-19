@@ -186,6 +186,27 @@ export interface ComposerProps {
 export interface ComposerHandle {
   /** Insert at the last caret position (end of body if there was never one). */
   insertText: (text: string) => void
+  /**
+   * The same, for markup. A rich channel's quick-reply templates are HTML, and
+   * inserting them as TEXT would put the tags in the message.
+   *
+   * ⚠️ IT IS SANITISED ON THE WAY IN, through the same allowlist a paste goes
+   * through. A template comes from the workspace's own library and is therefore
+   * trusted-ish, which is exactly the reasoning that makes an unsanitised path
+   * survive until something else starts using it. Refused outright on a
+   * plain-text channel: there is no markup layer on SMS, so the honest failure
+   * is to do nothing rather than to insert visible tags.
+   */
+  insertHtml: (html: string) => void
+  /**
+   * The body as PLAIN TEXT, with block boundaries as newlines.
+   *
+   * `innerText`, not a tag-strip: an email send carries both `body_html` and
+   * `body_text`, and a regex over the markup joins paragraphs into one run-on
+   * line. Only the DOM knows where the line breaks are, and only this atom
+   * holds the node.
+   */
+  getText: () => string
   focus: () => void
 }
 
@@ -350,10 +371,46 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
     [disabled, emit],
   )
 
+  const insertHtml = useCallback(
+    (html: string) => {
+      const el = editorRef.current
+      if (!el || disabled) return
+      // A channel with no markup layer cannot carry this, and inserting the
+      // tags as characters is worse than declining — on SMS they would be
+      // visible to the recipient and would push the body into a second segment.
+      if (plainTextOnly) return
+      el.focus()
+      const sel = document.getSelection()
+      const saved = savedRange.current
+      if (sel && saved && el.contains(saved.commonAncestorContainer)) {
+        sel.removeAllRanges()
+        sel.addRange(saved)
+      } else if (sel) {
+        const end = document.createRange()
+        end.selectNodeContents(el)
+        end.collapse(false)
+        sel.removeAllRanges()
+        sel.addRange(end)
+      }
+      document.execCommand('insertHTML', false, sanitizePastedHtml(html))
+      const after = document.getSelection()
+      if (after && after.rangeCount > 0) {
+        savedRange.current = after.getRangeAt(0).cloneRange()
+      }
+      emit()
+    },
+    [disabled, emit, plainTextOnly],
+  )
+
   useImperativeHandle(
     ref,
-    () => ({ insertText, focus: () => editorRef.current?.focus() }),
-    [insertText],
+    () => ({
+      insertText,
+      insertHtml,
+      getText: () => editorRef.current?.innerText ?? '',
+      focus: () => editorRef.current?.focus(),
+    }),
+    [insertText, insertHtml],
   )
 
   const promptLink = useCallback(() => {
