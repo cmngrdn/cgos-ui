@@ -1,0 +1,37 @@
+/* Popover — the floating panel's chrome. Placement is written inline by the
+   component (it is measured, not a style choice); everything an author can
+   decide is here. See Popover.tsx for why the flip exists. */
+
+[data-cg-popover] {
+  position: fixed;
+  z-index: 1000;
+  box-sizing: border-box;
+  /* The measured room, written by the component. The fallback matters: if the
+     inline property is ever missing the panel is capped rather than unbounded,
+     which fails toward "scrolls" instead of "runs off the screen". */
+  max-height: var(--cg-popover-max-h, 60vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--cg-bg-elevated);
+  border: 1px solid var(--cg-border);
+  border-radius: var(--cg-radius-md);
+  box-shadow: var(--cg-elev-3, 0 8px 24px color-mix(in srgb, var(--cg-bg), transparent 40%));
+  font-family: var(--cg-font);
+  color: var(--cg-text);
+  animation: cg-popover-in var(--cg-duration-fast, 120ms) var(--cg-ease-entry, ease-out);
+}
+
+/* Rising toward the anchor, so the panel reads as coming OUT of the control
+   that opened it whichever side it landed on. */
+@keyframes cg-popover-in {
+  from { opacity: 0; transform: translateY(var(--cg-popover-rise, -3px)); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+[data-cg-popover][data-side='top'] {
+  --cg-popover-rise: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-cg-popover] { animation: none; }
+}

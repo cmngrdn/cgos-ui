@@ -1,6 +1,6 @@
 {
   "name": "cgos-ui",
-  "version": "0.63.0",
+  "version": "0.64.0",
   "description": "Shared design tokens, atoms, and visual primitives for the Common Garden ecosystem (cgos dashboard + cmngrdn + feather + reliquary).",
   "type": "module",
   "license": "UNLICENSED",
@@ -236,6 +236,34 @@
     "./lib/vcard": {
       "types": "./lib/vcard.ts",
       "import": "./lib/vcard.ts"
+    },
+    "./ui/Popover": {
+      "types": "./ui/Popover.tsx",
+      "import": "./ui/Popover.tsx"
+    },
+    "./ui/Popover.css": "./ui/Popover.css",
+    "./ui/EmojiPicker": {
+      "types": "./ui/EmojiPicker.tsx",
+      "import": "./ui/EmojiPicker.tsx"
+    },
+    "./ui/EmojiPicker.css": "./ui/EmojiPicker.css",
+    "./ui/StatChip": {
+      "types": "./ui/StatChip.tsx",
+      "import": "./ui/StatChip.tsx"
+    },
+    "./ui/StatChip.css": "./ui/StatChip.css",
+    "./ui/SendMeter": {
+      "types": "./ui/SendMeter.tsx",
+      "import": "./ui/SendMeter.tsx"
+    },
+    "./ui/SendMeter.css": "./ui/SendMeter.css",
+    "./lib/emoji-search": {
+      "types": "./lib/emoji-search.ts",
+      "import": "./lib/emoji-search.ts"
+    },
+    "./lib/emoji-data": {
+      "types": "./lib/emoji-data.ts",
+      "import": "./lib/emoji-data.ts"
     }
   },
   "files": [
@@ -259,7 +287,8 @@
   ],
   "scripts": {
     "audit:composer": "tsx scripts/audit-composer-paste.mts",
-    "audit:exports": "node scripts/audit-exports.mjs"
+    "audit:exports": "node scripts/audit-exports.mjs",
+    "audit:emoji": "tsx scripts/audit-emoji-search.mjs"
   },
   "devDependencies": {
     "jsdom": "^26.0.0",

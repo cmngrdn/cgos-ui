@@ -71,11 +71,23 @@
 
 /* Pushes the slotted extras (emoji picker) to the trailing edge so formatting
    reads as one group and insertion as another. */
+/* THE SPACER PINS THE CLUSTER TO THE TRAILING EDGE on every channel — see
+   Composer.tsx. `flex-wrap` on the toolbar means an auto margin alone is not
+   enough: once the row wraps, `margin-left:auto` pushes the cluster to the end
+   of whatever line it landed on, which on a narrow inspector is the middle of
+   nowhere. A real spacer element wraps WITH the cluster and keeps them
+   together. */
+.cg-composer-spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cg-composer-actions,
 .cg-composer-extras {
-  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 2px;
+  flex-shrink: 0;
 }
 
 /* ── Editor ──────────────────────────────────────────────────────────────── */
@@ -143,6 +155,12 @@
 
 /* ── Footer (encoding HUD, attachments, counts) ──────────────────────────── */
 
+/* THE FOOTER IS THE METER'S HOME, and it is deliberately always-present chrome
+   rather than a conditional band. A readout that appears when there is news to
+   report moves the editor, the send button and the conversation above it every
+   time the news changes — which is precisely the complaint that produced
+   `SendMeter` (2026-09-19). Surfaces that have nothing to put here pass no
+   `footer` and pay nothing; a surface that passes one gets a fixed box. */
 .cg-composer-footer {
   border-top: 1px solid var(--cg-border);
   padding: 6px 10px;

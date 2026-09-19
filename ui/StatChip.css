@@ -1,0 +1,90 @@
+/* StatChip — see StatChip.tsx. Resting state lives here, never inline, so a
+   consumer's stylesheet can reach it (v0.48.0 rule). */
+
+.cg-stat-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+[data-cg-stat-chip] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;              /* ControlChip's height — one baseline per strip */
+  padding: 0 10px;
+  box-sizing: border-box;
+  border-radius: var(--cg-radius-md);
+  border: 1px solid var(--cg-border);
+  background: var(--cg-bg-elevated);
+  font-family: var(--cg-font);
+  white-space: nowrap;
+  transition:
+    border-color var(--cg-duration-fast, 120ms) ease,
+    background var(--cg-duration-fast, 120ms) ease;
+}
+
+button[data-cg-stat-chip] {
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+button[data-cg-stat-chip]:hover:not(:disabled) {
+  border-color: var(--cg-border-strong, var(--cg-text-muted));
+  background: var(--cg-bg-hover, var(--cg-bg-elevated));
+}
+
+button[data-cg-stat-chip]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 2px;
+}
+
+button[data-cg-stat-chip]:disabled {
+  cursor: default;
+  opacity: var(--cg-disabled-opacity, 0.45);
+}
+
+/* THE PRESSED STATE. Ring plus tint plus a brighter label — three signals,
+   because the ring alone is a 1px difference at a glance and this control's
+   whole failure mode was looking unchanged after a click. */
+button[data-cg-stat-chip][data-active] {
+  border-color: var(--cg-accent);
+  background: var(--cg-accent-subtle);
+  box-shadow: 0 0 0 1px var(--cg-accent) inset;
+}
+
+button[data-cg-stat-chip][data-active] .cg-stat-chip-label {
+  color: var(--cg-text);
+}
+
+.cg-stat-chip-value {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--cg-text);
+}
+
+.cg-stat-chip-label {
+  font-size: 11px;
+  color: var(--cg-text-secondary);
+}
+
+/* TONE COLOURS THE VALUE, NOT THE CHIP. A row of five fully-tinted chips reads
+   as five alerts; a row of neutral chips with coloured numbers reads as one
+   status board, which is what it is. */
+[data-cg-stat-chip][data-tone='accent'] .cg-stat-chip-value  { color: var(--cg-accent); }
+[data-cg-stat-chip][data-tone='success'] .cg-stat-chip-value { color: var(--cg-status-success); }
+[data-cg-stat-chip][data-tone='warning'] .cg-stat-chip-value { color: var(--cg-status-warning); }
+[data-cg-stat-chip][data-tone='danger'] .cg-stat-chip-value  { color: var(--cg-status-danger); }
+
+/* A finger needs a bigger target than a cursor. Same rule as ControlChip —
+   keyed on the pointer, never on viewport width. */
+@media (pointer: coarse) {
+  button[data-cg-stat-chip] {
+    height: 44px;
+    padding: 0 14px;
+  }
+}

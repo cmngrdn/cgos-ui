@@ -1,0 +1,116 @@
+/* SendMeter — see SendMeter.tsx. The height rules are the load-bearing part:
+   this element must occupy the same box whatever the body says, or typing an
+   emoji moves the composer under the operator's hands. */
+
+.cg-send-meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-family: var(--cg-font);
+}
+
+.cg-send-meter-rails {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cg-send-meter-rail {
+  display: grid;
+  /* Tag and bar are FIXED tracks and the fact is the flexible one, so the bars
+     of both rails line up vertically and neither moves when the words in the
+     middle change length. A three-column flex row re-flows on every keystroke,
+     which is the same jitter one level down from the one this component fixes. */
+  grid-template-columns: 30px minmax(0, 1fr) 84px;
+  align-items: center;
+  gap: 8px;
+  height: 14px;
+}
+
+.cg-send-meter[data-size='md'] .cg-send-meter-rail {
+  height: 16px;
+  grid-template-columns: 34px minmax(0, 1fr) 120px;
+}
+
+.cg-send-meter-tag {
+  font-family: var(--cg-font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: 1px 0;
+  border-radius: var(--cg-radius-sm);
+  color: var(--cg-text-secondary);
+  background: var(--cg-bg-elevated);
+  border: 1px solid var(--cg-border);
+}
+
+.cg-send-meter-fact {
+  font-family: var(--cg-font-mono);
+  font-size: 10px;
+  color: var(--cg-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cg-send-meter-bar {
+  position: relative;
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--cg-bg-elevated);
+  border: 1px solid var(--cg-border);
+  overflow: hidden;
+}
+
+.cg-send-meter-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--cg-text-muted);
+  transition: width var(--cg-duration-fast, 120ms) ease, background var(--cg-duration-fast, 120ms) ease;
+}
+
+/* A segment boundary. Drawn over the fill so a crossed boundary is visible
+   rather than swallowed by it. */
+.cg-send-meter-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--cg-bg);
+  opacity: 0.85;
+}
+
+/* TONE IS THE FILL AND THE TAG, never the whole row: the point of stacking two
+   rails is comparing them, which a fully-tinted row makes harder. */
+.cg-send-meter-rail[data-tone='ok'] .cg-send-meter-fill      { background: var(--cg-status-success); }
+.cg-send-meter-rail[data-tone='warn'] .cg-send-meter-fill    { background: var(--cg-status-warning); }
+.cg-send-meter-rail[data-tone='danger'] .cg-send-meter-fill  { background: var(--cg-status-danger); }
+
+.cg-send-meter-rail[data-tone='ok'] .cg-send-meter-tag       { color: var(--cg-status-success); border-color: color-mix(in srgb, var(--cg-status-success), transparent 65%); }
+.cg-send-meter-rail[data-tone='warn'] .cg-send-meter-tag     { color: var(--cg-status-warning); border-color: color-mix(in srgb, var(--cg-status-warning), transparent 65%); }
+.cg-send-meter-rail[data-tone='danger'] .cg-send-meter-tag   { color: var(--cg-status-danger); border-color: color-mix(in srgb, var(--cg-status-danger), transparent 65%); }
+.cg-send-meter-rail[data-tone='danger'] .cg-send-meter-fact  { color: var(--cg-status-danger); }
+
+.cg-send-meter-trailing {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* On a phone the bar is the first thing to go: at 375px the fact is the fact
+   and a 84px gauge beside it leaves nothing for the words. */
+@media (max-width: 480px) {
+  .cg-send-meter-rail {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+  .cg-send-meter-bar {
+    display: none;
+  }
+}

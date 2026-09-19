@@ -78,10 +78,27 @@ export {
  *     DOM. Writing innerHTML every render puts the caret back at position zero
  *     on every keystroke.
  *
+ * THE TOOLBAR HAS TWO SIDES, AND WHICH SIDE A CONTROL IS ON IS THE CONTRACT
+ * (v0.64.0). Left: what only THIS CHANNEL can do — bold/italic/underline/lists/
+ * link on email, nothing on SMS, nothing on RCS yet. Right, via `actions`: what
+ * EVERY channel does — emoji, attach, quick replies. Feather, 2026-09-19:
+ * *"left side could be the composition type specific options (email: bold,
+ * italicize, underline, etc | sms: not sure what else?) … right side emoji /
+ * attach / replies"*.
+ *
+ * Before this, position was per-surface and so was the vocabulary. The SMS
+ * thread put emoji and paperclip OUTSIDE the composer to its left and the
+ * quick-replies dropdown on a row ABOVE it; the transmission builder put emoji
+ * inside the toolbar; the email reply had a paperclip drawn as `+`, quick
+ * replies at the far right, and no emoji button at all. Four surfaces, four
+ * layouts, one job — *"our text compose engine needs to be standardized across
+ * the system everywhere, and then change slightly based on if it's
+ * sms/rcs/email"*. Which side a control sits on is now a property of the
+ * ENGINE, so a surface cannot put it somewhere new by writing different JSX.
+ *
  * WHAT THIS IS NOT. It does not send anything, own attachments, or know what a
  * transmission is — those stay with the surface. It renders a toolbar, an
- * editable region, and whatever the surface slots into `toolbarExtras` (which
- * is how the emoji picker arrives without this package taking on emoji data).
+ * editable region, and whatever the surface slots into `actions` and `footer`.
  */
 
 export interface ComposerProps {
@@ -117,7 +134,18 @@ export interface ComposerProps {
    * broadcast are both `channel="sms"` and want opposite things.
    */
   submitOn?: 'modEnter' | 'enter'
-  /** Rendered at the end of the toolbar — where the emoji picker goes. */
+  /**
+   * THE RIGHT-HAND CLUSTER: emoji, attach, quick replies — in that order, on
+   * every channel that has them. Pinned to the trailing edge by a spacer, so a
+   * channel with no formatting buttons still puts them where the last one did.
+   *
+   * The atom does not supply them, because attachments need a bucket and quick
+   * replies need a workspace; it supplies the POSITION, which is the part that
+   * was drifting. `<EmojiPicker>` is an atom and belongs first in this slot.
+   */
+  actions?: ReactNode
+  /** @deprecated Renders into `actions`. Kept so a consumer mid-upgrade still
+   *  compiles; new callsites pass `actions`. */
   toolbarExtras?: ReactNode
   /**
    * Overrides the channel's detector. Pass `null` to silence the readout on a
@@ -186,6 +214,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   disabled,
   onSubmit,
   submitOn = 'modEnter',
+  actions,
   toolbarExtras,
   detector,
   onBodyRewrite,
@@ -196,7 +225,10 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
 }, ref) {
   const editorRef = useRef<HTMLDivElement>(null)
   const caps = capabilities ?? (channel ? CHANNEL_CAPABILITIES[channel] : [])
-  const showToolbar = caps.length > 0 || Boolean(toolbarExtras)
+  const trailing = actions ?? toolbarExtras
+  // A toolbar with only a right-hand cluster is still a toolbar — that is the
+  // SMS case, and it is why this is an OR rather than a check on `caps`.
+  const showToolbar = caps.length > 0 || Boolean(trailing)
 
   // A channel that cannot RENDER formatting must not RETAIN it on paste. Asked
   // for `rich` on an SMS surface, keeping the markup would mean the operator
@@ -409,7 +441,12 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
               🔗
             </button>
           )}
-          {toolbarExtras && <span className="cg-composer-extras">{toolbarExtras}</span>}
+          {/* THE SPACER IS THE CONTRACT. Without it the cluster sits wherever
+              the formatting buttons end, so the same controls land in a
+              different place on every channel — which is the drift this slot
+              exists to remove. */}
+          <span className="cg-composer-spacer" aria-hidden />
+          {trailing && <span className="cg-composer-actions">{trailing}</span>}
         </div>
       )}
 
