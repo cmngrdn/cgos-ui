@@ -38,6 +38,27 @@ import {
   type ReactNode,
 } from 'react'
 
+/**
+ * The nearest ancestor that actually scrolls vertically, starting with `el`.
+ *
+ * "Actually" is two tests, and both are needed: `overflow-y` must permit it AND
+ * there must be something to scroll. A container with `overflow-y: auto` whose
+ * content fits is not the scroller — which is exactly the case that made this
+ * function necessary, since `VirtualList` sets `auto` on itself unconditionally
+ * and then renders at full height inside somebody else's scroll region.
+ */
+function scrollParent(el: HTMLElement): HTMLElement | null {
+  let node: HTMLElement | null = el
+  while (node) {
+    const overflowY = getComputedStyle(node).overflowY
+    const scrolls = overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay'
+    if (scrolls && node.scrollHeight > node.clientHeight + 1) return node
+    node = node.parentElement
+  }
+  // Nothing bounded above us: the document itself is scrolling.
+  return (document.scrollingElement as HTMLElement | null) ?? document.documentElement
+}
+
 export interface VirtualListProps {
   /** Total number of rows the list contains. */
   count: number
@@ -163,26 +184,51 @@ export function VirtualList({
 
   // Bring the selected row into view, by the minimum distance — see
   // `scrollToIndex`. Runs BEFORE paint so a keypress never shows a frame with
-  // the selection off screen, and writes `scrollTop` into state as well as onto
-  // the node because the render window is derived from state: setting only the
-  // node would leave the newly-visible rows unrendered until the scroll event
-  // arrived a frame later, which is a blank row exactly where the operator is
-  // looking.
+  // the selection off screen.
+  //
+  // ⚠️ IT SCROLLS WHICHEVER ELEMENT ACTUALLY SCROLLS, which is not always this
+  // one. The header promises the container is its own scroll context, and the
+  // SMS inbox does not honour that: it renders this list inside an `.hq-scroll`
+  // that owns the page's scrolling, so `clientHeight === scrollHeight` here
+  // (2,688 = 2,688, measured) and writing `scrollTop` on it moves nothing.
+  // Scrolling a node that cannot scroll fails silently, which is the worst
+  // shape a fix can have, so `scrollParent` walks up until it finds a node that
+  // can — this element first.
+  //
+  // (That page is also getting no virtualization for the same reason: the
+  // ResizeObserver measures the full list as the viewport, so every row mounts.
+  // Worth fixing where it happens, not here — this only makes the scroll land.)
   useLayoutEffect(() => {
     const el = containerRef.current
     if (!el || scrollToIndex == null || rowHeight <= 0) return
+    const scroller = scrollParent(el)
+    if (!scroller) return
+
     const i = Math.max(0, Math.min(count - 1, scrollToIndex))
-    const top = i * rowHeight
+    // The row's offset inside the SCROLLER, which is this container's own
+    // offset plus the row's offset inside it. Identical to `i * rowHeight` in
+    // the documented case, where the scroller IS this element.
+    const offsetInScroller =
+      scroller === el
+        ? 0
+        : el.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop
+    const top = offsetInScroller + i * rowHeight
     const bottom = top + rowHeight
-    const viewTop = el.scrollTop
-    const viewBottom = viewTop + el.clientHeight
+    const viewTop = scroller.scrollTop
+    const viewBottom = viewTop + scroller.clientHeight
+
     let next: number | null = null
     if (top < viewTop) next = top
-    else if (bottom > viewBottom) next = bottom - el.clientHeight
+    else if (bottom > viewBottom) next = bottom - scroller.clientHeight
     if (next === null) return
-    const clamped = Math.max(0, Math.min(next, count * rowHeight - el.clientHeight))
-    el.scrollTop = clamped
-    setScrollTop(clamped)
+
+    const clamped = Math.max(0, Math.min(next, scroller.scrollHeight - scroller.clientHeight))
+    scroller.scrollTop = clamped
+    // The render window is derived from STATE, so when we are the scroller the
+    // new position has to reach state too — setting only the node leaves the
+    // newly-visible rows unrendered until the scroll event arrives a frame
+    // later, which is a blank row exactly where the operator is looking.
+    if (scroller === el) setScrollTop(clamped)
   }, [scrollToIndex, rowHeight, count])
 
   const rows: ReactNode[] = []
