@@ -94,6 +94,9 @@ export function Popover({
   const panelRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState<MenuPlacement | null>(null)
   const [mounted, setMounted] = useState(false)
+  // THE HEIGHT THE SIDE WAS DECIDED FROM, frozen for as long as the panel is
+  // open. See `measure` — this is the whole anti-flip mechanism.
+  const openHeight = useRef<number | null>(null)
 
   useEffect(() => setMounted(true), [])
 
@@ -101,16 +104,32 @@ export function Popover({
     const anchor = anchorRef.current
     if (!anchor) return
     const r = anchor.getBoundingClientRect()
+
+    // ⚠️ THE SIDE MUST NOT CHANGE WHILE THE PANEL IS OPEN, and measuring the
+    // live content on every pass is how it does.
+    //
+    // Caught in the browser rather than reasoned about: the emoji picker opens
+    // ABOVE its button (388px of curated grid, no room below), and typing
+    // "fire" cuts it to 8 results — at which point the live height fits below
+    // and `placeMenu` correctly, and uselessly, flipped it back down. The panel
+    // jumped out from under the operator's eyes on the third keystroke of every
+    // search. Correct placement, wrong behaviour.
+    //
+    // So the height fed to the decision is the one measured when the panel
+    // OPENED, held until it closes. A panel that later grows past it is capped
+    // and scrolls, which is what `--cg-popover-max-h` is for; a panel that
+    // shrinks keeps its side. The anchor is still re-measured every pass, so a
+    // genuine move — a scroll that pushes the trigger to the top of the screen
+    // — still flips it, which is the case flipping exists for.
+    const live = panelRef.current?.scrollHeight || 0
+    if (openHeight.current === null && live > 0) openHeight.current = live
+
     setPos(
       placeMenu({
         anchor: r,
         viewport: { width: window.innerWidth, height: window.innerHeight },
         minWidth,
-        // The panel's OWN height when it has one, so a short panel is not
-        // given a tall panel's placement. `scrollHeight` rather than
-        // `offsetHeight`: the CSS caps the box, and the cap is what we are
-        // trying to compute.
-        preferredHeight: panelRef.current?.scrollHeight || preferredHeight,
+        preferredHeight: openHeight.current ?? live ?? preferredHeight,
       }),
     )
   }, [anchorRef, minWidth, preferredHeight])
@@ -121,6 +140,7 @@ export function Popover({
   useLayoutEffect(() => {
     if (!open) {
       setPos(null)
+      openHeight.current = null
       return
     }
     measure()
