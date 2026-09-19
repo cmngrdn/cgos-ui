@@ -12,6 +12,8 @@
 @import "./ui/Composer.css";
 @import "./ui/Input.css";
 @import "./ui/Select.css";
+@import "./ui/SegmentedPicker.css";
+@import "./ui/TagPicker.css";
 @import "./ui/Popover.css";
 @import "./ui/EmojiPicker.css";
 @import "./ui/StatChip.css";

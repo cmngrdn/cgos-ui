@@ -1,0 +1,110 @@
+/* ── The segmented track ────────────────────────────────────────────────────
+ *
+ * ONE ROW, CHIP HEIGHT — the same footprint as the `<ChipGroup>`s it replaces.
+ * It was briefly a stack of letter-plus-caption cells, which doubled the
+ * height of a control that lives inside a dialog and an inspector, to render a
+ * word the tooltip already carries.
+ *
+ * What it adds over a chip row is meaning, not size. The rungs are JOINED into
+ * one track rather than floating as separate pills, because a call list is an
+ * ordered ladder and not five equivalent options — a shared edge reads as a
+ * selector, gaps read as tags. The engaged rung fills with a tone taken from
+ * Airtable's own `List` field (A green · B cyan · C amber · D red · Z grey),
+ * so the control reads the way the base the schedulers have used for years
+ * already does. The tone rides in per rung as `--sgp-tone`; this file never
+ * names a colour.
+ */
+
+.sgp {
+  display: inline-flex;
+  align-items: stretch;
+  /* SHRINK-WRAP. The parent is a flex column, so `align-items: stretch`
+     pulled an inline-flex track to the full column width and four letters sat
+     130px apart — a bar, not a selector. A control should be the size of its
+     own content. */
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 2px;
+  border: 1px solid var(--cg-border);
+  border-radius: var(--cg-radius-md);
+  background: var(--cg-bg-surface);
+  font-family: var(--cg-font);
+}
+
+.sgp-cell {
+  flex: 0 0 auto;
+  min-width: 34px;
+  height: 26px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: calc(var(--cg-radius-md) - 3px);
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--cg-text-muted);
+  cursor: pointer;
+  transition:
+    background var(--cg-duration-fast) var(--cg-ease),
+    color var(--cg-duration-fast) var(--cg-ease);
+}
+
+.sgp-cell:hover:not(:disabled):not([data-active]) {
+  background: var(--cg-fill);
+  color: var(--cg-text-secondary);
+}
+
+.sgp-cell:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: -2px;
+}
+
+.sgp-cell:disabled {
+  cursor: default;
+  opacity: var(--cg-disabled-opacity);
+}
+
+/* The engaged cell. A tinted fill plus the tone on the label — enough to read
+   as switched without the row growing a second state layer. */
+.sgp-cell[data-active] {
+  background: color-mix(
+    in srgb,
+    var(--sgp-tone, var(--cg-fill-strong)) 20%,
+    transparent
+  );
+  color: var(--sgp-tone, var(--cg-text));
+}
+
+/* "None" is a real state, not an off switch — dispatch reads an unranked crew
+   member differently from a low-ranked one. It sits at the head of the track,
+   separated by a hairline so it reads as outside the set rather than as its
+   first member. */
+.sgp-cell[data-none] {
+  flex: 0 0 auto;
+  min-width: 0;
+  margin-right: 2px;
+  padding: 0 9px;
+  border-right: 1px solid var(--cg-border);
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+@media (max-width: 767px) {
+  /* Fill the column rather than shrink-wrapping — at 375px an inline-flex
+     track leaves the rungs too narrow to hit reliably. */
+  .sgp {
+    display: flex;
+    align-self: stretch;
+    width: 100%;
+  }
+
+  .sgp-cell {
+    flex: 1 1 auto;
+    padding: 0 4px;
+  }
+}

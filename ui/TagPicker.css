@@ -1,0 +1,84 @@
+/* ── TagPicker ──────────────────────────────────────────────────────────────
+ *
+ * One wrap holding three kinds of child: the field, the match row, and the
+ * chips. Order is enforced here rather than by markup order, because the two
+ * properties that matter are both positional.
+ */
+
+.cg-tagpicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 6px;
+  min-width: 0;
+  font-family: var(--cg-font);
+}
+
+/* THE FIELD IS FIRST AND CANNOT BE PUSHED. `order: -2` puts it on the wrap's
+   own first line whatever else is in here, so it sits at identical coordinates
+   on a two-tag record and a twenty-tag one. Chips reflowing beneath it is
+   ordinary; a control you AIM AT moving with the amount of content above it is
+   the bug this exists to prevent. */
+.cg-tagpicker > .cg-tagpicker-input,
+.cg-tagpicker :is(input).cg-tagpicker-input {
+  order: -2;
+  flex: 0 0 auto;
+  width: 132px;
+  min-width: 0;
+}
+
+/* ── The match row ────────────────────────────────────────────────────────
+ *
+ * ⚠️ RESERVED, NOT CONDITIONAL. This row holds its line whether or not it has
+ * anything in it. Unmounting it — or `display: none` — is what made every
+ * keystroke that changed the match count shove the chips, and the section
+ * below them, down and back up.
+ *
+ * `order: -1` keeps it between the field and the chips: matches read as
+ * candidates about to join the set below, which is why they are drawn as the
+ * same chips rather than as menu rows.
+ *
+ * `flex-basis: 100%` forces its own line so a match never sits beside the
+ * field pretending to be applied. */
+.cg-tagpicker-matches {
+  order: -1;
+  flex: 1 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  /* One chip's height. The row costs this much space always — which is the
+     whole point, and is cheap next to a section that jumps while you type. */
+  min-height: 24px;
+  /* Hidden but still occupying. Not `display`, not unmounting. */
+  visibility: hidden;
+}
+
+.cg-tagpicker-matches[data-showing] {
+  visibility: visible;
+}
+
+.cg-tagpicker-none {
+  font-size: 11px;
+  color: var(--cg-text-muted);
+  white-space: nowrap;
+}
+
+/* ── Touch ────────────────────────────────────────────────────────────────
+ * The field grows because a 132px target beside chips is the thing a thumb
+ * misses, and because iOS zooms any input under 16px on focus — which is a
+ * layout event, not a style one, and takes the whole surface with it. */
+@media (pointer: coarse) {
+  .cg-tagpicker > .cg-tagpicker-input,
+  .cg-tagpicker :is(input).cg-tagpicker-input {
+    width: 100%;
+    flex: 1 0 100%;
+    font-size: 16px;
+  }
+
+  /* With the field on its own full-width line, the match row below it needs
+     room for a tappable chip rather than a 24px one. */
+  .cg-tagpicker-matches {
+    min-height: 32px;
+  }
+}
