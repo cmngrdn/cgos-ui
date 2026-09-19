@@ -1,0 +1,104 @@
+/* ── StarRating ─────────────────────────────────────────────────────────────
+ *
+ * The glyph is one SVG path used filled and hollow, so the two states are the
+ * same shape at the same size and a half-lit row reads as one scale rather than
+ * two kinds of mark. Colour carries the state; geometry never moves.
+ */
+
+.cg-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  line-height: 0;
+}
+
+.cg-star {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  line-height: 0;
+  /* UNSET IS A DRAWN STAR, NOT AN ABSENT ONE. An empty row has to say "five
+     possible, none chosen" — blanks would read as a broken control, and the
+     scale length is part of the question. */
+  color: var(--cg-fill-strong);
+  transition: color var(--cg-duration-fast) var(--cg-ease);
+}
+
+.cg-star svg {
+  fill: currentColor;
+  display: block;
+}
+
+.cg-star[data-on] {
+  color: var(--cg-accent);
+}
+
+button.cg-star {
+  cursor: pointer;
+}
+
+/* Hover previews the value you would commit — every star up to the pointer
+   lights, which is what makes a star row feel like a scale instead of five
+   checkboxes. `:has()` on the row would be cleaner; it cannot express
+   "siblings BEFORE the hovered one", so the row does it in reverse: everything
+   from the hovered star rightward dims back down. */
+.cg-stars:hover button.cg-star {
+  color: var(--cg-accent-dim);
+}
+
+.cg-stars button.cg-star:hover ~ button.cg-star {
+  color: var(--cg-fill-strong);
+}
+
+button.cg-star:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 2px;
+  border-radius: var(--cg-radius-sm);
+}
+
+/* ── Touch ────────────────────────────────────────────────────────────────
+ * A 14–24px star is well under what a finger needs, and these sit in rows too
+ * tight to grow the glyph. So the HIT AREA grows and the star does not — the
+ * same centred-pseudo-element technique IconButton and ChipToggle use.
+ *
+ * Vertical only past the row's own gap: stars are adjacent by design and a
+ * horizontal expansion would overlap its neighbour, making the star you hit a
+ * coin toss. 44px tall with the natural width is the honest trade — it buys the
+ * whole vertical target and leaves the horizontal one to the glyph, which is
+ * the axis a thumb is already accurate on when sweeping a scale. */
+@media (pointer: coarse) {
+  button.cg-star::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+
+  /* Hover preview is a mouse affordance. On touch there is no hover state to
+     preview with, and :hover sticks after a tap on iOS — so the row would stay
+     lit at whatever was last touched, which is a value the record does not
+     hold. */
+  .cg-stars:hover button.cg-star,
+  .cg-stars button.cg-star:hover ~ button.cg-star {
+    color: inherit;
+  }
+
+  .cg-star {
+    color: var(--cg-fill-strong);
+  }
+
+  .cg-star[data-on] {
+    color: var(--cg-accent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cg-star {
+    transition: none;
+  }
+}

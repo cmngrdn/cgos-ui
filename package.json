@@ -1,6 +1,6 @@
 {
   "name": "cgos-ui",
-  "version": "0.68.0",
+  "version": "0.69.0",
   "description": "Shared design tokens, atoms, and visual primitives for the Common Garden ecosystem (cgos dashboard + cmngrdn + feather + reliquary).",
   "type": "module",
   "license": "UNLICENSED",
@@ -32,6 +32,11 @@
       "types": "./ui/Spinner.tsx",
       "import": "./ui/Spinner.tsx"
     },
+    "./ui/StarRating": {
+      "types": "./ui/StarRating.tsx",
+      "import": "./ui/StarRating.tsx"
+    },
+    "./ui/StarRating.css": "./ui/StarRating.css",
     "./ui/Badge": {
       "types": "./ui/Badge.tsx",
       "import": "./ui/Badge.tsx"
@@ -67,6 +72,11 @@
       "import": "./ui/EntityChip.tsx"
     },
     "./ui/EntityChip.css": "./ui/EntityChip.css",
+    "./ui/GlyphToggleRow": {
+      "types": "./ui/GlyphToggleRow.tsx",
+      "import": "./ui/GlyphToggleRow.tsx"
+    },
+    "./ui/GlyphToggleRow.css": "./ui/GlyphToggleRow.css",
     "./ui/GlassSurface": {
       "types": "./ui/GlassSurface.tsx",
       "import": "./ui/GlassSurface.tsx"
@@ -81,6 +91,11 @@
       "import": "./ui/Select.tsx"
     },
     "./ui/Select.css": "./ui/Select.css",
+    "./ui/SegmentedPicker": {
+      "types": "./ui/SegmentedPicker.tsx",
+      "import": "./ui/SegmentedPicker.tsx"
+    },
+    "./ui/SegmentedPicker.css": "./ui/SegmentedPicker.css",
     "./ui/FieldDot": {
       "types": "./ui/FieldDot.tsx",
       "import": "./ui/FieldDot.tsx"
@@ -216,6 +231,11 @@
       "import": "./ui/TagListField.tsx"
     },
     "./ui/TagListField.css": "./ui/TagListField.css",
+    "./ui/TagPicker": {
+      "types": "./ui/TagPicker.tsx",
+      "import": "./ui/TagPicker.tsx"
+    },
+    "./ui/TagPicker.css": "./ui/TagPicker.css",
     "./lib/rcs-card": {
       "types": "./lib/rcs-card.ts",
       "import": "./lib/rcs-card.ts"
