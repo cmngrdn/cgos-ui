@@ -69,6 +69,30 @@ export interface VirtualListProps {
   role?: string
   /** Optional ARIA label. */
   'aria-label'?: string
+  /**
+   * Keep this row in view. Pass the index a keyboard selection is on; the list
+   * scrolls the MINIMUM distance to bring it inside the viewport and does
+   * nothing when it is already there.
+   *
+   * WHY THIS HAD TO EXIST HERE rather than in a consumer. A virtualized row
+   * that is off screen is not in the DOM, so `document.querySelector(...)
+   * .scrollIntoView()` — the obvious consumer-side answer — finds nothing and
+   * silently does nothing. Arrow-key navigation past the visible window is
+   * therefore impossible to build against a `VirtualList` from outside it, and
+   * the SMS inbox's arrows read as "scroll" rather than "select" for exactly
+   * that reason (Feather, 2026-09-19: *"it seems like it's more of a scroll
+   * movement than a list selection movement… doesn't seem that you can arrow
+   * up if the scroll is already at the top"*).
+   *
+   * MINIMUM DISTANCE, NOT CENTRED. Centring the selection makes every keypress
+   * move the whole list under the operator's eyes, so the row they are reading
+   * is never where they left it. Scrolling only when the row would otherwise
+   * be cut off is how a native list behaves.
+   *
+   * `null`/`undefined` means "no selection" and never scrolls, so a surface
+   * that has not adopted keyboard navigation is unaffected by this existing.
+   */
+  scrollToIndex?: number | null
 }
 
 export function VirtualList({
@@ -80,6 +104,7 @@ export function VirtualList({
   style,
   role = 'list',
   'aria-label': ariaLabel,
+  scrollToIndex = null,
 }: VirtualListProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [scrollTop, setScrollTop] = useState(0)
@@ -135,6 +160,30 @@ export function VirtualList({
       setScrollTop(max)
     }
   }, [count, rowHeight])
+
+  // Bring the selected row into view, by the minimum distance — see
+  // `scrollToIndex`. Runs BEFORE paint so a keypress never shows a frame with
+  // the selection off screen, and writes `scrollTop` into state as well as onto
+  // the node because the render window is derived from state: setting only the
+  // node would leave the newly-visible rows unrendered until the scroll event
+  // arrived a frame later, which is a blank row exactly where the operator is
+  // looking.
+  useLayoutEffect(() => {
+    const el = containerRef.current
+    if (!el || scrollToIndex == null || rowHeight <= 0) return
+    const i = Math.max(0, Math.min(count - 1, scrollToIndex))
+    const top = i * rowHeight
+    const bottom = top + rowHeight
+    const viewTop = el.scrollTop
+    const viewBottom = viewTop + el.clientHeight
+    let next: number | null = null
+    if (top < viewTop) next = top
+    else if (bottom > viewBottom) next = bottom - el.clientHeight
+    if (next === null) return
+    const clamped = Math.max(0, Math.min(next, count * rowHeight - el.clientHeight))
+    el.scrollTop = clamped
+    setScrollTop(clamped)
+  }, [scrollToIndex, rowHeight, count])
 
   const rows: ReactNode[] = []
   for (let i = startIndex; i < endIndex; i++) {
