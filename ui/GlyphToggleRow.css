@@ -1,0 +1,150 @@
+/* ── GlyphToggleRow ─────────────────────────────────────────────────────────
+ *
+ * One row, one question. The items share a rhythm and a baseline so they read
+ * as a set of related flags rather than as several unrelated controls that
+ * happen to be adjacent — the same argument the segmented track makes, with
+ * gaps kept because these are INDEPENDENT (a shared edge would imply pick-one).
+ */
+
+.cg-glyphrow {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  font-family: var(--cg-font);
+}
+
+/* Items share the row equally. `1 1 0` rather than `1 1 auto` so a two-letter
+   rung and a forklift glyph get the SAME width — with `auto` the basis is the
+   content and the badges would come out ragged, which is exactly the "left
+   aligned, hard to hit" shape this replaces. */
+.cg-glyphrow[data-fill] .cg-glyphtoggle {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.cg-glyphtoggle {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 34px, not the chip family's 28: this is a form-body control sitting with
+     the md segmented pickers, and it is a touch target in its own right rather
+     than one chip in a dense filter row. */
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--cg-radius-sm);
+  border: 1px solid var(--cg-border);
+  background: transparent;
+  color: var(--cg-text-muted);
+  cursor: pointer;
+  transition:
+    border-color var(--cg-duration-fast) var(--cg-ease),
+    background var(--cg-duration-fast) var(--cg-ease),
+    color var(--cg-duration-fast) var(--cg-ease);
+}
+
+.cg-glyphtoggle-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* A rung renders as text and a badge as an SVG; both have to sit on the same
+     optical centre or a mixed row looks like two rows. */
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.cg-glyphtoggle-mark svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+}
+
+.cg-glyphtoggle:hover:not(:disabled) {
+  border-color: var(--cg-border-hover);
+  color: var(--cg-text-secondary);
+}
+
+.cg-glyphtoggle:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 1px;
+}
+
+/* ── Lit ──────────────────────────────────────────────────────────────────
+ * Tone says WHICH LADDER, never how important. The tinted fill plus a matching
+ * border is the same treatment ChipToggle uses when active, so a badge that is
+ * on and a chip that is on read as the same kind of "yes".
+ *
+ * ⚠️ THE TONE NAMES AND THEIR TOKENS MIRROR `BadgeTone` — `info` is
+ * `--cg-status-blue` here because that is what `Badge.tsx`'s TONE_VAR says it
+ * is. There is no `--cg-status-info` token; inventing one, or quietly mapping
+ * `info` to cyan here, would make one word mean two colours depending on which
+ * atom drew it. If Badge's map moves, this moves with it. */
+.cg-glyphtoggle[data-on] {
+  color: var(--cg-accent);
+  border-color: var(--cg-accent-dim);
+  background: var(--cg-accent-subtle);
+}
+
+.cg-glyphtoggle[data-on][data-tone='info'] {
+  color: var(--cg-status-blue);
+  border-color: var(--cg-status-blue);
+  background: color-mix(in srgb, var(--cg-status-blue) 14%, transparent);
+}
+
+.cg-glyphtoggle[data-on][data-tone='success'] {
+  color: var(--cg-status-success);
+  border-color: var(--cg-status-success);
+  background: color-mix(in srgb, var(--cg-status-success) 14%, transparent);
+}
+
+.cg-glyphtoggle[data-on][data-tone='warning'] {
+  color: var(--cg-status-warning);
+  border-color: var(--cg-status-warning);
+  background: color-mix(in srgb, var(--cg-status-warning) 14%, transparent);
+}
+
+.cg-glyphtoggle[data-on][data-tone='danger'] {
+  color: var(--cg-status-danger);
+  border-color: var(--cg-status-danger);
+  background: color-mix(in srgb, var(--cg-status-danger) 14%, transparent);
+}
+
+/* A fixed fact, not a broken control. The lit one KEEPS its tone — it is the
+   record — and the rest recede. Same rule ChipSegment's `:disabled` follows. */
+.cg-glyphtoggle:disabled {
+  cursor: default;
+}
+
+.cg-glyphtoggle:disabled:not([data-on]) {
+  opacity: 0.45;
+}
+
+/* ── Touch ────────────────────────────────────────────────────────────────
+ * 34px is already close, and `data-fill` gives the width. The pseudo-element
+ * takes the height the rest of the way to 44 without moving the visible row —
+ * these sit between labelled fields whose spacing the grid owns. */
+@media (pointer: coarse) {
+  .cg-glyphtoggle {
+    position: relative;
+  }
+
+  .cg-glyphtoggle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cg-glyphtoggle {
+    transition: none;
+  }
+}

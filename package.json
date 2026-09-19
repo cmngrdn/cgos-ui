@@ -32,6 +32,11 @@
       "types": "./ui/Spinner.tsx",
       "import": "./ui/Spinner.tsx"
     },
+    "./ui/StarRating": {
+      "types": "./ui/StarRating.tsx",
+      "import": "./ui/StarRating.tsx"
+    },
+    "./ui/StarRating.css": "./ui/StarRating.css",
     "./ui/Badge": {
       "types": "./ui/Badge.tsx",
       "import": "./ui/Badge.tsx"
@@ -67,6 +72,11 @@
       "import": "./ui/EntityChip.tsx"
     },
     "./ui/EntityChip.css": "./ui/EntityChip.css",
+    "./ui/GlyphToggleRow": {
+      "types": "./ui/GlyphToggleRow.tsx",
+      "import": "./ui/GlyphToggleRow.tsx"
+    },
+    "./ui/GlyphToggleRow.css": "./ui/GlyphToggleRow.css",
     "./ui/GlassSurface": {
       "types": "./ui/GlassSurface.tsx",
       "import": "./ui/GlassSurface.tsx"
