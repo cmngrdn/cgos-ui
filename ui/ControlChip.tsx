@@ -85,16 +85,26 @@ export interface ChipToggleProps {
   active: boolean
   onClick: () => void
   shape?: 'pill' | 'rect'
+  /**
+   * Hover text. `ChipSegment` has taken one since it shipped and `ChipSelect`
+   * has `labelFor`; this was the only chip in the family with no way to say
+   * what it does, which matters most for exactly the chips that need one — a
+   * toggle's label names the STATE, not the effect, so "Everyone" cannot tell
+   * you that pressing it adds a thousand rows.
+   */
+  title?: string
 }
 
 /** Toggle chip — label only, flips accent on/off. */
-export function ChipToggle({ label, active, onClick, shape }: ChipToggleProps) {
+export function ChipToggle({ label, active, onClick, shape, title }: ChipToggleProps) {
   return (
     <button
       type="button"
       data-cg-chip=""
       style={{ ...BASE, borderRadius: shapeRadius(shape), ...activeStyle(active) }}
       onClick={onClick}
+      title={title}
+      aria-pressed={active}
     >
       {label}
     </button>

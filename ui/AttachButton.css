@@ -1,0 +1,23 @@
+/* cgos-ui — AttachButton atom companion CSS
+ * -----------------------------------------------------------------------
+ * The wrapper exists so the hidden input has something to be absolute inside;
+ * the button's own appearance is IconButton's.
+ */
+
+.cg-attach {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+/* Driven by the button, never shown — and clipped rather than
+   `display: none`, which in some browsers makes `.click()` a no-op. */
+.cg-attach-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  opacity: 0;
+  pointer-events: none;
+}

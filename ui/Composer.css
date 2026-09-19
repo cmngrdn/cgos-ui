@@ -16,7 +16,24 @@
   /* Override these from a surface class, not the rules that read them. */
   --cg-composer-min-height: 96px;
   --cg-composer-max-height: 40vh;
+  /* One number for every control in the toolbar. See the toolbar block. */
+  --cg-composer-tool-size: 26px;
 
+  /* THE ROW: the field, then whatever sends it. `align-items: stretch` is what
+     makes a send button as tall as the composer rather than a chip floating
+     beside it — the inquiry reply's shape, which is now every surface's. */
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+/* The bordered field. Everything that was on `.cg-composer` before the send
+   slot existed lives here; the name moved OUT rather than IN so that consumer
+   classNames keep landing on the element their custom properties were written
+   against. */
+.cg-composer-card {
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--cg-border);
@@ -25,8 +42,20 @@
   overflow: hidden;
 }
 
-.cg-composer:focus-within {
+.cg-composer-card:focus-within {
   border-color: var(--cg-accent);
+}
+
+/* The slot stretches; the button inside it decides its own width. A surface
+   passes a `Button` and gets the same tall accent block on every channel. */
+.cg-composer-send {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+
+.cg-composer-send > * {
+  height: 100%;
 }
 
 /* ── Toolbar ─────────────────────────────────────────────────────────────── */
@@ -41,14 +70,33 @@
   flex-wrap: wrap;
 }
 
+/* EVERY CONTROL IN THIS TOOLBAR IS ONE HEIGHT, and the rule says so once
+   rather than each surface discovering it. B/I/U were 26 tall while the emoji
+   and paperclip beside them were an `IconButton` at 24 and the quick-replies
+   pill a `Button` at 24 — three heights in one row, which the SMS thread had
+   already patched locally and the email reply had not. Feather, 2026-09-19:
+   *"the size of the emoji and attach buttons currently seem smaller than the
+   other buttons in the email engine. we should match that size as the
+   standard."*
+
+   ⚠️ SIZING THESE DOES NOT SHRINK THE TOUCH TARGET. `IconButton` and `Button`
+   grow their coarse-pointer hit area with an `::after` at `max(100%, 44px)`,
+   not by growing the element — so `getBoundingClientRect()` reports the visual
+   box and says nothing about what a finger can hit. */
 .cg-composer-tool {
   all: unset;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 26px;
-  height: 26px;
+  /* BORDER-BOX, and it is load-bearing. `all: unset` resets box-sizing to
+     content-box, so `min-width: 26px` plus `0 6px` of padding drew a 38px-wide
+     button — the formatting half was half again as wide as the icons beside it,
+     and on a 480px drawer the six of them pushed the cluster onto a second row.
+     One size means one size. */
+  box-sizing: border-box;
+  min-width: var(--cg-composer-tool-size);
+  height: var(--cg-composer-tool-size);
   padding: 0 6px;
   border-radius: var(--cg-radius-sm);
   font-family: var(--cg-font);
@@ -88,6 +136,18 @@
   align-items: center;
   gap: 2px;
   flex-shrink: 0;
+}
+
+/* The slotted controls take the toolbar's height, whatever atom they are. The
+   `> * >` arm reaches a control the surface wrapped (the attach button carries
+   a hidden `<input>` alongside it, so it ships inside a span). */
+.cg-composer-actions [data-cg-icon-button] {
+  width: var(--cg-composer-tool-size);
+  height: var(--cg-composer-tool-size);
+}
+
+.cg-composer-actions [data-cg-button] {
+  min-height: var(--cg-composer-tool-size);
 }
 
 /* ── Editor ──────────────────────────────────────────────────────────────── */

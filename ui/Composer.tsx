@@ -9,6 +9,7 @@ import {
   useRef,
   type ReactNode,
 } from 'react'
+import { LinkSimple } from '@phosphor-icons/react'
 
 import {
   CHANNEL_CAPABILITIES,
@@ -164,6 +165,20 @@ export interface ComposerProps {
   detectionText?: string
   /** Rendered under the readout: attachments, surface-specific extras. */
   footer?: ReactNode
+  /**
+   * THE SEND CONTROL, pinned to the trailing edge at the composer's full
+   * height. Same reasoning as `actions`: the atom does not send anything and
+   * never will — it owns the POSITION, which is what was drifting. The inquiry
+   * reply put a tall accent button to the right of the card; the SMS thread put
+   * a small one inside its footer beside the meter. One engine, two send
+   * buttons, and Feather could see it: *"the send button in the inbox should be
+   * the same larger size on the right hand side to match the email one"*.
+   *
+   * Pass a `Button` (or anything); the slot stretches it. Omit it and the
+   * composer renders exactly as before — a transmission body sends from an
+   * action bar somewhere else entirely, which is still right.
+   */
+  send?: ReactNode
   ariaLabel?: string
   /** Extra class on the root, for surface-specific sizing. */
   className?: string
@@ -245,6 +260,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   onBodyRewrite,
   detectionText,
   footer,
+  send,
   ariaLabel = 'Message body',
   className,
 }, ref) {
@@ -478,88 +494,103 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   )
 
   return (
+    /* TWO BOXES, AND THE OUTER ONE KEEPS THE NAME. `.cg-composer` is the row —
+       the card plus whatever sends it; `.cg-composer-card` is the bordered
+       field. Named this way round because every consumer's `className` sizes
+       the composer through custom properties inherited from the root, and
+       moving the name would have meant editing six stylesheets to change none
+       of their intent. */
     <div className={`cg-composer${className ? ` ${className}` : ''}`}>
-      {showToolbar && (
-        <div className="cg-composer-toolbar" role="toolbar" aria-label="Formatting">
-          {BUTTONS.filter((b) => caps.includes(b.cap)).map((b) => (
-            <button
-              key={b.cap}
-              type="button"
-              className="cg-composer-tool"
-              aria-label={b.label}
-              title={b.label}
-              disabled={disabled}
-              // mousedown + preventDefault, never onClick — see the header.
-              onMouseDown={(e) => {
-                e.preventDefault()
-                exec(b.cmd)
-              }}
-            >
-              {b.glyph}
-            </button>
-          ))}
-          {caps.includes('link') && (
-            <button
-              type="button"
-              className="cg-composer-tool"
-              aria-label="Insert link"
-              title="Insert link"
-              disabled={disabled}
-              onMouseDown={(e) => {
-                e.preventDefault()
-                promptLink()
-              }}
-            >
-              🔗
-            </button>
-          )}
-          {/* THE SPACER IS THE CONTRACT. Without it the cluster sits wherever
-              the formatting buttons end, so the same controls land in a
-              different place on every channel — which is the drift this slot
-              exists to remove. */}
-          <span className="cg-composer-spacer" aria-hidden />
-          {trailing && <span className="cg-composer-actions">{trailing}</span>}
-        </div>
-      )}
+      <div className="cg-composer-card">
+        {showToolbar && (
+          <div className="cg-composer-toolbar" role="toolbar" aria-label="Formatting">
+            {BUTTONS.filter((b) => caps.includes(b.cap)).map((b) => (
+              <button
+                key={b.cap}
+                type="button"
+                className="cg-composer-tool"
+                aria-label={b.label}
+                title={b.label}
+                disabled={disabled}
+                // mousedown + preventDefault, never onClick — see the header.
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  exec(b.cmd)
+                }}
+              >
+                {b.glyph}
+              </button>
+            ))}
+            {caps.includes('link') && (
+              <button
+                type="button"
+                className="cg-composer-tool"
+                aria-label="Insert link"
+                title="Insert link"
+                disabled={disabled}
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  promptLink()
+                }}
+              >
+                {/* A CHAIN, NOT A CLIP. This was `🔗` — the only colour emoji in
+                    a toolbar of monochrome glyphs, and at 13px an Apple-rendered
+                    link emoji is a diagonal clip shape sitting two seats from the
+                    actual paperclip. Feather, 2026-09-19: *"the email thread now
+                    has TWO attach buttons"*. There was one; the other was this. */}
+                <LinkSimple size={14} weight="regular" />
+              </button>
+            )}
+            {/* THE SPACER IS THE CONTRACT. Without it the cluster sits wherever
+                the formatting buttons end, so the same controls land in a
+                different place on every channel — which is the drift this slot
+                exists to remove. */}
+            <span className="cg-composer-spacer" aria-hidden />
+            {trailing && <span className="cg-composer-actions">{trailing}</span>}
+          </div>
+        )}
 
-      <div
-        ref={editorRef}
-        className="cg-composer-editor"
-        contentEditable={!disabled}
-        suppressContentEditableWarning
-        role="textbox"
-        aria-multiline="true"
-        aria-label={ariaLabel}
-        aria-disabled={disabled || undefined}
-        data-placeholder={placeholder}
-        onInput={emit}
-        onPaste={onPaste}
-        onKeyDown={onKeyDown}
-      />
+        <div
+          ref={editorRef}
+          className="cg-composer-editor"
+          contentEditable={!disabled}
+          suppressContentEditableWarning
+          role="textbox"
+          aria-multiline="true"
+          aria-label={ariaLabel}
+          aria-disabled={disabled || undefined}
+          data-placeholder={placeholder}
+          onInput={emit}
+          onPaste={onPaste}
+          onKeyDown={onKeyDown}
+        />
 
-      {detections.length > 0 && (
-        <div className="cg-composer-hud" role="status" aria-live="polite">
-          {detections.map((d) => (
-            <div key={d.id} className="cg-composer-detection" data-tone={d.tone}>
-              <span className="cg-composer-detection-label">{d.label}</span>
-              {d.detail && (
-                <span className="cg-composer-detection-detail">{d.detail}</span>
-              )}
-              {d.fix && onBodyRewrite && (
-                <button
-                  type="button"
-                  className="cg-composer-detection-fix"
-                  onClick={() => onBodyRewrite(d.fix!.apply(probeText))}
-                >
-                  {d.fix.label}
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+        {detections.length > 0 && (
+          <div className="cg-composer-hud" role="status" aria-live="polite">
+            {detections.map((d) => (
+              <div key={d.id} className="cg-composer-detection" data-tone={d.tone}>
+                <span className="cg-composer-detection-label">{d.label}</span>
+                {d.detail && (
+                  <span className="cg-composer-detection-detail">{d.detail}</span>
+                )}
+                {d.fix && onBodyRewrite && (
+                  <button
+                    type="button"
+                    className="cg-composer-detection-fix"
+                    onClick={() => onBodyRewrite(d.fix!.apply(probeText))}
+                  >
+                    {d.fix.label}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
-      {footer && <div className="cg-composer-footer">{footer}</div>}
+        {footer && <div className="cg-composer-footer">{footer}</div>}
+      </div>
+
+      {send && <div className="cg-composer-send">{send}</div>}
     </div>
   )
 })
