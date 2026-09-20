@@ -39,13 +39,21 @@
 
 /* Size — was a JS lookup table baked into the inline style, so a consumer could
    not target "the small ones". Now an attribute, which a selector can see. */
+/* ⚠️ HEIGHT, NOT JUST PADDING. This was padding-only, so the rendered height
+   was whatever the font and line-height happened to add up to — 44px at `md`,
+   against 40px for the Select and Button it sits beside. Padding is now
+   horizontal only and the height comes from the shared scale, so a font
+   change can no longer resize the control. `textarea` keeps vertical padding:
+   it is multi-line and has no fixed height to centre against. */
 [data-cg-input][data-cg-size="sm"] {
-  padding: 0.375rem 0.625rem;
+  height: var(--cg-control-h-sm, 32px);
+  padding: 0 0.625rem;
   font-size: 0.75rem;
 }
 
 [data-cg-input][data-cg-size="md"] {
-  padding: 0.625rem 0.875rem;
+  height: var(--cg-control-h-md, 40px);
+  padding: 0 0.875rem;
   font-size: 0.875rem;
 }
 

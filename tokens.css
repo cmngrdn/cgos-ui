@@ -373,4 +373,26 @@
   --cg-z-toast:             1300;  /* FIXED — shipped value */
   --cg-z-tooltip:           1400;
   --cg-z-system:            1500;  /* install prompts, dev probes — above the app by intent */
+
+  /* ── Control heights ────────────────────────────────────────────────
+     WHY THIS EXISTS. Feather, on the Members form: "the type field, role
+     selector, add button and add agent button are all inconsistent sizes.
+     shouldn't these be standard atoms by now? if they're not we should lock
+     these in so they're consistent across the entire system's UI."
+
+     They WERE all standard atoms — Input, Select and Button from this
+     package, sitting in one row. The inconsistency was in here. MEASURED on
+     that form: Input 44px, Select 40px, Button 40px, because the three sized
+     themselves three different ways — Input derived its height from padding
+     alone, Select set an explicit `height`, Button set `min-height`. Nothing
+     was wrong at the callsite and nothing could be fixed there.
+
+     ⚠️ A SHARED SCALE IS THE POINT, NOT THE 40. Any of the three could have
+     been "corrected" to match the others and it would drift again the next
+     time one of them was restyled, because agreement was a coincidence rather
+     than a rule. Now `md` is one number in one place and all three read it. */
+  --cg-control-h-xs:        24px;
+  --cg-control-h-sm:        32px;
+  --cg-control-h-md:        40px;
+  --cg-control-h-lg:        48px;
 }

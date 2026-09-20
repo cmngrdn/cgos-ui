@@ -34,13 +34,13 @@ const SIZE_TOKENS: Record<
 > = {
   sm: {
     padding: '0 1.75rem 0 0.625rem',
-    height: '32px',
+    height: 'var(--cg-control-h-sm, 32px)',
     chevronSize: 12,
     chevronRight: '0.5rem',
   },
   md: {
     padding: '0 2rem 0 0.875rem',
-    height: '40px',
+    height: 'var(--cg-control-h-md, 40px)',
     chevronSize: 14,
     chevronRight: '0.625rem',
   },

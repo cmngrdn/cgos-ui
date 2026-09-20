@@ -32,8 +32,20 @@
 
 /* ── Sizes ────────────────────────────────────────────────────── */
 
+/* ⚠️ EVERY REFERENCE CARRIES ITS LITERAL AS A FALLBACK, and that is not
+   belt-and-braces. A consumer pinned to an older cgos-ui gets this stylesheet
+   from the new package and `tokens.css` from... the same package, so in theory
+   they always match — except a stale CSS bundle, a partially-updated
+   node_modules or a consumer that imports atoms without tokens breaks that
+   assumption. An undefined custom property does not fall back to the previous
+   value: it makes the whole declaration INVALID, so `min-height` disappears
+   and the control collapses to its content. Measured while testing this
+   change: buttons went from 40px to 21px. A token that can silently destroy a
+   control is not worth shipping without its literal beside it. */
+
+
 [data-cg-button][data-size="xs"] {
-  min-height: 24px;
+  min-height: var(--cg-control-h-xs, 24px);
   padding: 0 8px;
   font-size: 0.6875rem;       /* 11px */
   font-weight: var(--cg-weight-semibold);
@@ -41,20 +53,20 @@
   gap: 0.375rem;
 }
 [data-cg-button][data-size="sm"] {
-  min-height: 32px;
+  min-height: var(--cg-control-h-sm, 32px);
   padding: 0 12px;
   font-size: 0.75rem;         /* 12px */
   border-radius: var(--cg-radius-sm);
   gap: 0.375rem;
 }
 [data-cg-button][data-size="md"] {
-  min-height: 40px;
+  min-height: var(--cg-control-h-md, 40px);
   padding: 0 16px;
   font-size: 0.8125rem;       /* 13px */
   border-radius: var(--cg-radius-md);
 }
 [data-cg-button][data-size="lg"] {
-  min-height: 48px;
+  min-height: var(--cg-control-h-lg, 48px);
   padding: 0 24px;
   font-size: 0.875rem;        /* 14px */
   font-weight: var(--cg-weight-semibold);
