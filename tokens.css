@@ -340,4 +340,37 @@
   --cg-data-reachable-sms:  #7c5cd6;  /* sms */
   --cg-data-both:           #5f9e10;  /* both — deeper lime */
   --cg-data-unreachable:    #8a8076;  /* neither — warm grey */
+
+  /* ── Layer scale ────────────────────────────────────────────────────
+     WHY THIS EXISTS. There were 41 distinct z-index values across 94 files
+     in cmngrdn alone and not one token, so every layering question was
+     answered locally by picking a bigger number. The result is a real,
+     daily, feel-it-while-you-use-it bug rather than untidiness.
+
+     ⚠️ 1200 AND 1300 ARE FIXED POINTS, NOT CHOICES. Modal has shipped at
+     1200 and Toast at 1300 since before this scale existed, in every
+     consumer on every pin. Renumbering them would silently re-layer four
+     front doors on their next upgrade, so the scale is built AROUND them.
+
+     ⚠️ AND POPOVER SITS ABOVE MODAL ON PURPOSE. It used to be 1000 — BELOW
+     the modal — which meant a dropdown opened inside a modal was drawn
+     behind it. That is why cmngrdn's calendar popover is at 3000: not
+     carelessness, a workaround for this file. The workaround then cleared
+     Toast at 1300 too, so a toast raised while a dropdown was open became
+     invisible. One wrong number here produced both halves of the bug.
+
+     A popover always belongs to whatever the person is touching, so it
+     clears the modal; a toast is the system interrupting, so it clears the
+     popover. That ordering is the whole design. */
+  --cg-z-base:              0;
+  --cg-z-raised:            1;     /* local stacking inside a component */
+  --cg-z-sticky:            100;   /* sticky rows, pinned headers in a list */
+  --cg-z-header:            200;   /* page chrome, sidebars */
+  --cg-z-overlay:           1000;  /* drawers, side panels, inspectors */
+  --cg-z-backdrop:          1100;  /* the scrim under a modal */
+  --cg-z-modal:             1200;  /* FIXED — shipped value */
+  --cg-z-popover:           1250;  /* dropdowns, menus, calendars */
+  --cg-z-toast:             1300;  /* FIXED — shipped value */
+  --cg-z-tooltip:           1400;
+  --cg-z-system:            1500;  /* install prompts, dev probes — above the app by intent */
 }

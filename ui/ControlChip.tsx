@@ -235,7 +235,7 @@ export function ChipSelect({
               borderRadius: 'var(--cg-glass-radius-md)',
               boxShadow: 'inset 0 1px 0 var(--cg-glass-border-top), var(--cg-elev-3)',
               padding: '4px',
-              zIndex: 1000,
+              zIndex: 'var(--cg-z-popover)',
               animation: 'cg-modal-rise 140ms var(--cg-ease-entry)',
             }}
           >
@@ -432,7 +432,7 @@ export function ChipMultiSelect({
               borderRadius: 'var(--cg-glass-radius-md)',
               boxShadow: 'inset 0 1px 0 var(--cg-glass-border-top), var(--cg-elev-3)',
               padding: '4px',
-              zIndex: 1000,
+              zIndex: 'var(--cg-z-popover)',
               animation: 'cg-modal-rise 140ms var(--cg-ease-entry)',
             }}
           >

@@ -4,7 +4,7 @@
 
 [data-cg-popover] {
   position: fixed;
-  z-index: 1000;
+  z-index: var(--cg-z-popover);
   box-sizing: border-box;
   /* The measured room, written by the component. The fallback matters: if the
      inline property is ever missing the panel is capped rather than unbounded,

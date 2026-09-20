@@ -196,7 +196,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               display: 'flex',
               flexDirection: 'column',
               gap: 'var(--cg-space-sm, 10px)',
-              zIndex: 1300,
+              zIndex: 'var(--cg-z-toast)',
               pointerEvents: 'none',
               maxWidth: 'calc(100vw - 32px)',
             }}

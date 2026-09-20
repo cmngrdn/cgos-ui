@@ -188,7 +188,7 @@ export function Modal({
         alignItems: 'center',
         justifyContent: 'center',
         padding: 'var(--cg-space-lg)',
-        zIndex: 1200,
+        zIndex: 'var(--cg-z-modal)',
         animation: open
           ? 'cg-modal-fade 150ms var(--cg-ease)'
           : `cg-modal-fade-out ${EXIT_MS}ms var(--cg-ease-exit) forwards`,
