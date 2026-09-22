@@ -52,6 +52,17 @@
   border-radius: var(--cg-radius-sm);
   gap: 0.375rem;
 }
+/* chip — a button that sits in a row of ControlChips: the create action at the
+   end of a `ToolsRow`. Before this cmngrdn dragged `sm` down to 28 with
+   `.library-filters-actions > button[data-cg-button] { height: 28px }`, a
+   consumer patch that existed only because this step did not (v0.71.0). */
+[data-cg-button][data-size="chip"] {
+  min-height: var(--cg-control-h-chip, 28px);
+  padding: 0 10px;
+  font-size: 0.75rem;         /* 12px */
+  border-radius: 6px;
+  gap: 0.3125rem;
+}
 [data-cg-button][data-size="sm"] {
   min-height: var(--cg-control-h-sm, 32px);
   padding: 0 12px;
@@ -262,6 +273,7 @@
   line-height: 1;
 }
 [data-cg-button][data-size="xs"] [data-cg-button-icon] svg { width: 12px; height: 12px; }
+[data-cg-button][data-size="chip"] [data-cg-button-icon] svg { width: 12px; height: 12px; }
 [data-cg-button][data-size="sm"] [data-cg-button-icon] svg { width: 14px; height: 14px; }
 [data-cg-button][data-size="md"] [data-cg-button-icon] svg { width: 16px; height: 16px; }
 [data-cg-button][data-size="lg"] [data-cg-button-icon] svg { width: 18px; height: 18px; }

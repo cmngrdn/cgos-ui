@@ -50,7 +50,11 @@ import { isCoarsePointer } from '../lib/pointer'
  */
 
 const BASE: CSSProperties = {
-  height: '28px',
+  // The chip step on the shared scale (tokens.css). This was a bare '28px'
+  // that read no token, which is why nothing else could be made to match it
+  // except by typing 28 again. The literal fallback is not decoration: an
+  // undefined custom property invalidates the whole declaration.
+  height: 'var(--cg-control-h-chip, 28px)',
   padding: '0 12px',
   display: 'inline-flex',
   alignItems: 'center',
@@ -93,10 +97,17 @@ export interface ChipToggleProps {
    * you that pressing it adds a thousand rows.
    */
   title?: string
+  /**
+   * How many records this chip would match — "New 7" (v0.71.0). Drawn in the
+   * mono voice after the label, so a filter shelf can say how big each option
+   * is before you press it. `0` renders (an empty option is a fact); omit it
+   * to show nothing.
+   */
+  count?: number
 }
 
 /** Toggle chip — label only, flips accent on/off. */
-export function ChipToggle({ label, active, onClick, shape, title }: ChipToggleProps) {
+export function ChipToggle({ label, active, onClick, shape, title, count }: ChipToggleProps) {
   return (
     <button
       type="button"
@@ -107,6 +118,7 @@ export function ChipToggle({ label, active, onClick, shape, title }: ChipToggleP
       aria-pressed={active}
     >
       {label}
+      {count !== undefined && <span data-cg-chip-count="">{count}</span>}
     </button>
   )
 }
@@ -546,26 +558,28 @@ interface ChipGroupSizeTokens {
 const GROUP_SIZE_TOKENS: Record<ChipGroupSize, ChipGroupSizeTokens> = {
   // sm — the original 28px chip-group. Filter rows, dense chrome.
   sm: {
-    height: '28px',
+    height: 'var(--cg-control-h-chip, 28px)',
     padding: '2px',
     gap: '2px',
     fontSize: '11px',
     radius: '6px',
     background: 'transparent',
-    segHeight: '22px',
+    // Shell minus 2px padding and 1px border, each side — derived, so the
+    // segments follow the token instead of holding their own number.
+    segHeight: 'calc(var(--cg-control-h-chip, 28px) - 6px)',
     segPadding: '0 8px',
   },
   // md — 40px segmented control. Form bodies where peers are Input/Select md.
   // Tinted bg so the group reads as one filled control (the segments visually
   // "live inside" a surface rather than floating in a hairline frame).
   md: {
-    height: '40px',
+    height: 'var(--cg-control-h-md, 40px)',
     padding: '3px',
     gap: '2px',
     fontSize: '13px',
     radius: 'var(--cg-radius-md)',
     background: 'var(--cg-bg)',
-    segHeight: '32px',
+    segHeight: 'calc(var(--cg-control-h-md, 40px) - 8px)',
     segPadding: '0 12px',
   },
 }

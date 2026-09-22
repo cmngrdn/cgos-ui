@@ -1,6 +1,6 @@
 {
   "name": "cgos-ui",
-  "version": "0.70.1",
+  "version": "0.71.0",
   "description": "Shared design tokens, atoms, and visual primitives for the Common Garden ecosystem (cgos dashboard + cmngrdn + feather + reliquary).",
   "type": "module",
   "license": "UNLICENSED",
@@ -289,6 +289,54 @@
     "./lib/emoji-data": {
       "types": "./lib/emoji-data.ts",
       "import": "./lib/emoji-data.ts"
+    },
+    "./ui/ChipSplit": {
+      "types": "./ui/ChipSplit.tsx",
+      "import": "./ui/ChipSplit.tsx"
+    },
+    "./ui/ChipSplit.css": "./ui/ChipSplit.css",
+    "./ui/ChipApplied": {
+      "types": "./ui/ChipApplied.tsx",
+      "import": "./ui/ChipApplied.tsx"
+    },
+    "./ui/ChipApplied.css": "./ui/ChipApplied.css",
+    "./ui/Shelf": {
+      "types": "./ui/Shelf.tsx",
+      "import": "./ui/Shelf.tsx"
+    },
+    "./ui/Shelf.css": "./ui/Shelf.css",
+    "./ui/ToolsRow": {
+      "types": "./ui/ToolsRow.tsx",
+      "import": "./ui/ToolsRow.tsx"
+    },
+    "./ui/ToolsRow.css": "./ui/ToolsRow.css",
+    "./ui/ColumnHeader": {
+      "types": "./ui/ColumnHeader.tsx",
+      "import": "./ui/ColumnHeader.tsx"
+    },
+    "./ui/ColumnHeader.css": "./ui/ColumnHeader.css",
+    "./ui/UniversalListRow": {
+      "types": "./ui/UniversalListRow.tsx",
+      "import": "./ui/UniversalListRow.tsx"
+    },
+    "./ui/UniversalListRow.css": "./ui/UniversalListRow.css",
+    "./ui/UniversalCard": {
+      "types": "./ui/UniversalCard.tsx",
+      "import": "./ui/UniversalCard.tsx"
+    },
+    "./ui/UniversalCard.css": "./ui/UniversalCard.css",
+    "./ui/UniversalTile": {
+      "types": "./ui/UniversalTile.tsx",
+      "import": "./ui/UniversalTile.tsx"
+    },
+    "./ui/UniversalTile.css": "./ui/UniversalTile.css",
+    "./ui/CompletenessDots": {
+      "types": "./ui/CompletenessDots.tsx",
+      "import": "./ui/CompletenessDots.tsx"
+    },
+    "./lib/list": {
+      "types": "./lib/list.ts",
+      "import": "./lib/list.ts"
     }
   },
   "files": [

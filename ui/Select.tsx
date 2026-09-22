@@ -9,6 +9,8 @@ import { forwardRef, type SelectHTMLAttributes, type ReactNode } from 'react'
  * native picker UX, simple form fields.
  *
  * Sizes:
+ *   chip — 28px tall, 12px font, 12px chevron — sits in a row of ControlChips
+ *          and reads their token (v0.71.0)
  *   sm — 32px tall, 12px font, 12px chevron (filter-row, dense chrome)
  *   md — 40px tall, 14px font, 14px chevron (default — most form fields)
  *
@@ -21,7 +23,7 @@ import { forwardRef, type SelectHTMLAttributes, type ReactNode } from 'react'
  * native picker.
  */
 
-export type SelectSize = 'sm' | 'md'
+export type SelectSize = 'chip' | 'sm' | 'md'
 
 export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   size?: SelectSize
@@ -30,17 +32,28 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
 
 const SIZE_TOKENS: Record<
   SelectSize,
-  { padding: string; height: string; chevronSize: number; chevronRight: string }
+  { padding: string; height: string; radius: string; chevronSize: number; chevronRight: string }
 > = {
+  chip: {
+    padding: '0 1.625rem 0 0.625rem',
+    height: 'var(--cg-control-h-chip, 28px)',
+    // The chip family's corner, as `Input size="chip"` — in a row of chips it
+    // reads as one more control, not as a form field.
+    radius: '6px',
+    chevronSize: 12,
+    chevronRight: '0.5rem',
+  },
   sm: {
     padding: '0 1.75rem 0 0.625rem',
     height: 'var(--cg-control-h-sm, 32px)',
+    radius: 'var(--cg-radius-md)',
     chevronSize: 12,
     chevronRight: '0.5rem',
   },
   md: {
     padding: '0 2rem 0 0.875rem',
     height: 'var(--cg-control-h-md, 40px)',
+    radius: 'var(--cg-radius-md)',
     chevronSize: 14,
     chevronRight: '0.625rem',
   },
@@ -71,7 +84,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
           padding: sizeStyle.padding,
           background: 'var(--cg-bg)',
           border: '1px solid var(--cg-border)',
-          borderRadius: 'var(--cg-radius-md)',
+          borderRadius: sizeStyle.radius,
           color: 'var(--cg-text)',
           fontFamily: 'var(--cg-font)',
           outline: 'none',

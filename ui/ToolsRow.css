@@ -1,0 +1,148 @@
+/* ToolsRow — the bar above a list. Spec: docs/subsystems/tools-row-contract.md */
+
+[data-cg-tools-row] {
+  /* The bar's geometry, derived — nothing below types a height. Shelves read
+     these two, so a shelf row is exactly one bar tall and sits on the same
+     gutter. */
+  --cg-tools-row-pad: 4px;
+  --cg-tools-row-bar: calc(var(--cg-control-h-chip, 28px) + var(--cg-tools-row-pad) * 2);
+  --cg-tools-row-gutter: var(--cg-gutter, 24px);
+  --cg-tools-row-gap: 6px;
+
+  /* Narrow is decided by the ROW's width, not the window's. */
+  container: cg-tools-row / inline-size;
+
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  min-width: 0;
+  border-bottom: var(--cg-hairline, 1px solid var(--cg-glass-border));
+}
+
+[data-cg-tools-row-bar] {
+  height: var(--cg-tools-row-bar);
+  display: flex;
+  align-items: center;
+  gap: var(--cg-tools-row-gap);
+  padding-inline: var(--cg-tools-row-gutter);
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* LEFT changes what you're looking at. RIGHT changes what exists. */
+[data-cg-tools-row-left],
+[data-cg-tools-row-right] {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cg-tools-row-gap);
+  flex-shrink: 0;
+}
+
+[data-cg-tools-row-right] {
+  margin-left: auto;
+}
+
+/* A search box is not an elastic member: a ceiling AND a floor. The slack it
+   gives up goes to the applied-filter readout, which yields first. */
+[data-cg-tools-row-search] {
+  flex: 0 1 280px;
+  min-width: 200px;
+  display: flex;
+}
+
+[data-cg-tools-row-search] > * {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* `0 1 auto`, NOT `1 1 0`: a zero basis only grows into FREE space, and a bar
+   with a 280px search has none, so the chips rendered 0px wide while present
+   in the DOM — measured. Content-sized, first to give, and the mask fades what
+   does not fit instead of clipping a chip in half. */
+[data-cg-tools-row-applied] {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent);
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent);
+}
+
+[data-cg-tools-row-count] {
+  font-family: var(--cg-font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: var(--cg-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+[data-cg-tools-row-create] {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+/* ── Narrow ───────────────────────────────────────────────────────────── */
+
+@container cg-tools-row (max-width: 620px) {
+  [data-cg-tools-row-bar] {
+    --cg-tools-row-gutter: var(--cg-gutter-narrow, 12px);
+    height: auto;
+    flex-wrap: wrap;
+    padding-block: var(--cg-tools-row-pad);
+    row-gap: var(--cg-tools-row-pad);
+  }
+
+  [data-cg-shelf-body] {
+    --cg-tools-row-gutter: var(--cg-gutter-narrow, 12px);
+  }
+
+  /* ROW 1 IS THE FILTER CONTROLS, ROW 2 IS SEARCH + VIEW. `margin-left: auto`
+     on the right group stranded an icon-only toggle 32px from the nearest
+     labelled chip at 375 (left group ended at 295, toggle started at 328),
+     which reads as detached. Giving the left group the whole first row puts
+     the toggle at the end of the search row, where it has a neighbour. */
+  [data-cg-tools-row-left] {
+    flex: 1 1 100%;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  [data-cg-tools-row-left]::-webkit-scrollbar {
+    display: none;
+  }
+
+  [data-cg-tools-row-search] {
+    order: 3;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  [data-cg-tools-row-right] {
+    order: 4;
+    margin-left: 0;
+  }
+
+  /* The badge still says how many filters are on and the shelf says which; at
+     this width the chips would fight the controls for the same row. */
+  [data-cg-tools-row-applied],
+  [data-cg-tools-row-count],
+  [data-cg-tools-row-create] {
+    display: none;
+  }
+
+  /* A shelf of controls scrolls sideways rather than wrapping into a wall. */
+  [data-cg-shelf][data-variant="row"] [data-cg-shelf-body] {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  [data-cg-shelf][data-variant="row"] [data-cg-shelf-body]::-webkit-scrollbar {
+    display: none;
+  }
+  [data-cg-shelf-group] {
+    flex-wrap: nowrap;
+  }
+}

@@ -1,0 +1,287 @@
+/* ColumnGrid · ColumnHeader · ColumnRow — the table archetype.
+ * Spec: docs/list-row-template.md → "Table sibling"
+ *
+ * ONE GRID. The header is row zero of it, and every row adopts its tracks with
+ * `subgrid`, so a track is as wide as the widest thing in the COLUMN — label or
+ * value, in any row — and a header cell cannot sit anywhere but over its cells.
+ */
+
+[data-cg-column-grid] {
+  --cg-column-gap: 16px;
+  --cg-column-row-h: 56px;
+  --cg-column-head-h: 30px;
+
+  container: cg-columns / inline-size;
+  display: grid;
+  grid-template-columns: var(--cg-column-template);
+  /* ⚠️ THE GAP LIVES ON THE GRID, NOT ON THE ROWS. A subgrid with its own gap
+     does not get wider gutters — the difference from the parent's gap is taken
+     out of the ITEMS as margin. With 16px on the rows and 0 here, every inner
+     cell rendered 16px narrower than its track: a column resized to 155px drew
+     at 139, and since resize starts from the width you can see, every drag
+     began with a 16px jump. Measured, then fixed here. */
+  column-gap: var(--cg-column-gap);
+  min-width: 0;
+}
+
+[data-cg-column-head],
+[data-cg-column-row] {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  box-sizing: border-box;
+  /* The row sits on the module gutter, so a column edge and the tools row's
+     edge are the same line. */
+  padding-inline: var(--cg-gutter, 24px);
+  border-bottom: 1px solid var(--cg-border);
+}
+
+/* ── Header ───────────────────────────────────────────────────────────── */
+
+[data-cg-column-head] {
+  position: sticky;
+  top: 0;
+  z-index: var(--cg-z-raised, 1);
+  height: var(--cg-column-head-h);
+  background: var(--cg-bg);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+[data-cg-column-head-lead],
+[data-cg-column-head-label] {
+  font-family: var(--cg-font);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--cg-text-muted);
+  white-space: nowrap;
+}
+
+[data-cg-column-head-lead] {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-cg-column-head-cell] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 100%;
+  touch-action: none;
+}
+
+[data-cg-column-head-cell][data-align="end"] {
+  justify-content: flex-end;
+}
+[data-cg-column-head-cell][data-align="center"] {
+  justify-content: center;
+}
+
+[data-cg-column-head-label] {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  cursor: pointer;
+  transition: color var(--cg-duration-fast) var(--cg-ease);
+}
+
+[data-cg-column-head-label]:disabled {
+  cursor: default;
+}
+
+[data-cg-column-head-label]:not(:disabled):hover {
+  color: var(--cg-text-secondary);
+}
+
+[data-cg-column-head-cell][data-active] [data-cg-column-head-label] {
+  color: var(--cg-text);
+}
+
+[data-cg-column-head-label]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* The direction slot is always 8px — the arrow's own width — so a column does
+   not widen when it becomes the sorted one and shove every column after it. */
+[data-cg-column-sort] {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 8px;
+  color: var(--cg-accent);
+}
+
+/* Reorder feedback: the dragged column recedes, the target shows an insertion
+   edge on the side the column will land. */
+[data-cg-column-head][data-dragging] [data-cg-column-head-label] {
+  cursor: grabbing;
+}
+[data-cg-column-head-cell][data-dragging] {
+  opacity: 0.4;
+}
+[data-cg-column-head-cell][data-over] [data-cg-column-head-label] {
+  color: var(--cg-accent);
+}
+[data-cg-column-head-cell][data-over]::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--cg-accent);
+}
+[data-cg-column-head-cell][data-over="before"]::after {
+  left: calc(var(--cg-column-gap) / -2 - 1px);
+}
+[data-cg-column-head-cell][data-over="after"]::after {
+  right: calc(var(--cg-column-gap) / -2 - 1px);
+}
+
+/* Resize grip — centred in the gap on the column's LEFT edge, with a 1px
+   divider that only shows on hover so the resting header stays a label. */
+[data-cg-column-resize] {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--cg-column-gap) / -2 - 6px);
+  width: 12px;
+  cursor: col-resize;
+  touch-action: none;
+  z-index: 1;
+}
+[data-cg-column-resize]::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  left: 50%;
+  width: 1px;
+  background: var(--cg-border-hover);
+  opacity: 0;
+  transition: opacity var(--cg-duration-fast) var(--cg-ease);
+}
+[data-cg-column-head]:hover [data-cg-column-resize]::after {
+  opacity: 1;
+}
+[data-cg-column-resize]:hover::after,
+[data-cg-column-resize]:active::after {
+  background: var(--cg-accent);
+}
+
+/* ── Row ──────────────────────────────────────────────────────────────── */
+
+[data-cg-column-row] {
+  position: relative;
+  height: var(--cg-column-row-h);
+  transition: background var(--cg-duration-fast) var(--cg-ease);
+}
+
+[data-cg-column-row][data-interactive] {
+  cursor: pointer;
+}
+
+[data-cg-column-row][data-interactive]:hover,
+[data-cg-column-row][aria-selected="true"] {
+  background: var(--cg-bg-elevated);
+}
+
+[data-cg-column-row]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: -2px;
+}
+
+[data-cg-column-row-spine] {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+}
+
+[data-cg-column-lead] {
+  min-width: 0;
+}
+
+[data-cg-column-cell] {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--cg-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-cg-column-cell][data-align="end"] {
+  text-align: end;
+}
+[data-cg-column-cell][data-align="center"] {
+  text-align: center;
+}
+
+[data-cg-column-anchor] {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: var(--cg-text-muted);
+}
+
+/* ── Narrow — reflow, never hide ──────────────────────────────────────── */
+
+@container cg-columns (max-width: 620px) {
+  /* A header would title columns that no longer exist. */
+  [data-cg-column-head] {
+    display: none;
+  }
+
+  [data-cg-column-row] {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: auto;
+    min-height: var(--cg-column-row-h);
+    padding-block: 10px;
+    padding-inline: var(--cg-gutter-narrow, 12px);
+    row-gap: 8px;
+    column-gap: 12px;
+  }
+
+  [data-cg-column-lead] {
+    grid-column: 1 / -1;
+  }
+
+  /* The anchor rides the lead line's right edge rather than vanishing. */
+  [data-cg-column-anchor] {
+    position: absolute;
+    top: 10px;
+    right: var(--cg-gutter-narrow, 12px);
+    height: 20px;
+  }
+
+  /* The label is what the header used to say, so it travels with the value. */
+  [data-cg-column-cell] {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    text-align: start;
+  }
+  [data-cg-column-cell]::before {
+    content: attr(data-label);
+    font-size: 8.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--cg-text-muted);
+  }
+}

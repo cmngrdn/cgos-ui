@@ -1,0 +1,183 @@
+/* Shelf · ShelfToggle · ShelfGroup. Spec: docs/subsystems/tools-row-contract.md
+ *
+ * Geometry comes from the ToolsRow it sits in: `--cg-tools-row-gutter` and
+ * `--cg-tools-row-bar` are set on the row, and each falls back to the token it
+ * derives from, so a shelf used on its own still lines up with the gutter.
+ */
+
+/* ── The disclosure ─────────────────────────────────────────────────────── */
+
+/* 0fr → 1fr is the only way to animate to CONTENT height without measuring. */
+[data-cg-shelf] {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--cg-duration-base, 220ms) var(--cg-ease-entry);
+}
+
+[data-cg-shelf][data-open] {
+  grid-template-rows: 1fr;
+}
+
+/* `min-height: 0` IS LOAD-BEARING. A grid item's automatic minimum is its
+   content height, so without it the 0fr track can never get below the content
+   and the shelf never closes. */
+[data-cg-shelf-inner] {
+  min-height: 0;
+  overflow: hidden;
+}
+
+[data-cg-shelf-body] {
+  position: relative;
+  box-sizing: border-box;
+  padding-inline: var(--cg-tools-row-gutter, var(--cg-gutter, 24px));
+}
+
+[data-cg-shelf][data-variant="row"] [data-cg-shelf-body] {
+  min-height: var(--cg-tools-row-bar, calc(var(--cg-control-h-chip, 28px) + 8px));
+  padding-block: 4px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+
+[data-cg-shelf][data-variant="panel"] [data-cg-shelf-body] {
+  padding-block: 10px 12px;
+}
+
+/* A hairline INSET to the gutter. A full-bleed rule would cut the instrument
+   in half instead of dividing it. Chrome, so the chrome hairline. */
+[data-cg-shelf-body]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  inset-inline: var(--cg-tools-row-gutter, var(--cg-gutter, 24px));
+  border-top: var(--cg-hairline, 1px solid var(--cg-glass-border));
+}
+
+[data-cg-shelf][data-tone="selection"] [data-cg-shelf-body] {
+  background: var(--cg-bg-elevated);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-cg-shelf] {
+    transition: none;
+  }
+}
+
+/* ── A labelled group on a shelf ────────────────────────────────────────── */
+
+[data-cg-shelf-group] {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+[data-cg-shelf-group-label] {
+  font-family: var(--cg-font);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--cg-text-muted);
+  white-space: nowrap;
+  margin-right: 2px;
+}
+
+/* ── The toggle that opens a shelf ──────────────────────────────────────── */
+
+[data-cg-shelf-toggle] {
+  appearance: none;
+  margin: 0;
+  font: inherit;
+  font-family: var(--cg-font);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  height: var(--cg-control-h-chip, 28px);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--cg-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cg-text-secondary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color var(--cg-duration-fast) var(--cg-ease),
+    border-color var(--cg-duration-fast) var(--cg-ease),
+    background var(--cg-duration-fast) var(--cg-ease);
+}
+
+[data-cg-shelf-toggle]:hover {
+  color: var(--cg-text);
+  border-color: var(--cg-border-hover);
+}
+
+/* Open reads as "the shelf below is mine" — the same elevated fill the shelf
+   sits on, not the accent a chosen FILTER takes. */
+[data-cg-shelf-toggle][data-open] {
+  color: var(--cg-text);
+  background: var(--cg-bg-elevated);
+  border-color: var(--cg-border-hover);
+}
+
+[data-cg-shelf-toggle]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 1px;
+}
+
+[data-cg-shelf-toggle-icon] {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+[data-cg-shelf-toggle-badge] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: var(--cg-accent);
+  color: var(--cg-bg);
+  font-family: var(--cg-font-mono, ui-monospace, monospace);
+  font-size: 9.5px;
+  font-weight: 600;
+}
+
+[data-cg-shelf-toggle-readout] {
+  font-family: var(--cg-font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--cg-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-cg-shelf-toggle][data-open] [data-cg-shelf-toggle-readout] {
+  color: var(--cg-text-secondary);
+}
+
+@media (pointer: coarse) {
+  :where([data-cg-shelf-toggle]) {
+    position: relative;
+  }
+  [data-cg-shelf-toggle]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+    height: max(100%, 44px);
+    transform: translateY(-50%);
+  }
+}

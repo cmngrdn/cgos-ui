@@ -337,6 +337,50 @@
   --cg-control-h-sm:        32px;
   --cg-control-h-md:        40px;
   --cg-control-h-lg:        48px;
+
+  /* THE CHIP STEP — 28px, v0.71.0. `ControlChip` shipped at 28 from day one
+     and read no token, so the scale above was 24/32/40/48 while the most-used
+     control in every filter row sat off it. A search box could not match a
+     chip without a consumer pinning `height: 28px` by hand, which is exactly
+     what cmngrdn did (`.library-filters-actions > button[data-cg-button]`).
+
+     ⚠️ A NEW STEP, NOT A REDEFINED ONE. `--cg-control-h-xs` is 24px with 53
+     `size="xs"` call sites in cmngrdn alone; moving it to 28 would grow every
+     one of them by 4px without anyone asking. The t-shirt scale has no room
+     between xs and sm, so this names the ROLE — it is the height of a chip,
+     and anything that has to sit in a row of chips (`Input size="chip"`,
+     `Select size="chip"`, `Button size="chip"`) reads it. */
+  --cg-control-h-chip:      28px;
+
+  /* ── Chrome geometry (v0.71.0) ──────────────────────────────────────────
+     Until now no design system held any of this. cmngrdn defined the two
+     heights locally as `--hq-chrome-height` / `--hq-chrome-subrow-height`, and
+     the module gutter was not a token ANYWHERE — `24px` typed as a literal in
+     ~41 padding declarations. The single most-repeated geometric decision in
+     the chrome was a number people retyped, which is the mechanical cause of
+     "padding does not line up between modules": a tab bar, a tools row and the
+     rows under them can only agree on an edge if they read one value.
+
+     `--cg-chrome-h`        — primary chrome row (sidebar header, page header,
+                              inspector header). 48 = iOS nav bar / dense AppBar.
+     `--cg-chrome-subrow-h` — secondary row (sub-tabs, filter strips, viewport
+                              toggles).
+     `--cg-gutter`          — the module's horizontal inset. The tab bar, the
+                              tools row, a shelf, the list rows and the console
+                              archetype ALL read this or the alignment it exists
+                              for is still a convention.
+     `--cg-gutter-narrow`   — the same inset at phone width. Swap it in a
+                              container/media query; never type 12.
+     `--cg-hairline`        — a chrome divider, as a whole `border` value.
+                              Chrome takes `--cg-glass-border`; CONTENT takes
+                              `--cg-border` (heavier). That rule is in
+                              docs/subsystems/inspector-contract.md and was
+                              never tokenised, so each surface re-decided it. */
+  --cg-chrome-h:            48px;
+  --cg-chrome-subrow-h:     40px;
+  --cg-gutter:              24px;
+  --cg-gutter-narrow:       12px;
+  --cg-hairline:            1px solid var(--cg-glass-border);
 }
 
 /* ============================================================

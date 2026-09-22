@@ -11,8 +11,11 @@ import { forwardRef, type InputHTMLAttributes, type TextareaHTMLAttributes } fro
  *   - var(--cg-disabled-opacity) when disabled
  *
  * Sizes:
- *   sm — 32px tall, 12px font (filter-row inputs, dense chrome)
- *   md — 40px tall, 14px font (default — most form inputs)
+ *   chip — 28px tall, 12px font. A search box that sits in a row of chips
+ *          (`ToolsRow`). Reads `--cg-control-h-chip`, the same token
+ *          `ControlChip` does, so the two cannot disagree (v0.71.0).
+ *   sm   — 32px tall, 12px font (filter-row inputs, dense chrome)
+ *   md   — 40px tall, 14px font (default — most form inputs)
  *
  * **STYLING LIVES IN `Input.css`, NOT INLINE (changed 2026-08-14).** These
  * atoms used to set their resting state in a React `style` attribute, and this
@@ -37,7 +40,7 @@ import { forwardRef, type InputHTMLAttributes, type TextareaHTMLAttributes } fro
  * render unstyled rather than half-styled, which is the honest failure mode.
  */
 
-export type InputSize = 'sm' | 'md'
+export type InputSize = 'chip' | 'sm' | 'md'
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   size?: InputSize

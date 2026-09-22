@@ -1,0 +1,371 @@
+/* UniversalCard — the detailed tier. Spec: docs/list-row-template.md → Card sibling */
+
+/* HOISTED from cmngrdn `src/components/hq/list/list.css` in v0.71.0 — rules
+ * unchanged, class names unchanged. The names are kept on purpose: cmngrdn
+ * still ships its own copy of these rules until its consumers move (list-chrome
+ * standard, Phase 4), and identical selectors with identical declarations
+ * cannot fight whichever loads last. That is also why this file is NOT in
+ * `index.css` — it arrives only with the atom that imports it, so installing
+ * this version changes nothing on a page that has not adopted the atom.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * Card view — full-width DETAILED LIST ROW
+ * spine · media · [eyebrow · name] · [facts · signal · chips · actions]
+ *
+ * One item per line, stacked + hairline-separated so it reads unmistakably
+ * as a list — but each row is taller and carries the informative slots in
+ * ALIGNED COLUMNS that line up down the page (fixed metric widths). That
+ * vertical rhythm is what makes a sorted/filtered list scannable; a card
+ * grid can't give it. Middle density between the 64px row and the tile.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* Container — vertical stack, hairline-separated, rounded. */
+.ucard-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--cg-border);
+  border-radius: var(--cg-radius-md, 8px);
+  overflow: hidden;
+}
+
+.ucard {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 76px;
+  padding: 12px 18px 12px 22px;
+  box-sizing: border-box;
+  background: transparent;
+  border-bottom: 1px solid var(--cg-border);
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font-family: var(--cg-font);
+  transition: background 120ms var(--cg-ease, ease);
+}
+
+.ucard:last-child {
+  border-bottom: 0;
+}
+
+.ucard:hover,
+.ucard:focus-visible {
+  background: var(--cg-bg-elevated);
+}
+
+.ucard:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: -2px;
+}
+
+.ucard-selected {
+  background: var(--cg-bg-elevated);
+}
+
+/* Spine — full-height left edge (absolute so it survives the mobile row wrap) */
+.ucard-spine {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+}
+
+.ucard-selection {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Media — 48px square */
+.ucard-media {
+  position: relative;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--cg-radius-sm, 6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ucard-media-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ucard-media-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+}
+
+.ucard-media-mark {
+  font-size: 22px;
+  opacity: 0.6;
+}
+
+.ucard-media-swatch {
+  width: 100%;
+  height: 100%;
+}
+
+/* Date-block media — compact for the 48px square (time rides the eyebrow) */
+.ucard-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  color: var(--cg-text);
+}
+
+.ucard-date-m {
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cg-text-secondary);
+  font-weight: 600;
+}
+
+.ucard-date-d {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-top: 1px;
+}
+
+.ucard-date-t {
+  display: none;
+}
+
+/* Main — eyebrow + name, flexes to fill the middle */
+.ucard-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ucard-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cg-text-muted);
+  font-weight: 600;
+  min-width: 0;
+}
+
+.ucard-eyebrow > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ucard-eyebrow-type {
+  color: var(--cg-text-secondary);
+  flex-shrink: 0;
+}
+
+.ucard-eyebrow-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.ucard-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cg-text);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Metrics cluster — aligned columns on the right. Fixed widths so facts +
+ * signal line up down the list (the vertical rhythm is the whole point). */
+.ucard-metrics {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.ucard-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 92px;
+  min-width: 0;
+}
+
+.ucard-fact-k {
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cg-text-muted);
+}
+
+.ucard-fact-v {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--cg-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Signal — fixed lane so anything after it stays aligned across rows */
+.ucard-signal {
+  width: 168px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  justify-content: center;
+}
+
+.ucard-sig-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ucard-sig-lbl {
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cg-text-muted);
+}
+
+.ucard-sig-val {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ucard-sig-muted {
+  color: var(--cg-text-muted);
+}
+
+.ucard-sig-stat {
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.ucard-track {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--cg-text) 10%, transparent);
+  overflow: hidden;
+}
+
+.ucard-track-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.ucard-spark {
+  width: 100%;
+  height: 24px;
+  display: block;
+}
+
+.ucard-pill {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 11px;
+  border-radius: 999px;
+}
+
+.ucard-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ucard-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ucard-chip {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--cg-border);
+  background: color-mix(in srgb, var(--cg-text) 4%, transparent);
+  color: var(--cg-text-secondary);
+  white-space: nowrap;
+}
+
+.ucard-chip[data-tone="accent"] {
+  color: var(--cg-accent);
+  border-color: color-mix(in srgb, var(--cg-accent) 40%, transparent);
+}
+
+.ucard-chip[data-tone="amber"] {
+  color: var(--cg-status-amber);
+  border-color: color-mix(in srgb, var(--cg-status-amber) 40%, transparent);
+}
+
+.ucard-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Mobile — the metric cluster wraps to a second line under the name,
+ * indented to align with the main column. */
+@media (max-width: 767px) {
+  .ucard {
+    flex-wrap: wrap;
+    row-gap: 10px;
+    min-height: 72px;
+    padding: 12px 14px 12px 18px;
+  }
+
+  .ucard-metrics {
+    flex-basis: 100%;
+    margin-left: 62px;
+    gap: 16px;
+  }
+
+  .ucard-fact {
+    width: auto;
+    min-width: 64px;
+  }
+
+  .ucard-signal {
+    width: 150px;
+  }
+}

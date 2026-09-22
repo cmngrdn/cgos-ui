@@ -18,3 +18,14 @@
 @import "./ui/EmojiPicker.css";
 @import "./ui/StatChip.css";
 @import "./ui/SendMeter.css";
+/* The list chrome (v0.71.0). */
+@import "./ui/ChipSplit.css";
+@import "./ui/ChipApplied.css";
+@import "./ui/Shelf.css";
+@import "./ui/ToolsRow.css";
+@import "./ui/ColumnHeader.css";
+/* NOT here: UniversalListRow / UniversalCard / UniversalTile .css. They were
+   hoisted with their class names (.ulr-*, .ucard-*, .ult-*) unchanged, and
+   cmngrdn still ships its own copy of those rules until its consumers move.
+   Each arrives with the atom that imports it, so installing this version
+   changes nothing on a page that has not adopted the atom. */

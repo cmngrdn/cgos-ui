@@ -2,7 +2,18 @@
 
 The visual contract for every list and grid surface across HQ (`cmngrdn` + `cgos` dashboard) and any future Common Garden product surface. Locks the row skeleton so the eye can predict layout the moment it lands on a new module.
 
-This is a **contract doc**, not an implementation log. The matching atoms are `cgos-ui/ui/UniversalListRow` + `cgos-ui/ui/UniversalTile` (forthcoming).
+This is a **contract doc**, not an implementation log. The matching atoms are `cgos-ui/ui/UniversalListRow`, `cgos-ui/ui/UniversalCard` and `cgos-ui/ui/UniversalTile`, with their shared vocabulary in `cgos-ui/lib/list` — **hoisted from cmngrdn in v0.71.0**. Until then this line said "(forthcoming)" and the atoms lived in cmngrdn `src/components/hq/list/`, so the canonical contract pointed at code that did not exist in the repo that owned it. cmngrdn's consumers still import the local copy until the list-chrome sweep moves them (cmngrdn `docs/list-chrome-standard.md` Phase 4).
+
+**Four archetypes, one family:**
+
+| Archetype | Atom | Height | Use when |
+|---|---|---|---|
+| **Record row** | `UniversalListRow` | 64 / 72 mobile | a list of things you open one at a time |
+| **Card** (detailed tier) | `UniversalCard` | min 76 | the same records, when one line cannot carry the payload — facts + one signal |
+| **Tile** | `UniversalTile` | grid | image-forward browsing |
+| **Table row** | `ColumnGrid` + `ColumnHeader` + `ColumnRow` | 56 | a grid you scan and sort BY COLUMN |
+
+The bar above any of them is governed separately: [`subsystems/tools-row-contract.md`](subsystems/tools-row-contract.md).
 
 ## Why this exists
 
@@ -85,6 +96,75 @@ For grid view. Strict skeleton:
 - Passes → exempt (PassCard is its own atom)
 
 Tile bottom-slot is the only place per-module variation lives. Everything else (spine on top, thumb sizing, name + sub-meta styling) is locked.
+
+## Card sibling — `UniversalCard`
+
+The **detailed tier**: the middle density between the 64px row and the tile. `UniversalCard`'s docblock has cited this section since it shipped; it did not exist until v0.71.0, so the tier with the richest grammar was the only one without a spec. This describes what is implemented.
+
+```
+▎ [media]  TYPE · SUB · TIME                 FACT   FACT   ┌ signal ┐  chip chip  ⓘ ↗
+▎  48px    Name (15px, one line)             value  value  └────────┘
+spine                                        └ 0–3 ┘ └ ONE ┘ └ footer ┘
+```
+
+**Seven slots, in order:** spine · media · eyebrow · name · facts · signal · footer (chips + ≤2 actions).
+
+- **Spine** — the same `SpineToken` as the row. Status leaves the chip layer here too.
+- **Media** — the row's thumb vocabulary (`image` / `icon` / `mark` / `swatch`) plus a `date` block for time-anchored records. 48px.
+- **Eyebrow** — `typeLabel · subLabel · timestamp`, uppercase micro type. The type the row puts in its thumb corner is written out here.
+- **Facts** — `CardFact { label, value }`, **0–3**, fixed 92px lanes so they align down the list. These are the "more than a row" payload.
+- **Signal** — `CardSignal`, **exactly one**, adapter-picked: `progress` · `stat` · `pill` · `sparkline` · `custom` · `none`. A transmission shows a status `pill`, a release a `sparkline`, a crew member a completeness `progress`, a pay period a `stat`. Fixed 168px lane.
+- **Footer** — `CardChip`s (quiet metadata: format, rarity, world) and the row's `RowAction` pair.
+
+**Why chips are allowed here and not in a row.** The no-chips rule governs the record row, and it holds — status goes to the spine, type to the thumb, the width to the title. The card is the tier built to carry more, and its chips are footer metadata, never status or type (those still have their slots). Nothing in the row canon is relaxed by this tier existing.
+
+### Hard rules
+
+- **A FACT PROMOTED TO THE SIGNAL LEAVES THE FACTS.** The signal is the emphasised version of a fact, never a second copy. The list-chrome lab rendered Crew's `COMPLIANCE` twice on its first run — as the bar and as a cell — and caught Finances (`Amount`) and Quests (`Completed`) the same way. The primitive cannot detect it; every per-module adapter must be checked for it.
+- **One signal.** If a record seems to want two, one of them is a fact.
+- **Count facts against production before choosing them.** Half the candidate facts carry one value across every row, and a fact that never varies is noise with a label.
+- **Card and row share their adapter.** The card is the row's narrow-width and detailed rendering, not a second model of the record: sub-meta and anchor become labelled facts. One declaration, two renderings.
+
+### Open decisions
+
+- How many facts a surface may declare (0–3 is what the atom renders; whether 3 is the norm or the ceiling is undecided).
+- Whether `signal` is required on the detailed tier or may be `none`.
+
+## Table sibling — `ColumnGrid` · `ColumnHeader` · `ColumnRow`
+
+The archetype this contract never had. Catalog (`.cl-row`), Crew and Finances (`DataList`'s `.dl-row`) are all **56px grids you scan and sort by column**. They did not choose 56 over 64 for a record row; they are a different object that found only a record-row contract and each invented one. Their convergence on 56 is evidence for this archetype, not against the row's 64.
+
+```
+            NAME                              RECEIVED ↓   CODE          STATUS
+▎ [thumb]  Susie Lawless                     Sep 22       RQ-804-I09   UNREAD    ›
+▎          Black & grey shading
+└─ lead: the one flexing column ─┘           └── data columns, max-content ──┘ anchor
+```
+
+- **One grid, every row `subgrid`.** A track is as wide as the widest thing in its column — label or value, header or any row — so a header cell cannot sit anywhere but over its cells. Verified at **0px drift** across four differently-shaped surfaces (4, 3, 5 and 3 columns; centred pills, end-aligned currency, dot meters, labels wider than their values), and after a reorder and a resize.
+- **Height 56.** Row height is not a control height and is not a token.
+- **Columns are data.** `ColumnGrid` takes `ColumnDef[]` in display order; `ColumnRow` takes its cells as a record keyed by column id and lays them out in that order. One ordering is read by the header and every row, which is the only way a reorder can be correct.
+- **Sort, reorder, resize — and the engine owns the state.** Click a label to sort (the SAME state the bar's sort control reads — two doors, never two sort models). Drag a label, or Alt+←/→, to reorder. Drag the grip on a column's LEFT edge to resize that column (Feather, 2026-07-08; skipped on the first data column). The atom emits `onSort` / `onMove` / `onResize` and holds nothing past a gesture: order, widths and persistence belong to the ONE column engine cmngrdn is to merge from `DataList` and `CatalogList`. Never a third.
+- **Narrow reflows, never hides.** Below 620px of its own width (container query) the header goes and each row lays its cells out under the lead as labelled pairs — the column label travels with the value.
+
+⚠️ **Two things the engine merge must settle, found building this:**
+1. `DataList`'s resize grip is on the RIGHT edge (added 2026-07-26), against the LEFT-edge decision `CatalogList` and cmngrdn `docs/hq-table-columns.md` record. `ColumnHeader` follows the documented decision.
+2. `DataList`, `CatalogList` and the lab all reorder by inserting BEFORE the drop target, which makes a one-step rightward move a no-op. `moveColumnTo` (exported beside the header) puts the column in the target's place instead; the merged engine should adopt it.
+
+⚠️ **The gap lives on the grid, not the rows.** A subgrid with its own gap takes the difference out of its items as margin: with the gap on the rows, a column resized to 155px drew at 139 and every resize began with a 16px jump. Measured, then fixed in `ColumnHeader.css`.
+
+## Compliance gap — measured 2026-09-22
+
+Measured live in cmngrdn at 1440×900 (cmngrdn `docs/list-chrome-standard.md` §1, §9):
+
+| | Surfaces |
+|---|---|
+| Follow the record-row contract (`UniversalListRow`, 64/72) | **~16** |
+| Went bespoke | **6** — Inquiries `.inq-row` (40) · Appointments `.appointments-row` (43, derived) · Catalog `.cl-row` (56) · Crew `.dl-row` (56) · Finances (56) · Quests (inline-styled, 104–237 variable) |
+| Use the detailed tier (`UniversalCard`) | **1** (Transmissions) |
+
+The bespoke six are not defiance: they needed a table or a detailed row, and this contract only described a record row. Catalog, Crew and Finances belong on the **table sibling**; Inquiries, Appointments and Quests are the open cases. The Inquiries `EXEMPT` below is an exemption, not an archetype — it is to be replaced by one of the four, not extended. **Deadline:** the list-chrome sweep, Phases 4–5 in cmngrdn.
+
 
 ## Props specification
 
@@ -212,7 +292,7 @@ Tooltip on spine hover surfaces the human-readable label (e.g. `"Pre-release"`).
 - **Action buttons render even when disabled.** The right edge must stay optically locked across every row in a list. Don't conditionally drop the button — render it greyed.
 - **Sub-meta is single-line.** If the content wants two lines, you're overloading the slot. Move secondary detail to the inspector.
 - **Row height matches the contract (64 desktop / 72 mobile).** Don't pick a one-off height. If a module wants more density, the answer is shorter sub-meta, not a shorter row.
-- **Use `UniversalListRow` / `UniversalTile` directly.** Never re-roll the skeleton in module CSS. Per-module variation lives in the props (sub-meta content, thumb kind, status token), not in the rendered structure.
+- **Use `UniversalListRow` / `UniversalCard` / `UniversalTile` (or the table sibling) directly.** Never re-roll the skeleton in module CSS. Per-module variation lives in the props (sub-meta content, thumb kind, status token), not in the rendered structure.
 - **Inquiries is the only exempt list.** New exemptions need a documented reason in this file before they ship.
 
 ## Migration order (consumer responsibility)

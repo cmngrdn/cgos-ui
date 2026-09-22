@@ -5,9 +5,11 @@
  */
 
 /* Font size lives here, not inline, so the touch rule at the end can reach it. */
-[data-cg-select][data-cg-size="sm"] {
+[data-cg-select][data-cg-size="sm"],
+[data-cg-select][data-cg-size="chip"] {
   font-size: 0.75rem;
 }
+
 [data-cg-select][data-cg-size="md"] {
   font-size: 0.875rem;
 }

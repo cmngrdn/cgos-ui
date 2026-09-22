@@ -36,7 +36,7 @@ import {
  */
 
 export type ButtonVariant = 'primary' | 'ghost' | 'accent' | 'danger' | 'link' | 'glass'
-export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg'
+export type ButtonSize = 'xs' | 'chip' | 'sm' | 'md' | 'lg'
 
 type BaseProps = {
   variant?: ButtonVariant
@@ -59,7 +59,7 @@ type AsAnchor = BaseProps &
 
 export type ButtonProps = AsButton | AsAnchor
 
-const SPINNER_SIZE: Record<ButtonSize, number> = { xs: 10, sm: 12, md: 14, lg: 16 }
+const SPINNER_SIZE: Record<ButtonSize, number> = { xs: 10, chip: 11, sm: 12, md: 14, lg: 16 }
 
 function Spinner({ size }: { size: ButtonSize }) {
   const dim = SPINNER_SIZE[size]

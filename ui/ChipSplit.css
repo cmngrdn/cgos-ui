@@ -1,0 +1,98 @@
+/* ChipSplit — one chip shell, two halves. Spec: docs/subsystems/tools-row-contract.md
+ *
+ * The shell owns the border and the height; the halves are bare buttons inside
+ * it with a hairline between them. `overflow: hidden` clips each half's hover
+ * fill to the shell's corners.
+ */
+
+[data-cg-chip-split] {
+  display: inline-flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  height: var(--cg-control-h-chip, 28px);
+  border: 1px solid var(--cg-border);
+  border-radius: 6px;
+  overflow: hidden;
+  font-family: var(--cg-font);
+  transition: border-color var(--cg-duration-fast) var(--cg-ease);
+}
+
+[data-cg-chip-split][data-open],
+[data-cg-chip-split]:hover {
+  border-color: var(--cg-border-hover);
+}
+
+[data-cg-chip-split-value],
+[data-cg-chip-split-modifier] {
+  appearance: none;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--cg-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color var(--cg-duration-fast) var(--cg-ease),
+    background var(--cg-duration-fast) var(--cg-ease);
+}
+
+[data-cg-chip-split-value] {
+  gap: 5px;
+  padding: 0 9px 0 10px;
+  white-space: nowrap;
+}
+
+[data-cg-chip-split-modifier] {
+  justify-content: center;
+  padding: 0 7px;
+  border-left: 1px solid var(--cg-border);
+}
+
+[data-cg-chip-split-value]:hover,
+[data-cg-chip-split-modifier]:hover {
+  color: var(--cg-text);
+}
+
+/* Open: the value half fills, the way the open shelf beneath it does. */
+[data-cg-chip-split][data-open] [data-cg-chip-split-value] {
+  background: var(--cg-bg-elevated);
+  color: var(--cg-text);
+}
+
+[data-cg-chip-split-value]:focus-visible,
+[data-cg-chip-split-modifier]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: -2px;
+}
+
+[data-cg-chip-split] svg {
+  flex-shrink: 0;
+}
+
+/* Same touch rule as ControlChip: the visible chip stays 28px and the hit area
+   grows vertically to 44px, because chips sit in tight horizontal rows. */
+@media (pointer: coarse) {
+  [data-cg-chip-split] {
+    overflow: visible;
+  }
+  :where([data-cg-chip-split-value], [data-cg-chip-split-modifier]) {
+    position: relative;
+  }
+  [data-cg-chip-split-value]::after,
+  [data-cg-chip-split-modifier]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+    height: max(100%, 44px);
+    transform: translateY(-50%);
+  }
+}

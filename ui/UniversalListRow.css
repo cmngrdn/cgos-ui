@@ -1,0 +1,292 @@
+/* ──────────────────────────────────────────────────────────────────────────
+ * UniversalListRow
+ * Spec: docs/list-row-template.md
+ *
+ * Row height locked at 64px desktop / 72px mobile.
+ * Three zones — spine | body | right anchor.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/* HOISTED from cmngrdn `src/components/hq/list/list.css` in v0.71.0 — rules
+ * unchanged, class names unchanged. The names are kept on purpose: cmngrdn
+ * still ships its own copy of these rules until its consumers move (list-chrome
+ * standard, Phase 4), and identical selectors with identical declarations
+ * cannot fight whichever loads last. That is also why this file is NOT in
+ * `index.css` — it arrives only with the atom that imports it, so installing
+ * this version changes nothing on a page that has not adopted the atom.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * Row
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.ulr-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3px 40px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 64px;
+  padding: 0 16px 0 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  border-bottom: 1px solid var(--cg-border);
+  background: transparent;
+  transition: background 120ms var(--cg-ease, ease);
+  font-family: var(--cg-font);
+  text-align: left;
+  color: inherit;
+}
+
+/* Selection-enabled rows insert a 24px column between spine and thumb. */
+.ulr-row:has(.ulr-selection) {
+  grid-template-columns: 3px 24px 40px 1fr auto;
+  gap: 10px;
+}
+
+.ulr-selection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+}
+
+.ulr-row:hover,
+.ulr-row:focus-visible {
+  background: var(--cg-bg-elevated);
+}
+
+.ulr-row:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: -2px;
+}
+
+.ulr-row-selected {
+  background: var(--cg-bg-elevated);
+}
+
+/* THE KEYBOARD CURSOR, and it reads differently from `selected` on purpose —
+   see `focused` in types.ts. An inset accent edge plus a tint: an edge alone
+   competes with the status spine in column 1, and a tint alone is
+   indistinguishable from the hover it will usually be sitting under. */
+.ulr-row-focused {
+  background: var(--cg-accent-subtle);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cg-accent), transparent 55%);
+}
+
+/* Spine — column 1 */
+.ulr-spine {
+  display: block;
+  width: 3px;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+/* Thumb — column 2 */
+.ulr-thumb {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--cg-radius-sm, 6px);
+  background: var(--cg-bg-surface);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ulr-thumb-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ulr-thumb-icon,
+.ulr-thumb-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  opacity: 0.7;
+}
+
+.ulr-thumb-swatch {
+  width: 100%;
+  height: 100%;
+}
+
+.ulr-portal-pip {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ulr-portal-pip[data-tone="accent"] {
+  background: var(--cg-accent);
+  box-shadow: 0 0 4px var(--cg-accent);
+}
+
+.ulr-portal-pip[data-tone="amber"] {
+  background: var(--cg-status-amber);
+  box-shadow: 0 0 4px var(--cg-status-amber);
+}
+
+.ulr-portal-pip[data-tone="muted"] {
+  background: var(--cg-text-muted);
+}
+
+/* Body — column 3 */
+.ulr-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  gap: 2px;
+}
+
+.ulr-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cg-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.ulr-sub-meta {
+  font-size: 11px;
+  color: var(--cg-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+/* Right anchor — column 4 */
+.ulr-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.ulr-progress {
+  flex-shrink: 0;
+}
+
+/* Channel coverage — "where did this go".
+ *
+ * A published channel is lit at full contrast; a queued one sits dim, so the
+ * difference between "it went out" and "it is going to" reads without a
+ * legend. Glyphs are supplied by the consumer; this owns the spacing, the two
+ * states, and the roll-up past `max`. */
+.ulr-coverage {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ulr-coverage-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cg-text-muted);
+  opacity: 0.45;
+}
+
+.ulr-coverage-glyph[data-published] {
+  color: var(--cg-text-secondary);
+  opacity: 1;
+}
+
+.ulr-coverage-more {
+  font-size: 10px;
+  font-family: var(--cg-font-mono);
+  color: var(--cg-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.ulr-coverage-empty {
+  font-size: 10px;
+  color: var(--cg-text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ulr-time {
+  font-size: 10px;
+  color: var(--cg-text-muted);
+  font-family: var(--cg-font-mono);
+  white-space: nowrap;
+  min-width: 75px;
+  text-align: right;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ulr-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ulr-action-placeholder {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * Row — mobile
+ * 72px row, action cluster collapses (consumers should pass a single
+ * overflow action OR rely on tap-to-inspect on mobile)
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 767px) {
+  .ulr-row {
+    height: 72px;
+    padding: 0 12px 0 0;
+    gap: 10px;
+    grid-template-columns: 3px 40px 1fr auto;
+  }
+
+  .ulr-row:has(.ulr-selection) {
+    grid-template-columns: 3px 24px 40px 1fr auto;
+    gap: 8px;
+  }
+
+  .ulr-time {
+    min-width: 60px;
+    font-size: 9px;
+  }
+
+  /* Mobile collapses the action cluster — consumers handle overflow via
+   * usePageAction or the inspector. Hide both action slots. */
+  .ulr-actions {
+    display: none;
+  }
+
+  .ulr-right {
+    gap: 8px;
+  }
+
+  .ulr-coverage {
+    gap: 4px;
+  }
+
+  .ulr-coverage-empty {
+    display: none;
+  }
+}

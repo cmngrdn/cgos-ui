@@ -1,0 +1,82 @@
+/* ChipApplied — a removable applied-filter chip. Spec: docs/subsystems/tools-row-contract.md
+ *
+ * Accent-tinted pill so it reads as "this is narrowing the list" against the
+ * neutral controls beside it. The × sits muted until hover, then takes the text
+ * colour — the chip is the target, the glyph is the promise.
+ */
+
+[data-cg-chip-applied],
+[data-cg-chip-applied-clear] {
+  appearance: none;
+  margin: 0;
+  font: inherit;
+  font-family: var(--cg-font);
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  height: var(--cg-control-h-chip, 28px);
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-cg-chip-applied] {
+  gap: 6px;
+  padding: 0 9px 0 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cg-accent) 38%, transparent);
+  background: color-mix(in srgb, var(--cg-accent) 14%, transparent);
+  color: var(--cg-text);
+  transition: background var(--cg-duration-fast) var(--cg-ease);
+}
+
+[data-cg-chip-applied] svg {
+  flex-shrink: 0;
+  color: var(--cg-text-muted);
+  transition: color var(--cg-duration-fast) var(--cg-ease);
+}
+
+[data-cg-chip-applied]:hover {
+  background: color-mix(in srgb, var(--cg-accent) 24%, transparent);
+}
+
+[data-cg-chip-applied]:hover svg {
+  color: var(--cg-text);
+}
+
+[data-cg-chip-applied-clear] {
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--cg-text-muted);
+  transition: color var(--cg-duration-fast) var(--cg-ease);
+}
+
+[data-cg-chip-applied-clear]:hover {
+  color: var(--cg-text);
+}
+
+[data-cg-chip-applied]:focus-visible,
+[data-cg-chip-applied-clear]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 1px;
+}
+
+@media (pointer: coarse) {
+  :where([data-cg-chip-applied], [data-cg-chip-applied-clear]) {
+    position: relative;
+  }
+  [data-cg-chip-applied]::after,
+  [data-cg-chip-applied-clear]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+    height: max(100%, 44px);
+    transform: translateY(-50%);
+  }
+}

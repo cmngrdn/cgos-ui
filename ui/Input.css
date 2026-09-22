@@ -45,6 +45,16 @@
    horizontal only and the height comes from the shared scale, so a font
    change can no longer resize the control. `textarea` keeps vertical padding:
    it is multi-line and has no fixed height to centre against. */
+/* chip — the height of a ControlChip, so a search box can sit in a row of them
+   (`ToolsRow`). Radius follows the chip family's 6px rather than the form
+   field's 8px: in that row it is read as one more control, not as a form. */
+[data-cg-input][data-cg-size="chip"] {
+  height: var(--cg-control-h-chip, 28px);
+  padding: 0 0.625rem;
+  font-size: 0.75rem;
+  border-radius: 6px;
+}
+
 [data-cg-input][data-cg-size="sm"] {
   height: var(--cg-control-h-sm, 32px);
   padding: 0 0.625rem;

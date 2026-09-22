@@ -98,3 +98,15 @@
     transform: translateY(-50%);
   }
 }
+
+/* A chip's match count — "New 7". Mono and muted at rest so the label leads;
+ * lifts to the chip's own colour when the chip is on. */
+[data-cg-chip-count] {
+  font-family: var(--cg-font-mono, ui-monospace, monospace);
+  font-size: 10.5px;
+  color: var(--cg-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+[data-cg-chip][aria-pressed="true"] [data-cg-chip-count] {
+  color: inherit;
+}
