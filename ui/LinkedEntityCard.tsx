@@ -1,3 +1,22 @@
+/**
+ * ⚠️ RETIRED 2026-09-21 — DO NOT ADD CONSUMERS.
+ *
+ * Superseded by cmngrdn `components/hq/inspector/LinkedRow`, which is the one
+ * repeated record reference inside an inspector body. This file stays in the
+ * package so an older pin keeps resolving; it has ZERO consumers and a normal
+ * cgos-ui release should delete it.
+ *
+ * WHY IT LOST, because the lesson is about hoisting and not about looks: it was
+ * moved into the design system early and ended with ONE real consumer in the
+ * whole system, while eleven inspector surfaces hand-rolled their own row
+ * beside it — nine distinct implementations by the time anyone counted. The
+ * cause was its SCOPE. Its job is written below as "one object reference."
+ * Singular. Every surface holding MANY references found it did not fit, and
+ * there was no bounded-list container to put it in either.
+ *
+ * Full account: cmngrdn `docs/linked-row-template.md`.
+ */
+
 import type { CSSProperties, ReactNode } from 'react'
 import { Spinner } from './Spinner'
 
