@@ -151,6 +151,8 @@ The archetype this contract never had. Catalog (`.cl-row`), Crew and Finances (`
 1. `DataList`'s resize grip is on the RIGHT edge (added 2026-07-26), against the LEFT-edge decision `CatalogList` and cmngrdn `docs/hq-table-columns.md` record. `ColumnHeader` follows the documented decision.
 2. `DataList`, `CatalogList` and the lab all reorder by inserting BEFORE the drop target, which makes a one-step rightward move a no-op. `moveColumnTo` (exported beside the header) puts the column in the target's place instead; the merged engine should adopt it.
 
+⚠️ **A virtualized list cannot use it yet.** `VirtualList` positions each row in its own box, so rows are not direct children of the grid and `subgrid` has nothing to adopt. cmngrdn's Inquiries (virtualized, 662 rows) keeps its own fixed-width grid at the table height for this reason — and it carries a THIRD column engine (resize persisted to `cg-hq-inquiries-colw`), so the merge is three engines, not two. The merged engine needs a fixed-track mode where every column has a width and each row applies `--cg-column-template` directly.
+
 ⚠️ **The gap lives on the grid, not the rows.** A subgrid with its own gap takes the difference out of its items as margin: with the gap on the rows, a column resized to 155px drew at 139 and every resize began with a 16px jump. Measured, then fixed in `ColumnHeader.css`.
 
 ## Compliance gap — measured 2026-09-22

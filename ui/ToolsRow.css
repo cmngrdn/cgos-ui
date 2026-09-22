@@ -79,8 +79,11 @@
   flex-shrink: 0;
 }
 
+/* A module may pass more than one action ("Import CSV", "+ New"). */
 [data-cg-tools-row-create] {
   display: inline-flex;
+  align-items: center;
+  gap: var(--cg-tools-row-gap);
   flex-shrink: 0;
 }
 
