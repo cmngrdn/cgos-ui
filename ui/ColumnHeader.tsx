@@ -3,15 +3,12 @@
 import {
   createContext,
   useContext,
-  useRef,
-  useState,
   type CSSProperties,
-  type KeyboardEvent,
-  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
 import { SPINE_VAR, type SpineToken } from "../lib/list";
 import { ListCheckbox } from "./ListHeader";
+import { useColumnDrag } from "./useListColumns";
 import "./ColumnHeader.css";
 
 /**
@@ -168,7 +165,6 @@ export interface ColumnHeaderProps {
   actions?: ReactNode;
 }
 
-const DRAG_THRESHOLD = 4;
 
 export function ColumnHeader({
   lead = "Name",
@@ -186,88 +182,15 @@ export function ColumnHeader({
 }: ColumnHeaderProps) {
   const selecting = selectedCount > 0;
   const { columns, anchor } = useContext(ColumnGridContext);
-  const [dragging, setDragging] = useState<string | null>(null);
-  const indexOf = (id: string | null) => columns.findIndex((c) => c.id === id);
-  const [over, setOver] = useState<string | null>(null);
-  const cells = useRef(new Map<string, HTMLDivElement>());
-  const gesture = useRef<{ id: string; x: number; active: boolean } | null>(null);
-  const overRef = useRef<string | null>(null);
-  const swallowClick = useRef(false);
-
-  const columnAt = (x: number): string | null => {
-    for (const [id, el] of cells.current) {
-      const r = el.getBoundingClientRect();
-      // Half the column gap on each side, so the seam between two labels still
-      // counts as a target rather than a dead zone.
-      if (x >= r.left - 8 && x <= r.right + 8) return id;
-    }
-    return null;
-  };
-
-  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>, id: string) => {
-    if (!onMove || e.button !== 0) return;
-    gesture.current = { id, x: e.clientX, active: false };
-  };
-
-  const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const g = gesture.current;
-    if (!g) return;
-    if (!g.active) {
-      if (Math.abs(e.clientX - g.x) < DRAG_THRESHOLD) return;
-      g.active = true;
-      e.currentTarget.setPointerCapture(e.pointerId);
-      setDragging(g.id);
-    }
-    const hit = columnAt(e.clientX);
-    const next = hit && hit !== g.id ? hit : null;
-    if (next !== overRef.current) {
-      overRef.current = next;
-      setOver(next);
-    }
-  };
-
-  const endGesture = (commit: boolean) => {
-    const g = gesture.current;
-    gesture.current = null;
-    if (g?.active) {
-      swallowClick.current = true;
-      if (commit && overRef.current) onMove?.(g.id, overRef.current);
-    }
-    overRef.current = null;
-    setDragging(null);
-    setOver(null);
-  };
-
-  const startResize = (e: ReactPointerEvent<HTMLSpanElement>, col: ColumnDef) => {
-    if (!onResize || e.button !== 0) return;
-    e.stopPropagation();
-    e.preventDefault();
-    const cell = cells.current.get(col.id);
-    if (!cell) return;
-    const grip = e.currentTarget;
-    grip.setPointerCapture(e.pointerId);
-    const startX = e.clientX;
-    const startW = cell.getBoundingClientRect().width;
-    const min = col.minWidth ?? 48;
-    const move = (ev: PointerEvent) => onResize(col.id, Math.max(min, startW - (ev.clientX - startX)));
-    const done = () => {
-      grip.removeEventListener("pointermove", move);
-      grip.removeEventListener("pointerup", done);
-      grip.removeEventListener("pointercancel", done);
-    };
-    grip.addEventListener("pointermove", move);
-    grip.addEventListener("pointerup", done);
-    grip.addEventListener("pointercancel", done);
-  };
-
-  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, index: number) => {
-    if (!onMove || !e.altKey) return;
-    const step = e.key === "ArrowLeft" ? -1 : e.key === "ArrowRight" ? 1 : 0;
-    const target = columns[index + step];
-    if (!step || !target) return;
-    e.preventDefault();
-    onMove(columns[index].id, target.id);
-  };
+  // The gestures are the shared `useColumnDrag` — the same reorder, resize and
+  // click-vs-drag rules as every other header in the system (v0.73.0).
+  const drag = useColumnDrag({
+    order: columns.map((c) => c.id),
+    onMove,
+    onResize,
+    minWidth: (id) => columns.find((c) => c.id === id)?.minWidth ?? 48,
+  });
+  const dragging = drag.dragging;
 
   return (
     <div
@@ -310,46 +233,21 @@ export function ColumnHeader({
         return (
           <div
             key={col.id}
-            ref={(el) => {
-              if (el) cells.current.set(col.id, el);
-              else cells.current.delete(col.id);
-            }}
+            {...drag.cellProps(col.id)}
             data-cg-column-head-cell=""
             data-align={col.align ?? "start"}
             {...(active ? { "data-active": "" } : {})}
-            {...(dragging === col.id ? { "data-dragging": "" } : {})}
-            {...(over === col.id
-              ? // Which side the column will land on — `moveColumnTo` puts it in
-                // the target's place, so a rightward move lands AFTER it.
-                { "data-over": indexOf(over) > indexOf(dragging) ? "after" : "before" }
-              : {})}
             role="columnheader"
             aria-sort={active ? (sort!.dir === "asc" ? "ascending" : "descending") : undefined}
-            onPointerDown={(e) => onPointerDown(e, col.id)}
-            onPointerMove={onPointerMove}
-            onPointerUp={() => endGesture(true)}
-            onPointerCancel={() => endGesture(false)}
           >
             {onResize && i > 0 && (
-              <span
-                data-cg-column-resize=""
-                aria-hidden="true"
-                onPointerDown={(e) => startResize(e, col)}
-                onClick={(e) => e.stopPropagation()}
-              />
+              <span data-cg-column-resize="" aria-hidden="true" {...drag.gripProps(col.id)} />
             )}
             <button
               type="button"
               data-cg-column-head-label=""
               disabled={!sortable && !onMove}
-              onClick={() => {
-                if (swallowClick.current) {
-                  swallowClick.current = false;
-                  return;
-                }
-                if (sortable) onSort?.(col.id);
-              }}
-              onKeyDown={(e) => onKeyDown(e, i)}
+              {...drag.labelProps(col.id, sortable ? () => onSort?.(col.id) : undefined)}
               title={
                 [sortable && "Click to sort", onMove && "drag or Alt+←/→ to move"].filter(Boolean).join(" · ") ||
                 undefined
