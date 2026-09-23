@@ -102,7 +102,7 @@ Verified at the runtime (`getBoundingClientRect` + `getComputedStyle`) in a comp
 
 ## Narrow — a container query, not a media query
 
-Below **620px of the row's own width** (`container: cg-tools-row`), row 1 is `left` and row 2 is search with the view toggle beside it. `count`, `applied` and `create` hide, and shelves scroll sideways instead of wrapping. The container is the right trigger because a list sits in splits, rails and inspectors, not only in the window.
+Below **620px of the row's own width** (`container: cg-tools-row`), row 1 is `left` and row 2 is search with the view toggle beside it. `applied` and `create` hide (the count stays — it is the always-visible result count), and shelves scroll sideways instead of wrapping. The container is the right trigger because a list sits in splits, rails and inspectors, not only in the window.
 
 - ⚠️ **A surface that hides `create` at narrow MUST offer create another way on a phone** (cmngrdn: `usePageAction`), or it has none. Catalog shipped that way once.
 - iOS focus-zoom is handled by `Input`'s own `(pointer: coarse)` → 16px rule, which is the precise signal. Width is not the signal, so the lab's "16px/32px at narrow" is deliberately not reproduced: the search stays one chip tall.

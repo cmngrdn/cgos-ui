@@ -130,8 +130,9 @@
 
   /* The badge still says how many filters are on and the shelf says which; at
      this width the chips would fight the controls for the same row. */
+  /* The COUNT stays — it is the one always-visible "how many results" readout
+     (Feather, 2026-09-23); it rides row 2 beside search + view. */
   [data-cg-tools-row-applied],
-  [data-cg-tools-row-count],
   [data-cg-tools-row-create] {
     display: none;
   }

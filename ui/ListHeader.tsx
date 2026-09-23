@@ -38,8 +38,10 @@ import "./ListHeader.css";
 export interface ListHeaderProps {
   /** Select-all. Omit on a list without selection. */
   select?: { checked: boolean; indeterminate?: boolean; onToggle: () => void };
-  /** Resting count — "124 inquiries". */
-  count: ReactNode;
+  /** Resting label. The list's COUNT belongs in the bar (`ListToolbar`
+   *  `count`), not here — a header row that exists only to show a count is a
+   *  row the list does not need. */
+  count?: ReactNode;
   /** Rows currently ticked. > 0 switches the row to bulk mode. */
   selectedCount?: number;
   /** Bulk actions, shown only while `selectedCount > 0`. Chip-size buttons. */

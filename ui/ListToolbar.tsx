@@ -96,6 +96,10 @@ export interface ListToolbarProps {
   };
   create?: { label: string; onClick: () => void; disabled?: boolean } | null;
   extra?: ReactNode;
+  /** How many records the list shows — "1,804 items". Lives HERE, in the bar's
+   *  right group, and nowhere in a header: in a column header it widened the
+   *  column it sat in (2026-09-23). */
+  count?: ReactNode;
 }
 
 /**
@@ -114,7 +118,7 @@ const TOGGLE_MAX = 4;
 
 type ShelfId = "sort" | "pulse" | null;
 
-export function ListToolbar({ label, sort, filters, pulse, search, view, create, extra }: ListToolbarProps) {
+export function ListToolbar({ label, sort, filters, pulse, search, view, create, extra, count }: ListToolbarProps) {
   const [shelf, setShelf] = useState<ShelfId>(null);
   // THE FILTER DRAWER DEFAULTS TO OPEN WHILE FILTERS ARE ON (Feather,
   // 2026-09-23). It replaces the applied-filter chips beside search: the
@@ -154,6 +158,7 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
   return (
     <ToolsRow
       label={label}
+      count={count}
       left={
         <>
           {sort && (

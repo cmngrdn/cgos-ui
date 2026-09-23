@@ -40,7 +40,8 @@ import "./ToolsRow.css";
  * NARROW is a CONTAINER query (≤620px of the row's own width), not a media
  * query — a list is not always the width of the window; it sits in splits,
  * rails and inspectors. Row 1 becomes the `left` controls; row 2 is search with
- * the view toggle beside it. `count`, `applied` and `create` hide.
+ * the view toggle beside it. `applied` and `create` hide; `count` stays — it
+ * is the one always-visible result count.
  * ⚠️ A module that hides its create button this way must offer create another
  * way on a phone (cmngrdn: `usePageAction`), or it silently has none.
  *
