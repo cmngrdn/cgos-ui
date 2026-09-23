@@ -86,10 +86,22 @@ function write(key: string, s: Saved) {
   }
 }
 
-/** Saved order ∩ current ids, then any id the saved order never saw. */
+/** Saved order ∩ current ids, with any id the saved order never saw inserted
+ *  where the surface DECLARES it — after its nearest declared predecessor that
+ *  is present. Appending new ids at the end put a surface's new first column
+ *  (Inquiries' Client, when it stopped being a pinned lead) LAST on every saved
+ *  layout, which reads as the table having scrambled itself. */
 export function sanitizeOrder(saved: string[] | undefined, ids: string[]): string[] {
-  const known = (saved ?? []).filter((id) => ids.includes(id));
-  return [...known, ...ids.filter((id) => !known.includes(id))];
+  const out = (saved ?? []).filter((id) => ids.includes(id));
+  ids.forEach((id, i) => {
+    if (out.includes(id)) return;
+    const prev = ids
+      .slice(0, i)
+      .reverse()
+      .find((p) => out.includes(p));
+    out.splice(prev ? out.indexOf(prev) + 1 : 0, 0, id);
+  });
+  return out;
 }
 
 export function moveColumnId(order: string[], from: string, to: string): string[] {

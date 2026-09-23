@@ -130,32 +130,82 @@ spine                                        └ 0–3 ┘ └ ONE ┘ └ foote
 - How many facts a surface may declare (0–3 is what the atom renders; whether 3 is the norm or the ceiling is undecided).
 - Whether `signal` is required on the detailed tier or may be `none`.
 
-## Table sibling — `ColumnGrid` · `ColumnHeader` · `ColumnRow`
+## Table sibling — THE table primitive (v0.74.0)
 
-The archetype this contract never had. Catalog (`.cl-row`), Crew and Finances (`DataList`'s `.dl-row`) are all **56px grids you scan and sort by column**. They did not choose 56 over 64 for a record row; they are a different object that found only a record-row contract and each invented one. Their convergence on 56 is evidence for this archetype, not against the row's 64.
+`cgos-ui/ui/ColumnHeader` → `ColumnGrid` · `ColumnHeader` · `ColumnRow` · `ColumnRows` · `ColumnGroupRow` · `ColumnEditCell` · `columnsFrom`
+`cgos-ui/ui/ColumnCard` → `ColumnCards` · `ColumnCard` (the same records as cards)
+`cgos-ui/ui/useListColumns` → `useListColumns` (the state) · `useColumnDrag` (the gestures)
+
+**Every column list in the system renders through this — one renderer, one set of header behaviours.** Until v0.74.0 four renderers drew tables and shared only the engine: cmngrdn's `DataList` (Crew, Rates, Pay periods, pay-period Names), `CatalogList` (Catalog), `InquiriesList` (virtualized) and this atom (Appointments, Workspaces). Every header fix cost four edits and they drifted anyway. A surface that needs something the primitive cannot do gets it added HERE; it never grows a fifth renderer.
 
 ```
-            NAME                              RECEIVED ↓   CODE          STATUS
-▎ [thumb]  Susie Lawless                     Sep 22       RQ-804-I09   UNREAD    ›
-▎          Black & grey shading
-└─ lead: the one flexing column ─┘           └── data columns, max-content ──┘ anchor
+[☐ ▸ ▣]  CLIENT        RECEIVED ↓   CODE ⏷      STATUS                       [Export]   ← ColumnHeader
+▎☐ ▸ ▣   Susie Lawless  Sep 22       RQ-804-I09  UNREAD                          ⧉ ↗    ← ColumnRow
+ └prefix┘ └─────────────── fixed columns ───────────────┘ └─ filler 1fr ─┘ └anchor┘
 ```
 
-- **One grid, every row `subgrid`.** A track is as wide as the widest thing in its column — label or value, header or any row — so a header cell cannot sit anywhere but over its cells. Verified at **0px drift** across four differently-shaped surfaces (4, 3, 5 and 3 columns; centred pills, end-aligned currency, dot meters, labels wider than their values), and after a reorder and a resize.
-- **Height 56.** Row height is not a control height and is not a token.
-- **Columns are data.** `ColumnGrid` takes `ColumnDef[]` in display order; `ColumnRow` takes its cells as a record keyed by column id and lays them out in that order. One ordering is read by the header and every row, which is the only way a reorder can be correct.
-- **The engine is `useListColumns` (v0.73.0) — one for every header in the system.** It owns order, widths and sort per list and persists all three (localStorage, one key per surface), so nothing resets on reload or sign-in. `useColumnDrag` owns the gestures. Before it, cmngrdn had four engines (DataList, CatalogList, Inquiries' width-only one, Appointments' none) and sort lived in the URL or component state — so it reset. The header click and the bar's Sort control read and write the SAME `sort`, so either moves the other live.
-- **Resize is the spreadsheet model (Google Sheets / Airtable — Feather, 2026-09-23).** The grip is on each column's RIGHT border, on every column including the name/lead; dragging right widens THAT column and nothing else changes size — later columns move along at their own widths. Every column is a fixed width and ONE trailing filler track takes the leftover space; when the columns outgrow the view the table scrolls sideways. A first cut put the grip on the LEFT edge with the name column absorbing the slack: a drag moved other columns and felt like it resized the opposite side. Measured after: widening Code by 64px left Name and Received exactly as they were and moved Form and Status 64px right at unchanged widths.
-- **Sort, reorder, resize — the history.** Click a label to sort (the SAME state the bar's sort control reads — two doors, never two sort models). Drag a label, or Alt+←/→, to reorder. Drag the grip on a column's RIGHT border to resize that column, spreadsheet-style (Feather, 2026-09-23; superseding the 2026-07-08 left-edge rule). The atom emits `onSort` / `onMove` / `onResize` and holds nothing past a gesture: order, widths and persistence belong to the ONE column engine cmngrdn is to merge from `DataList` and `CatalogList`. Never a third.
-- **Narrow reflows, never hides.** Below 620px of its own width (container query) the header goes and each row lays its cells out under the lead as labelled pairs — the column label travels with the value.
+### The tracks — the spreadsheet model
 
-⚠️ **Two things the engine merge must settle, found building this:**
-1. `DataList`'s resize grip is on the RIGHT edge (added 2026-07-26), against the LEFT-edge decision `CatalogList` and cmngrdn `docs/hq-table-columns.md` record. `ColumnHeader` follows the documented decision.
-2. `DataList`, `CatalogList` and the lab all reorder by inserting BEFORE the drop target, which makes a one-step rightward move a no-op. `moveColumnTo` (exported beside the header) puts the column in the target's place instead; the merged engine should adopt it.
+`[prefix]? [column]… [filler minmax(0,1fr)] [anchor]?`
 
-⚠️ **A virtualized list cannot use it yet.** `VirtualList` positions each row in its own box, so rows are not direct children of the grid and `subgrid` has nothing to adopt. cmngrdn's Inquiries (virtualized, 662 rows) keeps its own fixed-width grid at the table height for this reason — and it carries a THIRD column engine (resize persisted to `cg-hq-inquiries-colw`), so the merge is three engines, not two. The merged engine needs a fixed-track mode where every column has a width and each row applies `--cg-column-template` directly.
+- **prefix** — checkbox (22) · nesting rail (18) · art square (`artWidth`), 10px apart. Present when the grid has `select`, `nest` or `artWidth`. Not resizable, not reorderable.
+- **No pinned column.** The name is an ordinary column: it sorts, drags and resizes like any other, and any column can be dragged to the first spot. An earlier cut had an optional pinned "lead" that could be neither dragged nor dropped in front of; Catalog and Crew had turned it off and Inquiries had not, so the SAME primitive let you move a column first on one list and not the next (Feather, 2026-09-23). It was removed rather than defaulted off — one behaviour, no opt-out. (`LEAD_COLUMN_ID` survives only as the old width key, read once to carry a saved width over.)
+- **columns** — `ColumnDef[]` in display order, EVERY one a fixed width (`columnsFrom(defs, engine)` applies the saved order and widths; a column with neither gets `defaultWidth`, else 120px — never `max-content`).
+- **filler** — the only flexing track. Leftover width lives here, after the last column.
+- **anchor** — row actions, `anchorWidth` px. List actions in the header need no anchor: they sit at the header's right end.
 
-⚠️ **The gap lives on the grid, not the rows.** A subgrid with its own gap takes the difference out of its items as margin: with the gap on the rows, a column resized to 155px drew at 139 and every resize began with a 16px jump. Measured, then fixed in `ColumnHeader.css`.
+**Resize (Feather, 2026-09-23 — Google Sheets / Airtable).** The grip is on each column's RIGHT border, every column including the name; dragging right widens THAT column and nothing else changes size. When the columns outgrow the view the rows are wider than the grid and the scroll container scrolls sideways; the header is in the same scroller, so it follows with no script.
+
+**No subgrid.** v0.71.0 made rows `subgrid` children so a track could be as wide as its widest label or value. With every track a fixed width that bought nothing, and it is what made virtualization impossible (a virtualized row is not a child of the grid). Each row now applies `--cg-column-template` itself, so a row mounted alone draws on the header's tracks exactly.
+
+### Header behaviours — non-negotiable, every table
+
+1. **Click a label → sort; again → flip.** The header and the bar's Sort control are ONE state — `useListColumns().sort` — so each moves the other live. Wire the header's `onSort` to `toggleSort`, and the bar through the same engine (cmngrdn: `toolbarSortFor`).
+2. **Drag a label → reorder**, header and rows together (pointer events; ≥4px of movement, so a press is still a click; Alt+←/→ by keyboard).
+3. **Resize** as above.
+4. **Order, widths and sort persist** across reloads and sign-in — the engine's localStorage key, one per surface.
+5. **The result count lives ONLY in the tools bar.** Never in a header row: in the leading tracks it overlapped the first label, beside it it widened the column. `ColumnHeader`'s old `count` prop is ignored.
+6. **One header row** does select-all (prefix), "N selected" + bulk actions + Clear IN PLACE over the labels (which stay laid out — visibility, not display — so no track moves), and list actions (Export) at the right end.
+7. **Per-column filter funnels** — `ColumnDef.filter` puts a funnel after the label; the menu is portalled and placed by `placeMenuFor` (a menu inside a sticky header was clipped by any scrolling ancestor).
+
+### Rows
+
+`ColumnRow` — 56px (`--cg-column-row-h`). `cells` (keyed by column id, laid out in the grid's order — the only way a reorder is correct), `anchor` (clicks never open the row), `art`, `spine`, `title` (spine tooltip), `onClick`, `onContextMenu`, and three distinct states that stack: **`selected`** = the record open in the inspector (`aria-current`, elevated fill) · **`checked`** + `onCheck` = ticked for bulk (`aria-selected`, accent tint; `onCheck` gets the event for shift-ranges) · **`focused`** = the keyboard cursor (an accent rule, not another fill). `nest` = `{ expanded, onToggle }` on a parent (chevron) or `"child"` (guide line). `id`/`rowRef`/`tabIndex` for a list shell that owns the keys (`aria-activedescendant`).
+
+`ColumnGroupRow` — a full-width label between rows ("Loose assets", "Today — Sep 23"); collapsible with `onToggle`.
+
+`ColumnEditCell` — the value is its own dropdown (Airtable's model). At rest it looks exactly as the plain cell; a caret on hover; the menu is portalled. Put it in `cells`.
+
+`ColumnRows` — the **virtualized** body: `count`, `rowHeight` (56), `renderRow(i)`, `scrollToIndex` (the keyboard cursor — minimum-distance scroll that clears the sticky header). It does not scroll itself: the grid's nearest scrolling ancestor does (the same one that scrolls sideways and that the header sticks to), and it measures its own offset in that scroller. Below the narrow breakpoint rows are variable-height, so every row mounts there.
+
+### Cards
+
+`ColumnCards` (`select` · `nest` · `art`) + `ColumnCard` — the same records as full-width cards: `title` · `hero` · `meta` · `facts` · `strip` · `actions` · `needs` / `ready` · `synopsis`, with the row's furniture (spine, checkbox, rail, art 68px) kept, so switching view keeps selection, tree and covers. Cards have no labels, so select-all / bulk / list actions ride `ListHeader` above them.
+
+### Narrow — reflow, never hide
+
+Below **620px of the grid's own width** (container query `cg-columns`) the labels go; the header keeps only what it does besides labelling (select-all, bulk, list actions). The first column is the title line; the rest lay out under it as a two-up grid of labelled pairs — the label travels with the value. The anchor rides the first line's right edge.
+
+### Wiring a surface
+
+```tsx
+const cols = useListColumns({ storageKey: "cg-hq-crew", columns: SPECS, defaultSort });
+const columns = columnsFrom(DEFS, cols); // saved order + widths
+
+<ColumnGrid columns={columns} select nest artWidth={40} anchorWidth={60} label="Crew">
+  <ColumnHeader sort={cols.sort} onSort={cols.toggleSort} onMove={cols.move}
+    onResize={cols.setWidth} select={…} selectedCount={n} bulk={…} onClearSelection={…} actions={<Export/>} />
+  {rows.map((r) => <ColumnRow key={r.id} cells={…} … />)}   // or <ColumnRows count renderRow />
+</ColumnGrid>
+```
+
+The grid must sit inside ONE scroll container that scrolls both axes (cmngrdn: `.hq-scroll`), with nothing between them that clips (`overflow: hidden`) — or the sticky header and the sideways scroll break.
+
+### Measured history (keep)
+
+- **The gap lives on the rows now, and that is correct.** Under subgrid a gap on the rows was taken out of the cells as margin (a 155px column drew at 139). Rows are ordinary grids now; the gap is theirs.
+- **A flag that swallows "the click after a drag" must expire** (zero-delay reset) — with pointer capture the click lands on the cell, and a standing flag ate the NEXT real sort click.
+- **Reorder puts the column in the target's place** (`moveColumnId`), so a one-step rightward move is a swap, not a no-op.
 
 ## The row header — one row, directly above the rows (v0.72.0)
 
@@ -163,19 +213,22 @@ Every list has exactly one row between the tools bar and its rows, at the
 bar's height (chip + 4px each side = 36px):
 
 ```
-[☐]  124 inquiries                                         [Export] [Import]
+[☐]                                                          [Export] [Import]
 [☑]  3 selected  [Set status ▾] [Add tag ▾] [Delete]  Clear          [Export]
 ```
 
 - **Record lists** render `ListHeader`. **Tables** carry the same jobs on their
-  column header row (`ColumnHeader`'s `select` · `count` · `bulk` · `actions`),
+  column header row (`ColumnHeader`'s `select` · `bulk` · `actions`),
   because a table already spends a row on labels.
 - **Selecting rows never adds a row.** The count becomes "N selected" and the
   bulk actions appear in place — for a table, over the column labels, which
   stay laid out (visibility, not display) so no track moves.
 - **One checkbox.** `ListCheckbox` is the header's select-all and every row's
   checkbox. Before this, Inquiries, Audience and the DataList engine drew three.
-- **The count lives here**, not in the bar.
+- **The count does NOT live here** (reversed 2026-09-23): it lives only in the
+  tools bar (`ListToolbar` `count`). In a header row it overlapped or widened
+  the first column, and a row that exists only to show a count is a row the
+  list does not need.
 
 Found on the first walkthrough of v0.71.0: Inquiries' bulk bar was a bordered
 ~40px card mounted inside the scroller (it scrolled away) with Export inside

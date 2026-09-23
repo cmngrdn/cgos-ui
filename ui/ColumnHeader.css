@@ -1,42 +1,40 @@
-/* ColumnGrid · ColumnHeader · ColumnRow — the table archetype.
+/* ColumnGrid · ColumnHeader · ColumnRow · ColumnRows — THE table (v0.74.0).
  * Spec: docs/list-row-template.md → "Table sibling"
  *
- * ONE GRID. The header is row zero of it, and every row adopts its tracks with
- * `subgrid`, so a track is as wide as the widest thing in the COLUMN — label or
- * value, in any row — and a header cell cannot sit anywhere but over its cells.
+ * Every track is a FIXED width (the spreadsheet model), so every row — the
+ * header included — applies `--cg-column-template` itself. No subgrid: a row
+ * mounted alone by the virtualizer draws on exactly the header's tracks.
+ *
+ *   [prefix: ☐ · rail · art] [col] [col] … [filler 1fr] [anchor]
  */
 
 [data-cg-column-grid] {
   --cg-column-gap: 16px;
   --cg-column-row-h: 56px;
   /* The header is as tall as the tools bar above it (chip + 4px each side),
-     so the two rows read as one instrument (v0.72.0; was 30). */
+     so the two rows read as one instrument (v0.72.0). */
   --cg-column-head-h: calc(var(--cg-control-h-chip, 28px) + 8px);
 
+  /* The container query asks how wide THIS LIST is — it sits in splits, rails
+     and beside inspectors, so the window's width is the wrong question. Size
+     containment also keeps the grid at its parent's width: the ROWS overflow it
+     when the columns outgrow the view, and the scroller scrolls sideways. */
   container: cg-columns / inline-size;
-  display: grid;
-  /* Spreadsheet width: at least the view, wider when the fixed columns add up
-     to more — then the scroller scrolls sideways instead of anything shrinking. */
+  position: relative;
   width: 100%;
-  min-width: max-content;
-  grid-template-columns: var(--cg-column-template);
-  /* ⚠️ THE GAP LIVES ON THE GRID, NOT ON THE ROWS. A subgrid with its own gap
-     does not get wider gutters — the difference from the parent's gap is taken
-     out of the ITEMS as margin. With 16px on the rows and 0 here, every inner
-     cell rendered 16px narrower than its track: a column resized to 155px drew
-     at 139, and since resize starts from the width you can see, every drag
-     began with a 16px jump. Measured, then fixed here. */
-  column-gap: var(--cg-column-gap);
-  min-width: 0;
+  font-family: var(--cg-font);
 }
 
 [data-cg-column-head],
 [data-cg-column-row] {
-  grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: subgrid;
+  grid-template-columns: var(--cg-column-template);
+  column-gap: var(--cg-column-gap);
   align-items: center;
   box-sizing: border-box;
+  /* Never narrower than the tracks: when they add up to more than the view the
+     row is wider than the grid and the scroller scrolls sideways. */
+  min-width: calc(var(--cg-column-tracks-w) + 2 * var(--cg-gutter, 24px));
   /* The row sits on the module gutter, so a column edge and the tools row's
      edge are the same line. */
   padding-inline: var(--cg-gutter, 24px);
@@ -48,14 +46,13 @@
 [data-cg-column-head] {
   position: sticky;
   top: 0;
-  z-index: var(--cg-z-raised, 1);
+  z-index: var(--cg-z-sticky, 100);
   height: var(--cg-column-head-h);
   background: var(--cg-bg);
   user-select: none;
   -webkit-user-select: none;
 }
 
-[data-cg-column-head-lead],
 [data-cg-column-head-label] {
   font-family: var(--cg-font);
   font-size: 9.5px;
@@ -66,69 +63,22 @@
   white-space: nowrap;
 }
 
-[data-cg-column-head-lead] {
-  position: relative;
+[data-cg-column-head-prefix] {
+  display: flex;
+  align-items: center;
   height: 100%;
-  min-width: 0;
-  text-overflow: ellipsis;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-[data-cg-column-head-count] {
-  color: var(--cg-text-muted);
-  font-variant-numeric: tabular-nums;
-  opacity: 0.8;
-}
-
-[data-cg-column-head-selected] {
-  color: var(--cg-text);
-}
-
-/* Bulk mode: the column labels give way to the bulk actions, in place. The
-   labels stay in the layout (visibility, not display) so the tracks — sized by
-   the widest label OR value — do not move under the rows while you select. */
-[data-cg-column-head][data-selecting] [data-cg-column-head-cell] {
-  visibility: hidden;
-}
-[data-cg-column-head-bulk] {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 100%;
-  z-index: 1;
-  padding-left: var(--cg-column-gap);
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  /* No overflow: it would clip the bulk menus' popovers (see ListHeader.css). */
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-/* Past the filler: the anchor is the LAST track, never auto-placed into the
-   filler before it. */
-[data-cg-column-head-anchor],
-[data-cg-column-anchor] {
-  grid-column: -2 / -1;
-}
-
-[data-cg-column-head-anchor] {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
 }
 
 [data-cg-column-head-cell] {
   position: relative;
   display: flex;
   align-items: center;
+  gap: 4px;
   min-width: 0;
   height: 100%;
+}
+
+[data-cg-column-head-cell] {
   touch-action: none;
 }
 
@@ -149,8 +99,10 @@
   align-items: center;
   gap: 3px;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
-  transition: color var(--cg-duration-fast) var(--cg-ease);
+  transition: color var(--cg-duration-fast, 150ms) var(--cg-ease, ease);
 }
 
 [data-cg-column-head-label]:disabled {
@@ -172,12 +124,59 @@
 }
 
 /* The direction slot is always 8px — the arrow's own width — so a column does
-   not widen when it becomes the sorted one and shove every column after it. */
+   not widen when it becomes the sorted one. */
 [data-cg-column-sort] {
   display: inline-flex;
   flex-shrink: 0;
   width: 8px;
   color: var(--cg-accent);
+}
+
+/* The filler + anchor, as one cell: list actions at the right end. Sticky to
+   the scroller's right edge, so Export stays in reach when the columns are
+   wider than the view and the table is scrolled sideways. */
+[data-cg-column-head-end] {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+  /* Opaque, so labels scrolling underneath do not show through the actions. */
+  background: var(--cg-bg);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+  height: 100%;
+}
+
+/* Bulk mode: the labels give way to "N selected" · bulk · Clear, in place.
+   The labels stay laid out (visibility, not display) so no track moves. */
+[data-cg-column-head][data-selecting] [data-cg-column-head-cell] {
+  visibility: hidden;
+}
+
+[data-cg-column-head-bulk] {
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 100%;
+  white-space: nowrap;
+  /* No overflow: it would clip the bulk menus' popovers (see ListHeader.css). */
+  font-size: 12px;
+}
+
+[data-cg-column-head][data-busy] [data-cg-column-head-bulk] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+[data-cg-column-head-selected] {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cg-text);
+  margin-right: 4px;
 }
 
 /* Reorder feedback: the dragged column recedes, the target shows an insertion
@@ -207,10 +206,9 @@
   right: calc(var(--cg-column-gap) / -2 - 1px);
 }
 
-/* Resize grip — centred in the gap on the column's LEFT edge, with a 1px
-   divider that only shows on hover so the resting header stays a label. */
-/* On the column's RIGHT border (the line between it and the next header) —
-   the spreadsheet model. */
+/* Resize grip — on the column's RIGHT border (the line between it and the
+   next header), centred in the gap. A 1px divider shows while the pointer is
+   over the header, so the resting header stays a label. */
 [data-cg-column-resize] {
   position: absolute;
   top: 0;
@@ -219,7 +217,7 @@
   width: 12px;
   cursor: col-resize;
   touch-action: none;
-  z-index: 1;
+  z-index: 2;
 }
 [data-cg-column-resize]::after {
   content: '';
@@ -230,7 +228,7 @@
   width: 1px;
   background: var(--cg-border-hover);
   opacity: 0;
-  transition: opacity var(--cg-duration-fast) var(--cg-ease);
+  transition: opacity var(--cg-duration-fast, 150ms) var(--cg-ease, ease);
 }
 [data-cg-column-head]:hover [data-cg-column-resize]::after {
   opacity: 1;
@@ -240,12 +238,142 @@
   background: var(--cg-accent);
 }
 
+/* ── Header funnel ────────────────────────────────────────────────────── */
+
+[data-cg-column-funnel] {
+  appearance: none;
+  margin: 0;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 16px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  color: var(--cg-text-muted);
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity var(--cg-duration-fast, 150ms) var(--cg-ease, ease);
+}
+[data-cg-column-head]:hover [data-cg-column-funnel],
+[data-cg-column-funnel]:focus-visible {
+  opacity: 1;
+}
+[data-cg-column-funnel]:hover {
+  color: var(--cg-text);
+  background: var(--cg-fill, var(--cg-bg-surface));
+}
+[data-cg-column-funnel][data-active],
+[data-cg-column-funnel][data-open] {
+  color: var(--cg-accent);
+  opacity: 1;
+}
+[data-cg-column-funnel]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 1px;
+}
+[data-cg-column-funnel-n] {
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+/* ── Menus (funnel + inline edit), portalled to <body> ────────────────── */
+
+[data-cg-column-menu] {
+  z-index: var(--cg-z-popover, 1250);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px;
+  overflow-y: auto;
+  background: var(--cg-bg-elevated, var(--cg-bg));
+  border: 1px solid var(--cg-border);
+  border-radius: var(--cg-radius-md, 8px);
+  box-shadow: var(--cg-elev-3, 0 8px 24px rgba(0, 0, 0, 0.28));
+  font-family: var(--cg-font);
+}
+
+[data-cg-column-menu-item],
+[data-cg-column-menu-clear] {
+  appearance: none;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--cg-radius-sm, 5px);
+  font-family: inherit;
+  font-size: 12px;
+  text-align: start;
+  color: var(--cg-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+[data-cg-column-menu-item]:hover,
+[data-cg-column-menu-clear]:hover {
+  background: var(--cg-fill, var(--cg-bg-surface));
+  color: var(--cg-text);
+}
+[data-cg-column-menu-item][data-on] {
+  color: var(--cg-text);
+}
+[data-cg-column-menu][role="listbox"] [data-cg-column-menu-item][data-on] {
+  color: var(--cg-accent);
+}
+[data-cg-column-menu-item]:focus-visible,
+[data-cg-column-menu-clear]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: -2px;
+}
+[data-cg-column-menu-check] {
+  display: grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  color: var(--cg-accent);
+}
+[data-cg-column-menu-label] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-cg-column-menu-clear] {
+  justify-content: center;
+  margin-top: 2px;
+  border-top: 1px solid var(--cg-border);
+  border-radius: 0 0 var(--cg-radius-sm, 5px) var(--cg-radius-sm, 5px);
+  font-size: 11px;
+  color: var(--cg-text-muted);
+}
+[data-cg-column-menu-empty] {
+  padding: 8px;
+  font-size: 11px;
+  color: var(--cg-text-muted);
+}
+
+@media (pointer: coarse) {
+  [data-cg-column-menu-item] {
+    padding: 11px 12px;
+    font-size: 13px;
+  }
+}
+
 /* ── Row ──────────────────────────────────────────────────────────────── */
 
 [data-cg-column-row] {
   position: relative;
   height: var(--cg-column-row-h);
-  transition: background var(--cg-duration-fast) var(--cg-ease);
+  background: transparent;
+  transition: background var(--cg-duration-fast, 150ms) var(--cg-ease, ease);
+  /* A keyboard cursor scrolling a row into view must clear the sticky header. */
+  scroll-margin-top: calc(var(--cg-column-head-h) + 4px);
+  scroll-margin-bottom: 8px;
 }
 
 [data-cg-column-row][data-interactive] {
@@ -253,8 +381,26 @@
 }
 
 [data-cg-column-row][data-interactive]:hover,
-[data-cg-column-row][aria-selected="true"] {
+[data-cg-column-row][data-selected] {
   background: var(--cg-bg-elevated);
+}
+
+/* Ticked for a bulk action — a tint, distinct from the open record. */
+[data-cg-column-row][data-checked] {
+  background: color-mix(in srgb, var(--cg-accent) 5%, transparent);
+}
+[data-cg-column-row][data-checked]:hover {
+  background: color-mix(in srgb, var(--cg-accent) 9%, var(--cg-bg-elevated));
+}
+
+/* The keyboard cursor: an accent RULE down the row, not another fill — it
+   co-occurs with "open" constantly and the two cues must stack. */
+[data-cg-column-row][data-focused] {
+  background: color-mix(in srgb, var(--cg-accent) 7%, transparent);
+  box-shadow: inset 2px 0 0 var(--cg-accent);
+}
+[data-cg-column-row][data-focused]:hover {
+  background: color-mix(in srgb, var(--cg-accent) 11%, var(--cg-bg-elevated));
 }
 
 [data-cg-column-row]:focus-visible {
@@ -270,8 +416,88 @@
   width: 3px;
 }
 
-[data-cg-column-lead] {
-  min-width: 0;
+/* Prefix: checkbox · nesting rail · art, 10px apart (the JS sums the same). */
+[data-cg-column-prefix] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  align-self: stretch;
+}
+[data-cg-column-check] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  flex-shrink: 0;
+}
+[data-cg-column-rail] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+[data-cg-column-guide] {
+  width: 1px;
+  align-self: stretch;
+  background: var(--cg-border);
+}
+[data-cg-column-chevron] {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  color: var(--cg-text-secondary);
+  cursor: pointer;
+}
+[data-cg-column-chevron]:hover {
+  background: var(--cg-fill, var(--cg-bg-surface));
+  color: var(--cg-text);
+}
+[data-cg-column-chevron] svg {
+  transition: transform var(--cg-duration-fast, 150ms) var(--cg-ease, ease);
+}
+[data-cg-column-row][data-expanded] [data-cg-column-chevron] svg {
+  transform: rotate(90deg);
+}
+[data-cg-column-chevron]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 1px;
+}
+
+/* Lead art — cover, avatar, glyph — in a fixed square. An <img> fills it. */
+[data-cg-column-art] {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--cg-column-art-w);
+  height: var(--cg-column-art-w);
+  flex-shrink: 0;
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--cg-bg-surface);
+}
+[data-cg-column-grid][data-art-shape="circle"] [data-cg-column-art] {
+  border-radius: 50%;
+}
+[data-cg-column-art] > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Invisible to the grid on desktop: every cell keeps its own track. */
+[data-cg-column-cells] {
+  display: contents;
 }
 
 [data-cg-column-cell] {
@@ -291,49 +517,167 @@
   text-align: center;
 }
 
+/* The LAST track by name — auto-placement would drop it in the filler. */
 [data-cg-column-anchor] {
+  grid-column: -2 / -1;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 4px;
   color: var(--cg-text-muted);
+}
+
+/* ── Group row ────────────────────────────────────────────────────────── */
+
+[data-cg-column-group] {
+  /* As wide as the rows, so its rule does not stop short when the table
+     scrolls sideways. */
+  min-width: calc(var(--cg-column-tracks-w, 0px) + 2 * var(--cg-gutter, 24px));
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  box-sizing: border-box;
+  padding: 11px var(--cg-gutter, 24px) 10px;
+  border-bottom: 1px solid var(--cg-border);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cg-text-muted);
+  user-select: none;
+}
+[data-cg-column-group][data-accent] {
+  color: var(--cg-accent);
+}
+[data-cg-column-group][data-interactive] {
+  cursor: pointer;
+  color: var(--cg-text-secondary);
+}
+[data-cg-column-group][data-interactive]:hover {
+  background: var(--cg-bg-elevated);
+}
+[data-cg-column-group]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: -2px;
+}
+[data-cg-column-group-caret] {
+  transition: transform var(--cg-duration-fast, 150ms) var(--cg-ease, ease);
+}
+[data-cg-column-group-caret][data-open] {
+  transform: rotate(90deg);
+}
+[data-cg-column-group-count] {
+  font-family: var(--cg-font-mono, ui-monospace, monospace);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--cg-text-muted);
+}
+
+/* ── Inline edit cell ─────────────────────────────────────────────────── */
+
+[data-cg-column-edit] {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  max-width: 100%;
+  border-radius: var(--cg-radius-sm, 5px);
+  cursor: pointer;
+}
+/* Reserved whether or not it is painted (opacity, never display): a cell that
+   grows on hover makes the whole column twitch as the pointer moves down. */
+[data-cg-column-edit-caret] {
+  font-size: 9px;
+  line-height: 1;
+  color: var(--cg-text-muted);
+  opacity: 0;
+  transition: opacity var(--cg-duration-fast, 150ms) var(--cg-ease, ease);
+}
+[data-cg-column-edit]:hover [data-cg-column-edit-caret],
+[data-cg-column-edit]:focus-visible [data-cg-column-edit-caret] {
+  opacity: 1;
+}
+[data-cg-column-edit]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: -1px;
+}
+@media (pointer: coarse) {
+  [data-cg-column-edit-caret] {
+    opacity: 1;
+  }
 }
 
 /* ── Narrow — reflow, never hide ──────────────────────────────────────── */
 
 @container cg-columns (max-width: 620px) {
-  /* A header would title columns that no longer exist. */
+  /* Labels would title columns that no longer exist. What the header row does
+     besides labelling — select-all, bulk, list actions — stays. */
   [data-cg-column-head] {
     display: none;
   }
+  [data-cg-column-head][data-tools] {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding-inline: var(--cg-gutter-narrow, 12px);
+  }
+  [data-cg-column-head][data-tools] > [data-cg-column-head-cell] {
+    display: none;
+  }
+  [data-cg-column-head][data-tools] > [data-cg-column-head-end] {
+    margin-left: auto;
+  }
+
+  [data-cg-column-group] {
+    min-width: 0;
+    padding-inline: var(--cg-gutter-narrow, 12px);
+  }
 
   [data-cg-column-row] {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr);
     height: auto;
     min-height: var(--cg-column-row-h);
+    min-width: 0;
     padding-block: 10px;
     padding-inline: var(--cg-gutter-narrow, 12px);
     row-gap: 8px;
     column-gap: 12px;
+    align-items: start;
+  }
+  [data-cg-column-grid][data-prefix] [data-cg-column-row] {
+    grid-template-columns: var(--cg-column-prefix-w) minmax(0, 1fr);
   }
 
-  [data-cg-column-lead] {
-    grid-column: 1 / -1;
+  [data-cg-column-prefix] {
+    grid-row: 1 / -1;
+    align-self: start;
   }
 
-  /* The anchor rides the lead line's right edge rather than vanishing. */
-  [data-cg-column-anchor] {
-    position: absolute;
-    top: 10px;
-    right: var(--cg-gutter-narrow, 12px);
-    height: 20px;
+  /* The cells share a two-up grid, each a labelled pair — the
+     label is what the header used to say, so it travels with the value. */
+  [data-cg-column-cells] {
+    grid-column: -2 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px 12px;
+    min-width: 0;
   }
-
-  /* The label is what the header used to say, so it travels with the value. */
   [data-cg-column-cell] {
     display: flex;
     flex-direction: column;
     gap: 3px;
+    text-align: start;
+  }
+  [data-cg-column-cell][data-align] {
     text-align: start;
   }
   [data-cg-column-cell]::before {
@@ -342,5 +686,23 @@
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--cg-text-muted);
+  }
+  /* The first column is the title line — full width, no label. */
+  [data-cg-column-cell]:first-child {
+    grid-column: 1 / -1;
+  }
+  [data-cg-column-cell]:first-child::before {
+    content: none;
+  }
+  /* Clear the anchor, which rides the first line's right edge. */
+  [data-cg-column-grid][data-anchor] [data-cg-column-cell]:first-child {
+    padding-right: 72px;
+  }
+
+  /* The anchor rides the first line's right edge rather than vanishing. */
+  [data-cg-column-anchor] {
+    position: absolute;
+    top: 10px;
+    right: var(--cg-gutter-narrow, 12px);
   }
 }

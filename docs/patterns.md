@@ -42,6 +42,15 @@ Empty is the correct starting state — entries arrive as sessions learn things,
 
 - **Filters: dropdown by default; toggles only for a small FIXED vocabulary.** Deciding by option count (≤ 8 → chips) made one filter chips in one workspace and a dropdown in the next, and let long record-derived labels (SMS blasts) eat a shelf row. Where the options come FROM decides.
 
-- **Four renderers sharing one engine still drift.** After unifying state + gestures (`useListColumns`/`useColumnDrag`), every header change still cost four edits (DataList, CatalogList, InquiriesList, ColumnGrid). The cause is history: each table was built for one page and the "hoist when a second consumer needs it" note was skipped exactly when the second consumer arrived. Merge the renderers.
+- **Four renderers sharing one engine still drift.** After unifying state + gestures (`useListColumns`/`useColumnDrag`), every header change still cost four edits (DataList, CatalogList, InquiriesList, ColumnGrid). The cause is history: each table was built for one page and the "hoist when a second consumer needs it" note was skipped exactly when the second consumer arrived. Merge the renderers. **Done in v0.74.0:** one table primitive; DataList is a data adapter over it, CatalogList/InquiriesList draw nothing of their own.
+
+- **An option on a shared primitive is a second behaviour.** v0.74.0 first shipped with an optional pinned "lead" column (not draggable, not a drop target). Catalog and Crew had it off, Inquiries/Appointments/Workspaces on — so "move a column to the first spot" worked on one list and not the next, and the owner asked "why would this be different? it's the same primitive". Removed outright rather than defaulted off.
+  **How to apply:** when the owner states a behaviour for ALL lists, the primitive must not expose a prop that turns it off. An opt-out is where the next drift starts.
+
+- **A column the saved layout has never seen must land where the surface declares it, not at the end.** `sanitizeOrder` appended unknown ids, so converting a pinned lead into an ordinary first column would have put it LAST on every saved layout — read as "the table scrambled itself". It now inserts after the nearest declared predecessor.
+
+- **Rows that are not subgrid children are what make a virtualized table possible.** Once every track had a fixed width, subgrid bought nothing and blocked `ColumnRows`. Each row applies `--cg-column-template` itself; the body windows against the grid's scroll ancestor, so the sticky header scrolls sideways with the rows with no script (Inquiries' old header followed `scrollLeft` by transform).
+
+- **Per-column pieces a sticky header holds must be portalled.** Funnel and inline-edit menus are placed by `placeMenuFor` into `<body>`; list actions in the header end cell are `position: sticky; right: 0` so Export stays in reach when the table scrolls sideways.
 
 <!-- Add entries above this line, newest last. -->
