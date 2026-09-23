@@ -155,6 +155,31 @@ The archetype this contract never had. Catalog (`.cl-row`), Crew and Finances (`
 
 ⚠️ **The gap lives on the grid, not the rows.** A subgrid with its own gap takes the difference out of its items as margin: with the gap on the rows, a column resized to 155px drew at 139 and every resize began with a 16px jump. Measured, then fixed in `ColumnHeader.css`.
 
+## The row header — one row, directly above the rows (v0.72.0)
+
+Every list has exactly one row between the tools bar and its rows, at the
+bar's height (chip + 4px each side = 36px):
+
+```
+[☐]  124 inquiries                                         [Export] [Import]
+[☑]  3 selected  [Set status ▾] [Add tag ▾] [Delete]  Clear          [Export]
+```
+
+- **Record lists** render `ListHeader`. **Tables** carry the same jobs on their
+  column header row (`ColumnHeader`'s `select` · `count` · `bulk` · `actions`),
+  because a table already spends a row on labels.
+- **Selecting rows never adds a row.** The count becomes "N selected" and the
+  bulk actions appear in place — for a table, over the column labels, which
+  stay laid out (visibility, not display) so no track moves.
+- **One checkbox.** `ListCheckbox` is the header's select-all and every row's
+  checkbox. Before this, Inquiries, Audience and the DataList engine drew three.
+- **The count lives here**, not in the bar.
+
+Found on the first walkthrough of v0.71.0: Inquiries' bulk bar was a bordered
+~40px card mounted inside the scroller (it scrolled away) with Export inside
+it; Audience's was a different bar with Export up in the filter strip; the
+DataList engine drew a third above its header. Same job, three shapes.
+
 ## Compliance gap — measured 2026-09-22
 
 Measured live in cmngrdn at 1440×900 (cmngrdn `docs/list-chrome-standard.md` §1, §9):

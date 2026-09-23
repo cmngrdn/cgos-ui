@@ -1,0 +1,139 @@
+/* ListHeader · ListCheckbox. Spec: docs/list-row-template.md → "The row header" */
+
+[data-cg-list-header] {
+  /* The tools bar's height, derived the same way — the two rows above a list
+     read as one instrument. */
+  height: calc(var(--cg-control-h-chip, 28px) + 8px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-inline: var(--cg-gutter, 24px);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  min-width: 0;
+  border-bottom: 1px solid var(--cg-border);
+  font-family: var(--cg-font);
+}
+
+[data-cg-list-header-select] {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+/* The count speaks in the same voice as a column label — it IS the label of
+   the lead column in a list that has no other columns. */
+[data-cg-list-header-count] {
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--cg-text-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-cg-list-header][data-selecting] [data-cg-list-header-count] {
+  color: var(--cg-text);
+}
+
+/* ⚠️ NO `overflow` here. Bulk actions are menus (Set status ▾, Add tag ▾)
+   whose popovers position inside this slot; any overflow value other than
+   visible makes BOTH axes a clip box, and the menus were cut off at the row's
+   36px. Found by the first consumer; fixed here, not per surface. */
+[data-cg-list-header-bulk] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+[data-cg-list-header-clear] {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0 4px;
+  font: inherit;
+  font-size: 11px;
+  color: var(--cg-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+[data-cg-list-header-clear]:hover {
+  color: var(--cg-text);
+}
+
+[data-cg-list-header-actions] {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+@container cg-tools-row (max-width: 620px) {
+  [data-cg-list-header] {
+    padding-inline: var(--cg-gutter-narrow, 12px);
+  }
+}
+@media (max-width: 767px) {
+  [data-cg-list-header] {
+    padding-inline: var(--cg-gutter-narrow, 12px);
+  }
+}
+
+/* ── The checkbox ────────────────────────────────────────────────────── */
+
+[data-cg-list-checkbox] {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--cg-border-hover);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--cg-bg);
+  cursor: pointer;
+  position: relative;
+  transition:
+    background var(--cg-duration-fast) var(--cg-ease),
+    border-color var(--cg-duration-fast) var(--cg-ease);
+}
+
+[data-cg-list-checkbox]:hover {
+  border-color: var(--cg-accent);
+}
+
+[data-cg-list-checkbox][data-checked] {
+  background: var(--cg-accent);
+  border-color: var(--cg-accent);
+}
+
+[data-cg-list-checkbox][data-indeterminate] {
+  background: color-mix(in srgb, var(--cg-accent) 40%, transparent);
+  border-color: var(--cg-accent);
+  color: var(--cg-text);
+}
+
+[data-cg-list-checkbox]:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 2px;
+}
+
+/* A 16px box is far under a finger; the hit area grows, the box does not. */
+@media (pointer: coarse) {
+  [data-cg-list-checkbox]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+}

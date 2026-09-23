@@ -263,6 +263,20 @@
 
 /* @keyframes cg-spin lives in base.css — shared with the Spinner atom. */
 
+/* ── Icon-only (v0.72.0) ────────────────────────────────────── */
+
+/* A button with a glyph and no label is SQUARE: its width is its own height,
+   read from the same scale, so a "+" beside a row of 28px chips is 28×28. */
+[data-cg-button][data-icon-only] {
+  padding: 0;
+  justify-content: center;
+}
+[data-cg-button][data-icon-only][data-size="xs"] { width: var(--cg-control-h-xs, 24px); }
+[data-cg-button][data-icon-only][data-size="chip"] { width: var(--cg-control-h-chip, 28px); }
+[data-cg-button][data-icon-only][data-size="sm"] { width: var(--cg-control-h-sm, 32px); }
+[data-cg-button][data-icon-only][data-size="md"] { width: var(--cg-control-h-md, 40px); }
+[data-cg-button][data-icon-only][data-size="lg"] { width: var(--cg-control-h-lg, 48px); }
+
 /* ── Icons ──────────────────────────────────────────────────── */
 
 [data-cg-button-icon] {

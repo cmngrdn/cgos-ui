@@ -116,6 +116,36 @@ export function ShelfToggle({ label, icon, open, onToggle, controls, badge, read
   );
 }
 
+/**
+ * THE TWO STANDARD SHELF CONTROLS (v0.72.0). Every list's Filter button and
+ * every list's Pulse button are these — same word, same glyph, same readout
+ * rule — so no surface can ship its own. v0.71.0 left the glyph to the caller
+ * and four surfaces shipped a Filter with no funnel beside one with it.
+ */
+export function FilterToggle(props: Omit<ShelfToggleBase, "label" | "icon"> & { badge: number }) {
+  return <ShelfToggle {...props} label="Filter" icon={<FunnelGlyph />} />;
+}
+
+export function PulseToggle(props: Omit<ShelfToggleBase, "label" | "icon"> & { readout: ReactNode }) {
+  return <ShelfToggle {...props} label="Pulse" icon={<PulseGlyph />} />;
+}
+
+function FunnelGlyph() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2 3h12l-4.5 5.5V13l-3-1.5V8.5z" />
+    </svg>
+  );
+}
+
+function PulseGlyph() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="1.5,9 4.5,9 6.5,4 9.5,12 11.5,7 14.5,7" />
+    </svg>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 
 /** A labelled cluster on a shelf. Each filter dimension keeps its NAME, which

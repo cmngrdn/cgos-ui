@@ -4,6 +4,31 @@ The contract for the strip between a module's tabs and its first row: sort, filt
 
 Nothing governed this strip before, which is why cmngrdn grew four implementations of it at six heights. The rows beneath it are governed by [`../list-row-template.md`](../list-row-template.md). The design reasoning and the live measurements are in cmngrdn [`docs/list-chrome-standard.md`](https://github.com/cmngrdn/cmngrdn/blob/main/docs/list-chrome-standard.md); the working model is cmngrdn `/lab/list-chrome`.
 
+## v0.72.0 — the assembly is the standard, not the parts
+
+v0.71.0 shipped the parts and let each surface compose them. Within one sweep
+that produced four Filter buttons without the funnel, lists with no sort or no
+search, a stat-chip row left outside the bar, and a create button that said
+"New quest" on one page and "+" on the next — every one visible to Feather on
+the first click-through. **Parts are not a standard; the assembly is.** So:
+
+- **`ListToolbar` is the bar.** A surface declares `sort` · `filters` · `pulse`
+  · `search` · `view` · `create` (· `extra` for a control the bar cannot model)
+  and the atom decides order, controls and shelves. Do not compose `ToolsRow`
+  by hand for a list.
+- **`FilterToggle` / `PulseToggle`** are the only Filter and Pulse controls —
+  fixed word, fixed glyph.
+- **Create is a square "+"** (icon-only `Button`; `label` is the tooltip and
+  accessible name). Register the phone's create another way.
+- **Stat lenses are Pulse.** A row of counted `StatChip`s — focus lenses,
+  status counts, "Unread 4" — is the module's numbers; it renders inside the
+  Pulse shelf and the shut control carries the headline one. Nothing sits
+  between the bar and the rows except the row header.
+- **The count, select-all, bulk actions and list actions (Export, Import) are
+  NOT in the bar.** They are about the rows: `ListHeader`, or the table's
+  column header row. See [`../list-row-template.md`](../list-row-template.md)
+  § The row header.
+
 ## Why
 
 Measured in cmngrdn on 2026-09-22 at 1440×900:

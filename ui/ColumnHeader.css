@@ -9,7 +9,9 @@
 [data-cg-column-grid] {
   --cg-column-gap: 16px;
   --cg-column-row-h: 56px;
-  --cg-column-head-h: 30px;
+  /* The header is as tall as the tools bar above it (chip + 4px each side),
+     so the two rows read as one instrument (v0.72.0; was 30). */
+  --cg-column-head-h: calc(var(--cg-control-h-chip, 28px) + 8px);
 
   container: cg-columns / inline-size;
   display: grid;
@@ -64,6 +66,43 @@
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+[data-cg-column-head-count] {
+  color: var(--cg-text-muted);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+[data-cg-column-head-selected] {
+  color: var(--cg-text);
+}
+
+/* Bulk mode: the column labels give way to the bulk actions, in place. The
+   labels stay in the layout (visibility, not display) so the tracks — sized by
+   the widest label OR value — do not move under the rows while you select. */
+[data-cg-column-head][data-selecting] [data-cg-column-head-cell] {
+  visibility: hidden;
+}
+[data-cg-column-head-bulk] {
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  /* No overflow: it would clip the bulk menus' popovers (see ListHeader.css). */
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+[data-cg-column-head-anchor] {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 [data-cg-column-head-cell] {

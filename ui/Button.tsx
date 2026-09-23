@@ -103,6 +103,11 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
       ...(fullWidth ? { 'data-full-width': '' } : {}),
       ...(loading ? { 'data-loading': '' } : {}),
       ...(pill && variant === 'glass' ? { 'data-pill': '' } : {}),
+      // No label, one glyph: a square control. Pass `aria-label` — the glyph
+      // has no text of its own (v0.72.0; the ToolsRow "+" create button).
+      ...((children === undefined || children === null) && (iconLeft || iconRight) && !(iconLeft && iconRight)
+        ? { 'data-icon-only': '' }
+        : {}),
     }
 
     const inner = (

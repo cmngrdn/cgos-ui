@@ -1,0 +1,261 @@
+"use client";
+
+import { useId, useRef, useState, type ReactNode } from "react";
+import { ToolsRow } from "./ToolsRow";
+import { ChipSplit, SortGlyph } from "./ChipSplit";
+import { Shelf, ShelfGroup, FilterToggle, PulseToggle } from "./Shelf";
+import { ChipApplied, ChipAppliedClear } from "./ChipApplied";
+import { ChipToggle, ChipMultiSelect, ChipGroup, ChipSegment } from "./ControlChip";
+import { Input } from "./Input";
+import { Button } from "./Button";
+
+/**
+ * ListToolbar — THE bar above every list, as configuration (v0.72.0).
+ *
+ * v0.71.0 shipped the parts (`ToolsRow`, `ChipSplit`, `Shelf`, `ChipApplied`)
+ * and let each surface assemble them. Within one sweep that produced a Filter
+ * button with a funnel on one page and without it on four, sort on some lists
+ * and not others, search missing from two, and a create button that said
+ * "New quest" on one page and "+" on the next. Parts are not a standard; the
+ * assembly is. So the assembly lives here, and a surface only DECLARES:
+ *
+ *   sort     — the fields you can order by. Always a `ChipSplit` + Sort shelf.
+ *   filters  — every dimension, once. It drives the shelf, the badge on the
+ *              Filter control AND the applied readout beside search, so the
+ *              three can never disagree.
+ *   pulse    — the module's numbers. A live readout on the shut control; the
+ *              content mounts only while the shelf is open. Stat lenses (a
+ *              row of counted `StatChip`s) belong HERE, not in a row of their
+ *              own — they are the module's numbers that happen to filter.
+ *   search   — always the same chip-height input.
+ *   view     — the lens toggle.
+ *   create   — a square "+" (icon only; `label` is its accessible name and
+ *              tooltip). Hidden at narrow width — register the phone's create
+ *              another way (cmngrdn: `usePageAction`).
+ *   extra    — surface-specific bar controls whose state this cannot see (a
+ *              period picker). Rendered after Pulse.
+ *
+ * List-level actions (Export, Import) and the select-all checkbox are NOT
+ * here — they are about the rows, so they live on the row header:
+ * `ListHeader`, or `ColumnHeader` for a table.
+ *
+ * Spec: docs/subsystems/tools-row-contract.md
+ */
+
+export interface ListSort {
+  options: Array<{ value: string; label: string }>;
+  value: string;
+  dir: "asc" | "desc";
+  /** A different field was picked on the shelf. */
+  onChange: (value: string) => void;
+  /** The arrow was pressed. */
+  onFlip: () => void;
+}
+
+export interface ListFilterDimension {
+  key: string;
+  label: string;
+  options: Array<{ value: string; label: string }>;
+  value: string[];
+  onChange: (next: string[]) => void;
+  /** Zero-or-one value (a lens). Picking another replaces it. */
+  single?: boolean;
+  /** Rendered at the end of this dimension's shelf group — a match-mode
+   *  toggle (Any / All), say. */
+  trailing?: ReactNode;
+}
+
+export interface ListToolbarProps {
+  label?: string;
+  sort?: ListSort;
+  filters?: ListFilterDimension[];
+  pulse?: { readout: ReactNode; render: () => ReactNode; title?: string };
+  search?: {
+    /** Controlled… */
+    value?: string;
+    /** …or uncontrolled (a URL-driven, debounced search keeps typing local). */
+    defaultValue?: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+    /** Debounce `onChange` by this many ms. */
+    debounceMs?: number;
+  };
+  view?: {
+    segments: Array<{ value: string; icon: ReactNode; title: string }>;
+    value: string;
+    onChange: (value: string) => void;
+  };
+  create?: { label: string; onClick: () => void; disabled?: boolean } | null;
+  extra?: ReactNode;
+}
+
+/** Above this many options a dimension stays a searchable dropdown on the
+ *  shelf — the threshold `ChipMultiSelect` adds its own search at. A row of
+ *  forty tag chips is a wall, not a control. */
+const TOGGLE_LIMIT = 8;
+
+type ShelfId = "sort" | "filter" | "pulse" | null;
+
+export function ListToolbar({ label, sort, filters, pulse, search, view, create, extra }: ListToolbarProps) {
+  const [shelf, setShelf] = useState<ShelfId>(null);
+  const toggle = (id: Exclude<ShelfId, null>) => setShelf((cur) => (cur === id ? null : id));
+  const uid = useId();
+  const ids = { sort: `${uid}-sort`, filter: `${uid}-filter`, pulse: `${uid}-pulse` };
+
+  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onSearch = (v: string) => {
+    if (!search) return;
+    if (!search.debounceMs) return search.onChange(v);
+    if (debounce.current) clearTimeout(debounce.current);
+    debounce.current = setTimeout(() => search.onChange(v), search.debounceMs);
+  };
+
+  const dims = (filters ?? []).filter((d) => d.options.length > 0);
+  const labelOf = (d: ListFilterDimension, v: string) => d.options.find((o) => o.value === v)?.label ?? v;
+  const active = dims.reduce((n, d) => n + d.value.length, 0);
+  const flip = (d: ListFilterDimension, v: string) => {
+    const on = d.value.includes(v);
+    if (d.single) d.onChange(on ? [] : [v]);
+    else d.onChange(on ? d.value.filter((x) => x !== v) : [...d.value, v]);
+  };
+  const clearAll = () => dims.forEach((d) => d.value.length > 0 && d.onChange([]));
+  const sortLabel = sort?.options.find((o) => o.value === sort.value)?.label ?? sort?.value;
+
+  return (
+    <ToolsRow
+      label={label}
+      left={
+        <>
+          {sort && (
+            <ChipSplit
+              label={sortLabel}
+              open={shelf === "sort"}
+              onOpen={() => toggle("sort")}
+              controls={ids.sort}
+              openTitle="Sort by…"
+              modifier={<SortGlyph dir={sort.dir} />}
+              modifierLabel={sort.dir === "asc" ? "Ascending — press for descending" : "Descending — press for ascending"}
+              onModifier={sort.onFlip}
+            />
+          )}
+          {dims.length > 0 && (
+            <FilterToggle open={shelf === "filter"} onToggle={() => toggle("filter")} controls={ids.filter} badge={active} />
+          )}
+          {pulse && (
+            <PulseToggle open={shelf === "pulse"} onToggle={() => toggle("pulse")} controls={ids.pulse} readout={pulse.readout} />
+          )}
+          {extra}
+        </>
+      }
+      search={
+        search ? (
+          <Input
+            size="chip"
+            type="search"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            data-1p-ignore=""
+            data-lpignore="true"
+            placeholder={search.placeholder ?? "Search…"}
+            aria-label={search.placeholder ?? "Search"}
+            {...(search.value !== undefined ? { value: search.value } : { defaultValue: search.defaultValue })}
+            onChange={(e) => onSearch(e.target.value)}
+          />
+        ) : undefined
+      }
+      applied={
+        active > 0 ? (
+          <>
+            {dims.flatMap((d) =>
+              d.value.map((v) => (
+                <ChipApplied key={`${d.key}:${v}`} label={labelOf(d, v)} group={d.label} onRemove={() => flip(d, v)} />
+              )),
+            )}
+            {active > 1 && <ChipAppliedClear onClear={clearAll} />}
+          </>
+        ) : null
+      }
+      right={
+        view && view.segments.length > 1 ? (
+          <ChipGroup>
+            {view.segments.map((s) => (
+              <ChipSegment key={s.value} active={view.value === s.value} onClick={() => view.onChange(s.value)} title={s.title}>
+                {s.icon}
+              </ChipSegment>
+            ))}
+          </ChipGroup>
+        ) : undefined
+      }
+      create={
+        create ? (
+          <Button
+            variant="primary"
+            size="chip"
+            onClick={create.onClick}
+            disabled={create.disabled}
+            aria-label={create.label}
+            title={create.label}
+            iconLeft={<PlusGlyph />}
+          />
+        ) : undefined
+      }
+    >
+      {sort && (
+        <Shelf open={shelf === "sort"} id={ids.sort} label="Sort by">
+          <ShelfGroup label="Sort by">
+            {sort.options.map((o) => (
+              <ChipToggle
+                key={o.value}
+                label={o.label}
+                active={sort.value === o.value}
+                shape="pill"
+                onClick={() => {
+                  if (o.value !== sort.value) sort.onChange(o.value);
+                }}
+              />
+            ))}
+          </ShelfGroup>
+        </Shelf>
+      )}
+      {dims.length > 0 && (
+        <Shelf open={shelf === "filter"} id={ids.filter} label="Filters">
+          {dims.map((d) => (
+            <ShelfGroup key={d.key} label={d.label}>
+              {d.options.length > TOGGLE_LIMIT && !d.single ? (
+                <ChipMultiSelect
+                  label={d.label}
+                  value={d.value}
+                  options={d.options.map((o) => o.value)}
+                  onChange={d.onChange}
+                  labelFor={(v) => labelOf(d, v)}
+                  shape="rect"
+                />
+              ) : (
+                d.options.map((o) => (
+                  <ChipToggle key={o.value} label={o.label} active={d.value.includes(o.value)} onClick={() => flip(d, o.value)} shape="pill" />
+                ))
+              )}
+              {d.trailing}
+            </ShelfGroup>
+          ))}
+        </Shelf>
+      )}
+      {pulse && (
+        <Shelf open={shelf === "pulse"} id={ids.pulse} label={pulse.title ?? "Pulse"} variant="panel">
+          {shelf === "pulse" && pulse.render()}
+        </Shelf>
+      )}
+    </ToolsRow>
+  );
+}
+
+function PlusGlyph() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+      <line x1="6" y1="1.5" x2="6" y2="10.5" />
+      <line x1="1.5" y1="6" x2="10.5" y2="6" />
+    </svg>
+  );
+}

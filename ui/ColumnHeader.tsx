@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { SPINE_VAR, type SpineToken } from "../lib/list";
+import { ListCheckbox } from "./ListHeader";
 import "./ColumnHeader.css";
 
 /**
@@ -90,9 +91,10 @@ const ColumnGridContext = createContext<GridContext>({ columns: [], anchor: fals
 /** The grid template: identity flexes, every data column sizes to content (or
  *  its resized width), the anchor is fixed. Exported for a consumer that has to
  *  lay out something else on the same tracks. */
-export function columnTemplate(columns: ColumnDef[], anchorWidth = 0): string {
+export function columnTemplate(columns: ColumnDef[], anchorWidth: number | "auto" = 0): string {
   const cols = columns.map((c) => (c.width ? `${Math.round(c.width)}px` : "max-content"));
-  return ["minmax(0, 1fr)", ...cols, ...(anchorWidth > 0 ? [`${anchorWidth}px`] : [])].join(" ");
+  const anchor = anchorWidth === "auto" ? ["max-content"] : anchorWidth > 0 ? [`${anchorWidth}px`] : [];
+  return ["minmax(0, 1fr)", ...cols, ...anchor].join(" ");
 }
 
 /** Move `from` to the position `to` holds — so dropping a column on its right
@@ -114,8 +116,10 @@ export function moveColumnTo(order: string[], from: string, to: string): string[
 export interface ColumnGridProps {
   /** In display order — apply the engine's saved order before passing. */
   columns: ColumnDef[];
-  /** Width of a trailing anchor column (a caret, an action). 0 = none. */
-  anchorWidth?: number;
+  /** Width of a trailing anchor column (a caret, an action). 0 = none;
+   *  `"auto"` sizes it to its widest content — use it when the header puts
+   *  list actions (Export) there. */
+  anchorWidth?: number | "auto";
   /** Names the table for assistive tech. */
   label?: string;
   children: ReactNode;
@@ -124,7 +128,7 @@ export interface ColumnGridProps {
 export function ColumnGrid({ columns, anchorWidth = 0, label, children }: ColumnGridProps) {
   const style = { "--cg-column-template": columnTemplate(columns, anchorWidth) } as CSSProperties;
   return (
-    <ColumnGridContext.Provider value={{ columns, anchor: anchorWidth > 0 }}>
+    <ColumnGridContext.Provider value={{ columns, anchor: anchorWidth === "auto" || anchorWidth > 0 }}>
       <div data-cg-column-grid="" role="table" aria-label={label} style={style}>
         {children}
       </div>
@@ -149,11 +153,38 @@ export interface ColumnHeaderProps {
   onMove?: (from: string, to: string) => void;
   /** Live, during a resize drag. Omit to disable resize. */
   onResize?: (id: string, width: number) => void;
+  /**
+   * THE ROW HEADER'S JOBS, for a table (v0.72.0) — the same contract as
+   * `ListHeader`, carried on the column header so a table spends one row, not
+   * two: select-all before the lead label, the count after it, list actions
+   * (Export, Import) in the anchor column (give the grid `anchorWidth="auto"`),
+   * and while rows are ticked the column labels give way to `bulk`.
+   */
+  select?: { checked: boolean; indeterminate?: boolean; onToggle: () => void };
+  count?: ReactNode;
+  selectedCount?: number;
+  bulk?: ReactNode;
+  onClearSelection?: () => void;
+  actions?: ReactNode;
 }
 
 const DRAG_THRESHOLD = 4;
 
-export function ColumnHeader({ lead = "Name", leadInset = 0, sort, onSort, onMove, onResize }: ColumnHeaderProps) {
+export function ColumnHeader({
+  lead = "Name",
+  leadInset = 0,
+  sort,
+  onSort,
+  onMove,
+  onResize,
+  select,
+  count,
+  selectedCount = 0,
+  bulk,
+  onClearSelection,
+  actions,
+}: ColumnHeaderProps) {
+  const selecting = selectedCount > 0;
   const { columns, anchor } = useContext(ColumnGridContext);
   const [dragging, setDragging] = useState<string | null>(null);
   const indexOf = (id: string | null) => columns.findIndex((c) => c.id === id);
@@ -239,10 +270,40 @@ export function ColumnHeader({ lead = "Name", leadInset = 0, sort, onSort, onMov
   };
 
   return (
-    <div data-cg-column-head="" role="row" {...(dragging ? { "data-dragging": "" } : {})}>
-      <div data-cg-column-head-lead="" role="columnheader" style={{ paddingLeft: leadInset }}>
-        {lead}
+    <div
+      data-cg-column-head=""
+      role="row"
+      {...(dragging ? { "data-dragging": "" } : {})}
+      {...(selecting ? { "data-selecting": "" } : {})}
+    >
+      <div data-cg-column-head-lead="" role="columnheader" style={{ paddingLeft: select ? 0 : leadInset }}>
+        {select && (
+          <ListCheckbox
+            checked={select.checked}
+            indeterminate={select.indeterminate}
+            onToggle={select.onToggle}
+            label={select.checked ? "Deselect all" : "Select all"}
+          />
+        )}
+        {selecting ? (
+          <span data-cg-column-head-selected="">{selectedCount} selected</span>
+        ) : (
+          <>
+            <span>{lead}</span>
+            {count !== undefined && <span data-cg-column-head-count="">{count}</span>}
+          </>
+        )}
       </div>
+      {selecting && (
+        <div data-cg-column-head-bulk="" style={{ gridColumn: anchor ? "2 / -2" : "2 / -1" }}>
+          {bulk}
+          {onClearSelection && (
+            <button type="button" data-cg-list-header-clear="" onClick={onClearSelection}>
+              Clear
+            </button>
+          )}
+        </div>
+      )}
       {columns.map((col, i) => {
         const active = sort?.id === col.id;
         const sortable = col.sortable !== false && !!onSort;
@@ -309,7 +370,11 @@ export function ColumnHeader({ lead = "Name", leadInset = 0, sort, onSort, onMov
           </div>
         );
       })}
-      {anchor && <div data-cg-column-head-anchor="" role="columnheader" aria-hidden="true" />}
+      {anchor && (
+        <div data-cg-column-head-anchor="" role="columnheader">
+          {actions}
+        </div>
+      )}
     </div>
   );
 }
