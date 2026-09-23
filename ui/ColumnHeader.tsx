@@ -74,6 +74,9 @@ export interface ColumnDef {
   width?: number;
   /** Floor for resize. Default 48. */
   minWidth?: number;
+  /** Header tooltip — what the column means when its label cannot say it
+   *  ("This period, on actual usage"). */
+  title?: string;
 }
 
 export type SortDir = "asc" | "desc";
@@ -88,10 +91,13 @@ const ColumnGridContext = createContext<GridContext>({ columns: [], anchor: fals
 /** The grid template: identity flexes, every data column sizes to content (or
  *  its resized width), the anchor is fixed. Exported for a consumer that has to
  *  lay out something else on the same tracks. */
-export function columnTemplate(columns: ColumnDef[], anchorWidth: number | "auto" = 0): string {
+export function columnTemplate(columns: ColumnDef[], anchorWidth: number | "auto" = 0, leadMin = 160): string {
   const cols = columns.map((c) => (c.width ? `${Math.round(c.width)}px` : "max-content"));
   const anchor = anchorWidth === "auto" ? ["max-content"] : anchorWidth > 0 ? [`${anchorWidth}px`] : [];
-  return ["minmax(0, 1fr)", ...cols, ...anchor].join(" ");
+  // The lead is the one flexible track — the slack a LEFT-edge resize takes
+  // from — with a floor, so widening data columns can never crush the names
+  // to nothing (the grid scrolls sideways instead).
+  return [`minmax(${leadMin}px, 1fr)`, ...cols, ...anchor].join(" ");
 }
 
 /** Move `from` to the position `to` holds — so dropping a column on its right
@@ -119,11 +125,13 @@ export interface ColumnGridProps {
   anchorWidth?: number | "auto";
   /** Names the table for assistive tech. */
   label?: string;
+  /** Floor for the flexible lead column, px. Default 160. */
+  leadMin?: number;
   children: ReactNode;
 }
 
-export function ColumnGrid({ columns, anchorWidth = 0, label, children }: ColumnGridProps) {
-  const style = { "--cg-column-template": columnTemplate(columns, anchorWidth) } as CSSProperties;
+export function ColumnGrid({ columns, anchorWidth = 0, label, leadMin = 160, children }: ColumnGridProps) {
+  const style = { "--cg-column-template": columnTemplate(columns, anchorWidth, leadMin) } as CSSProperties;
   return (
     <ColumnGridContext.Provider value={{ columns, anchor: anchorWidth === "auto" || anchorWidth > 0 }}>
       <div data-cg-column-grid="" role="table" aria-label={label} style={style}>
@@ -249,7 +257,7 @@ export function ColumnHeader({
               disabled={!sortable && !onMove}
               {...drag.labelProps(col.id, sortable ? () => onSort?.(col.id) : undefined)}
               title={
-                [sortable && "Click to sort", onMove && "drag or Alt+←/→ to move"].filter(Boolean).join(" · ") ||
+                [col.title, sortable && "Click to sort", onMove && "drag or Alt+←/→ to move"].filter(Boolean).join(" · ") ||
                 undefined
               }
             >
