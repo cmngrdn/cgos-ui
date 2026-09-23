@@ -4,7 +4,7 @@ import { useId, useRef, useState, type ReactNode } from "react";
 import { ToolsRow } from "./ToolsRow";
 import { ChipSplit, SortGlyph } from "./ChipSplit";
 import { Shelf, ShelfGroup, FilterToggle, PulseToggle } from "./Shelf";
-import { ChipApplied, ChipAppliedClear } from "./ChipApplied";
+import { ChipAppliedClear } from "./ChipApplied";
 import { ChipToggle, ChipSelect, ChipMultiSelect, ChipGroup, ChipSegment } from "./ControlChip";
 import { Input } from "./Input";
 import { Button } from "./Button";
@@ -112,10 +112,18 @@ export interface ListToolbarProps {
  */
 const TOGGLE_MAX = 4;
 
-type ShelfId = "sort" | "filter" | "pulse" | null;
+type ShelfId = "sort" | "pulse" | null;
 
 export function ListToolbar({ label, sort, filters, pulse, search, view, create, extra }: ListToolbarProps) {
   const [shelf, setShelf] = useState<ShelfId>(null);
+  // THE FILTER DRAWER IS OPEN EXACTLY WHILE FILTERS ARE ON (Feather,
+  // 2026-09-23). It replaces the applied-filter chips beside search: the
+  // drawer already names every active value, so a second readout of the same
+  // fact cost the bar its width. With nothing on, the Filter control opens it
+  // to pick the first one (`filterAsked`); once anything is on it stays open
+  // until the last filter is cleared, so what is narrowing the list is always
+  // in view. Independent of the one-at-a-time Sort/Pulse shelves.
+  const [filterAsked, setFilterAsked] = useState(false);
   const toggle = (id: Exclude<ShelfId, null>) => setShelf((cur) => (cur === id ? null : id));
   const uid = useId();
   const ids = { sort: `${uid}-sort`, filter: `${uid}-filter`, pulse: `${uid}-pulse` };
@@ -136,7 +144,11 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
     if (d.single) d.onChange(on ? [] : [v]);
     else d.onChange(on ? d.value.filter((x) => x !== v) : [...d.value, v]);
   };
-  const clearAll = () => dims.forEach((d) => d.value.length > 0 && d.onChange([]));
+  const clearAll = () => {
+    dims.forEach((d) => d.value.length > 0 && d.onChange([]));
+    setFilterAsked(false);
+  };
+  const filterOpen = active > 0 || filterAsked;
   const sortLabel = sort?.options.find((o) => o.value === sort.value)?.label ?? sort?.value;
 
   return (
@@ -157,10 +169,7 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
             />
           )}
           {dims.length > 0 && (
-            <FilterToggle open={shelf === "filter"} onToggle={() => toggle("filter")} controls={ids.filter} badge={active} />
-          )}
-          {pulse && (
-            <PulseToggle open={shelf === "pulse"} onToggle={() => toggle("pulse")} controls={ids.pulse} readout={pulse.readout} />
+            <FilterToggle open={filterOpen} onToggle={() => (active > 0 ? undefined : setFilterAsked((o) => !o))} controls={ids.filter} badge={active} />
           )}
           {extra}
         </>
@@ -183,27 +192,24 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
           />
         ) : undefined
       }
-      applied={
-        active > 0 ? (
-          <>
-            {dims.flatMap((d) =>
-              d.value.map((v) => (
-                <ChipApplied key={`${d.key}:${v}`} label={labelOf(d, v)} group={d.label} onRemove={() => flip(d, v)} />
-              )),
-            )}
-            {active > 1 && <ChipAppliedClear onClear={clearAll} />}
-          </>
-        ) : null
-      }
       right={
-        view && view.segments.length > 1 ? (
-          <ChipGroup>
-            {view.segments.map((s) => (
-              <ChipSegment key={s.value} active={view.value === s.value} onClick={() => view.onChange(s.value)} title={s.title}>
-                {s.icon}
-              </ChipSegment>
-            ))}
-          </ChipGroup>
+        pulse || (view && view.segments.length > 1) ? (
+          <>
+            {/* Pulse sits with the view toggle (Feather, 2026-09-23): both
+                change how you SEE the list, neither changes what is in it. */}
+            {pulse && (
+              <PulseToggle open={shelf === "pulse"} onToggle={() => toggle("pulse")} controls={ids.pulse} readout={pulse.readout} />
+            )}
+            {view && view.segments.length > 1 && (
+              <ChipGroup>
+                {view.segments.map((s) => (
+                  <ChipSegment key={s.value} active={view.value === s.value} onClick={() => view.onChange(s.value)} title={s.title}>
+                    {s.icon}
+                  </ChipSegment>
+                ))}
+              </ChipGroup>
+            )}
+          </>
         ) : undefined
       }
       create={
@@ -238,7 +244,7 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
         </Shelf>
       )}
       {dims.length > 0 && (
-        <Shelf open={shelf === "filter"} id={ids.filter} label="Filters">
+        <Shelf open={filterOpen} id={ids.filter} label="Filters">
           {dims.map((d) =>
             d.display === "toggles" && d.options.length <= TOGGLE_MAX ? (
               // Toggles: the group label names the row of chips.
@@ -275,6 +281,7 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
               </span>
             ),
           )}
+          {active > 0 && <ChipAppliedClear onClear={clearAll} />}
         </Shelf>
       )}
       {pulse && (

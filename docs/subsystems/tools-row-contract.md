@@ -17,7 +17,14 @@ the first click-through. **Parts are not a standard; the assembly is.** So:
   and the atom decides order, controls and shelves. Do not compose `ToolsRow`
   by hand for a list.
 - **`FilterToggle` / `PulseToggle`** are the only Filter and Pulse controls —
-  fixed word, fixed glyph.
+  fixed word, fixed glyph. **Pulse sits on the right, beside the view toggle**
+  (both change how you see the list, not what is in it).
+- **The Filter drawer is open exactly while a filter is on** (2026-09-23). It
+  replaced the applied-filter chips beside search — the drawer already names
+  every active value, and a second readout of the same fact cost the bar its
+  width. With nothing on, Filter opens it to pick the first one; "Clear all"
+  lives in the drawer and closes it. So what is narrowing a list is always in
+  view without an extra row of chips.
 - **Create is a square "+"** (icon-only `Button`; `label` is the tooltip and
   accessible name). Register the phone's create another way.
 - **Stat lenses are Pulse.** A row of counted `StatChip`s — focus lenses,
@@ -78,7 +85,7 @@ Measured in cmngrdn on 2026-09-22 at 1440×900:
   the same filter was chips in one workspace and a dropdown in the next, and
   SMS Blasts' long campaign names took a whole shelf row.
 - **A SHUT SHELF MUST STILL SAY SOMETHING.** `ShelfToggle`'s type requires `badge` or `readout`. Folding a thing away without leaving a number is a regression.
-- **The applied readout is what makes the fold safe.** The badge says how many; the chips say which and remove one in place.
+- **The open drawer is what makes the fold safe.** The badge says how many; the drawer, open whenever anything filters, says which. (Superseded: an applied-chip readout beside search, removed 2026-09-23.)
 - **One shelf at a time**, except Selection, which is orthogonal. Shelves close on surface change; shelf state is per surface.
 - **Sort is one shell, two halves.** The value half opens the field list and the modifier half flips direction. The frequent action is one click; the rare one is behind the caret.
 
