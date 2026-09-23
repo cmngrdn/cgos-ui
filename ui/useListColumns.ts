@@ -175,8 +175,14 @@ export function useListColumns(opts: {
  *  - press and move ≥ 4px on a header cell → reorder; release over another
  *    column → `onMove(from, to)`. A press without movement is still a click
  *    (sort), and the click after a drag is swallowed.
- *  - the grip on a column's LEFT edge resizes THAT column; dragging left widens
- *    (Feather's rule, cmngrdn docs/hq-table-columns.md, 2026-07-08).
+ *  - RESIZE IS THE SPREADSHEET MODEL (Google Sheets, Airtable — Feather,
+ *    2026-09-23): the grip sits on a column's RIGHT border (the line between
+ *    it and the next header); dragging right widens THAT column, left narrows
+ *    it, and nothing else changes size — later columns just move along. The
+ *    first cut put the grip on the LEFT edge with the name column absorbing
+ *    the slack, so a drag moved other columns and felt like it resized the
+ *    opposite side. Tables using this must give every column a FIXED width
+ *    (the lead included) and put the leftover space in a trailing filler.
  *  - Alt+← / Alt+→ on a focused header label moves the column by keyboard.
  *
  * Spread `cellProps(id)` on each header cell, `gripProps(id)` on its grip,
@@ -262,14 +268,17 @@ export function useColumnDrag(opts: {
       if (!onResize || e.button !== 0) return;
       e.stopPropagation();
       e.preventDefault();
-      const cell = cells.current.get(id);
+      // The grip lives INSIDE the cell it resizes, so its parent is the cell —
+      // which also lets a non-reorderable cell (the lead) be resized.
+      const cell = cells.current.get(id) ?? e.currentTarget.parentElement;
       if (!cell) return;
       const grip = e.currentTarget;
       grip.setPointerCapture(e.pointerId);
       const startX = e.clientX;
       const startW = cell.getBoundingClientRect().width;
       const min = minWidth?.(id) ?? 48;
-      const move = (ev: PointerEvent) => onResize(id, Math.max(min, startW - (ev.clientX - startX)));
+      // Right border: the edge you grab is the edge that moves with the cursor.
+      const move = (ev: PointerEvent) => onResize(id, Math.max(min, startW + (ev.clientX - startX)));
       const done = () => {
         grip.removeEventListener("pointermove", move);
         grip.removeEventListener("pointerup", done);

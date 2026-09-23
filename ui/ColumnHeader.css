@@ -15,6 +15,10 @@
 
   container: cg-columns / inline-size;
   display: grid;
+  /* Spreadsheet width: at least the view, wider when the fixed columns add up
+     to more — then the scroller scrolls sideways instead of anything shrinking. */
+  width: 100%;
+  min-width: max-content;
   grid-template-columns: var(--cg-column-template);
   /* ⚠️ THE GAP LIVES ON THE GRID, NOT ON THE ROWS. A subgrid with its own gap
      does not get wider gutters — the difference from the parent's gap is taken
@@ -63,8 +67,9 @@
 }
 
 [data-cg-column-head-lead] {
+  position: relative;
+  height: 100%;
   min-width: 0;
-  overflow: hidden;
   text-overflow: ellipsis;
   display: flex;
   align-items: center;
@@ -88,7 +93,13 @@
   visibility: hidden;
 }
 [data-cg-column-head-bulk] {
-  grid-row: 1;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  z-index: 1;
+  padding-left: var(--cg-column-gap);
+  white-space: nowrap;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -96,6 +107,13 @@
   /* No overflow: it would clip the bulk menus' popovers (see ListHeader.css). */
   text-transform: none;
   letter-spacing: 0;
+}
+
+/* Past the filler: the anchor is the LAST track, never auto-placed into the
+   filler before it. */
+[data-cg-column-head-anchor],
+[data-cg-column-anchor] {
+  grid-column: -2 / -1;
 }
 
 [data-cg-column-head-anchor] {
@@ -191,11 +209,13 @@
 
 /* Resize grip — centred in the gap on the column's LEFT edge, with a 1px
    divider that only shows on hover so the resting header stays a label. */
+/* On the column's RIGHT border (the line between it and the next header) —
+   the spreadsheet model. */
 [data-cg-column-resize] {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: calc(var(--cg-column-gap) / -2 - 6px);
+  right: calc(var(--cg-column-gap) / -2 - 6px);
   width: 12px;
   cursor: col-resize;
   touch-action: none;

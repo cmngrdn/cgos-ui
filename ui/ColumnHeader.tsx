@@ -48,11 +48,12 @@ import "./ColumnHeader.css";
  * movement, so a click is still a sort. Alt+←/→ on a focused label moves the
  * column by keyboard.
  *
- * RESIZE: one grip per column on its LEFT edge, resizing THAT column; dragging
- * left widens it. Skipped on the first data column, whose left neighbour is the
- * flexing identity column. Decision locked by Feather 2026-07-08
- * (cmngrdn `docs/hq-table-columns.md`). ⚠️ `DataList` later put its grip on the
- * RIGHT edge; that is a drift the engine merge must resolve toward this rule.
+ * RESIZE is the spreadsheet model (Google Sheets / Airtable — Feather,
+ * 2026-09-23): a grip on each column's RIGHT border, INCLUDING the lead;
+ * dragging right widens that column only. Every column is a fixed width (the
+ * lead's is `LEAD_COLUMN_ID` in the engine's widths) and the leftover space is
+ * a trailing filler track, so resizing one column never resizes another. When
+ * the columns outgrow the view, the grid scrolls sideways.
  *
  * Narrow (≤620px of the grid's own width, a container query): the header hides,
  * and each row REFLOWS its cells under the identity as labelled pairs — the
@@ -88,16 +89,17 @@ interface GridContext {
 
 const ColumnGridContext = createContext<GridContext>({ columns: [], anchor: false });
 
-/** The grid template: identity flexes, every data column sizes to content (or
- *  its resized width), the anchor is fixed. Exported for a consumer that has to
- *  lay out something else on the same tracks. */
-export function columnTemplate(columns: ColumnDef[], anchorWidth: number | "auto" = 0, leadMin = 160): string {
+/** Engine width key for the lead (identity) column. */
+export const LEAD_COLUMN_ID = "__lead";
+
+/** The grid template — the spreadsheet model: a fixed lead, fixed data columns
+ *  (resized width, else sized to content), then ONE trailing filler track that
+ *  takes the leftover space, then the anchor. Nothing flexes but the filler, so
+ *  resizing a column changes only that column. */
+export function columnTemplate(columns: ColumnDef[], anchorWidth: number | "auto" = 0, leadWidth = 280): string {
   const cols = columns.map((c) => (c.width ? `${Math.round(c.width)}px` : "max-content"));
   const anchor = anchorWidth === "auto" ? ["max-content"] : anchorWidth > 0 ? [`${anchorWidth}px`] : [];
-  // The lead is the one flexible track — the slack a LEFT-edge resize takes
-  // from — with a floor, so widening data columns can never crush the names
-  // to nothing (the grid scrolls sideways instead).
-  return [`minmax(${leadMin}px, 1fr)`, ...cols, ...anchor].join(" ");
+  return [`${Math.round(leadWidth)}px`, ...cols, "minmax(0, 1fr)", ...anchor].join(" ");
 }
 
 /** Move `from` to the position `to` holds — so dropping a column on its right
@@ -125,13 +127,14 @@ export interface ColumnGridProps {
   anchorWidth?: number | "auto";
   /** Names the table for assistive tech. */
   label?: string;
-  /** Floor for the flexible lead column, px. Default 160. */
-  leadMin?: number;
+  /** The lead column's width, px — pass the engine's `widths[LEAD_COLUMN_ID]`
+   *  so a resized lead is kept. Default 280. */
+  leadWidth?: number;
   children: ReactNode;
 }
 
-export function ColumnGrid({ columns, anchorWidth = 0, label, leadMin = 160, children }: ColumnGridProps) {
-  const style = { "--cg-column-template": columnTemplate(columns, anchorWidth, leadMin) } as CSSProperties;
+export function ColumnGrid({ columns, anchorWidth = 0, label, leadWidth = 280, children }: ColumnGridProps) {
+  const style = { "--cg-column-template": columnTemplate(columns, anchorWidth, leadWidth) } as CSSProperties;
   return (
     <ColumnGridContext.Provider value={{ columns, anchor: anchorWidth === "auto" || anchorWidth > 0 }}>
       <div data-cg-column-grid="" role="table" aria-label={label} style={style}>
@@ -196,7 +199,7 @@ export function ColumnHeader({
     order: columns.map((c) => c.id),
     onMove,
     onResize,
-    minWidth: (id) => columns.find((c) => c.id === id)?.minWidth ?? 48,
+      minWidth: (id) => (id === LEAD_COLUMN_ID ? 120 : columns.find((c) => c.id === id)?.minWidth ?? 48),
   });
   const dragging = drag.dragging;
 
@@ -208,6 +211,7 @@ export function ColumnHeader({
       {...(selecting ? { "data-selecting": "" } : {})}
     >
       <div data-cg-column-head-lead="" role="columnheader" style={{ paddingLeft: select ? 0 : leadInset }}>
+        {onResize && <span data-cg-column-resize="" aria-hidden="true" {...drag.gripProps(LEAD_COLUMN_ID)} />}
         {select && (
           <ListCheckbox
             checked={select.checked}
@@ -217,7 +221,20 @@ export function ColumnHeader({
           />
         )}
         {selecting ? (
-          <span data-cg-column-head-selected="">{selectedCount} selected</span>
+          <>
+            <span data-cg-column-head-selected="">{selectedCount} selected</span>
+            {/* Absolutely positioned from the lead cell over the (hidden)
+                column labels. Grid-placing it in row 1 pushed the auto-placed
+                labels to a second row and grew the header. */}
+            <div data-cg-column-head-bulk="">
+              {bulk}
+              {onClearSelection && (
+                <button type="button" data-cg-list-header-clear="" onClick={onClearSelection}>
+                  Clear
+                </button>
+              )}
+            </div>
+          </>
         ) : (
           <>
             <span>{lead}</span>
@@ -225,17 +242,7 @@ export function ColumnHeader({
           </>
         )}
       </div>
-      {selecting && (
-        <div data-cg-column-head-bulk="" style={{ gridColumn: anchor ? "2 / -2" : "2 / -1" }}>
-          {bulk}
-          {onClearSelection && (
-            <button type="button" data-cg-list-header-clear="" onClick={onClearSelection}>
-              Clear
-            </button>
-          )}
-        </div>
-      )}
-      {columns.map((col, i) => {
+      {columns.map((col) => {
         const active = sort?.id === col.id;
         const sortable = col.sortable !== false && !!onSort;
         return (
@@ -248,9 +255,7 @@ export function ColumnHeader({
             role="columnheader"
             aria-sort={active ? (sort!.dir === "asc" ? "ascending" : "descending") : undefined}
           >
-            {onResize && i > 0 && (
-              <span data-cg-column-resize="" aria-hidden="true" {...drag.gripProps(col.id)} />
-            )}
+            {onResize && <span data-cg-column-resize="" aria-hidden="true" {...drag.gripProps(col.id)} />}
             <button
               type="button"
               data-cg-column-head-label=""
