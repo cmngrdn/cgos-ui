@@ -25,4 +25,23 @@ Empty is the correct starting state — entries arrive as sessions learn things,
 
 ---
 
-<!-- No entries yet. Add them above this line, newest last. -->
+## List chrome (2026-09-22 → 23)
+
+- **Ship the ASSEMBLY as the standard, not the parts.** v0.71.0 shipped `ToolsRow`, `ChipSplit`, `Shelf`, `ChipApplied` and let each cmngrdn surface compose them. Within one sweep: four Filter buttons without the funnel, lists with no sort or no search, stat rows left outside the bar, "New quest" beside "+" — every one caught on the owner's first click-through. `ListToolbar` (configuration: `sort` · `filters` · `pulse` · `search` · `view` · `create` · `count`) fixed it because a surface can no longer choose the arrangement.
+  **How to apply:** when a standard is a *layout of* atoms, the layout is the atom. Ship it as a config-driven composite, not as parts plus a doc.
+
+- **A header row is sized by what is in it — don't put a count or anything variable there.** "1,804 items" in the narrow leading tracks overlapped the first label; moved beside that label, it widened the column (tracks are max-content). The count now lives only in the bar's right group.
+  **How to apply:** before adding text to a column header cell, ask whether it changes the column's width. Readouts belong in the bar.
+
+- **Resize is the spreadsheet model — right border, one column, trailing filler.** A left-edge grip with the lead column absorbing the slack (the 2026-07-08 rule) felt wrong in use: a drag moved other columns and seemed to resize the opposite side. Owner: "work exactly like Airtable or Google Sheets." Every column fixed-width, one `minmax(0,1fr)` filler, grip on the right border including the lead. Measured: +64px on one column left the others' widths identical.
+  **How to apply:** fixed widths also mean rows needn't be `subgrid` children to align — which is what makes a virtualized table possible on the same primitive.
+
+- **A subgrid's own gap is taken out of its cells.** With `column-gap` on the subgrid rows and 0 on the grid, a column resized to 155px drew at 139 and every resize began with a 16px jump. Put the gap on the grid.
+
+- **A flag that swallows "the click after a drag" must expire.** With pointer capture the click lands on the cell, not the label, so the flag stayed up and ate the NEXT real sort click. Reset it on a zero-delay timer.
+
+- **Filters: dropdown by default; toggles only for a small FIXED vocabulary.** Deciding by option count (≤ 8 → chips) made one filter chips in one workspace and a dropdown in the next, and let long record-derived labels (SMS blasts) eat a shelf row. Where the options come FROM decides.
+
+- **Four renderers sharing one engine still drift.** After unifying state + gestures (`useListColumns`/`useColumnDrag`), every header change still cost four edits (DataList, CatalogList, InquiriesList, ColumnGrid). The cause is history: each table was built for one page and the "hoist when a second consumer needs it" note was skipped exactly when the second consumer arrived. Merge the renderers.
+
+<!-- Add entries above this line, newest last. -->
