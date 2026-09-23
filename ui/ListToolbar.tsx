@@ -5,7 +5,7 @@ import { ToolsRow } from "./ToolsRow";
 import { ChipSplit, SortGlyph } from "./ChipSplit";
 import { Shelf, ShelfGroup, FilterToggle, PulseToggle } from "./Shelf";
 import { ChipApplied, ChipAppliedClear } from "./ChipApplied";
-import { ChipToggle, ChipMultiSelect, ChipGroup, ChipSegment } from "./ControlChip";
+import { ChipToggle, ChipSelect, ChipMultiSelect, ChipGroup, ChipSegment } from "./ControlChip";
 import { Input } from "./Input";
 import { Button } from "./Button";
 
@@ -60,9 +60,18 @@ export interface ListFilterDimension {
   onChange: (next: string[]) => void;
   /** Zero-or-one value (a lens). Picking another replaces it. */
   single?: boolean;
-  /** Rendered at the end of this dimension's shelf group — a match-mode
-   *  toggle (Any / All), say. */
+  /** Rendered after this dimension's control — a match-mode toggle (Any /
+   *  All), say. */
   trailing?: ReactNode;
+  /**
+   * `"toggles"` draws the options as a row of chips instead of a dropdown —
+   * but ONLY for a FIXED vocabulary (options defined in code: status, state,
+   * kind) of at most `TOGGLE_MAX` short options. Anything that comes from
+   * RECORDS (blasts, tags, forms, calendars, artists, countries) stays a
+   * dropdown whatever its count today, because it grows and its labels are
+   * whatever someone typed. Default: dropdown.
+   */
+  display?: "toggles";
 }
 
 export interface ListToolbarProps {
@@ -89,10 +98,19 @@ export interface ListToolbarProps {
   extra?: ReactNode;
 }
 
-/** Above this many options a dimension stays a searchable dropdown on the
- *  shelf — the threshold `ChipMultiSelect` adds its own search at. A row of
- *  forty tag chips is a wall, not a control. */
-const TOGGLE_LIMIT = 8;
+/**
+ * DROPDOWN BY DEFAULT; TOGGLES ARE THE EXCEPTION YOU OPT INTO (v0.72.0).
+ *
+ * v0.72.0's first cut decided by COUNT — eight options or fewer became a row
+ * of toggle chips — so the same kind of filter was a dropdown in one
+ * workspace and a wall of chips in the next, depending only on how much data
+ * it had. SMS "Blasts" (a handful of long campaign names) ate a whole shelf
+ * row that way. The deciding factor is where the options COME FROM: a fixed
+ * vocabulary may opt into toggles (`display: "toggles"`) when it is this small;
+ * everything else is a dropdown chip, so a Filter shelf reads as one compact
+ * row: `Status ▾  Form ▾  Blast ▾  Tag ▾`.
+ */
+const TOGGLE_MAX = 4;
 
 type ShelfId = "sort" | "filter" | "pulse" | null;
 
@@ -221,25 +239,42 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
       )}
       {dims.length > 0 && (
         <Shelf open={shelf === "filter"} id={ids.filter} label="Filters">
-          {dims.map((d) => (
-            <ShelfGroup key={d.key} label={d.label}>
-              {d.options.length > TOGGLE_LIMIT && !d.single ? (
-                <ChipMultiSelect
-                  label={d.label}
-                  value={d.value}
-                  options={d.options.map((o) => o.value)}
-                  onChange={d.onChange}
-                  labelFor={(v) => labelOf(d, v)}
-                  shape="rect"
-                />
-              ) : (
-                d.options.map((o) => (
+          {dims.map((d) =>
+            d.display === "toggles" && d.options.length <= TOGGLE_MAX ? (
+              // Toggles: the group label names the row of chips.
+              <ShelfGroup key={d.key} label={d.label}>
+                {d.options.map((o) => (
                   <ChipToggle key={o.value} label={o.label} active={d.value.includes(o.value)} onClick={() => flip(d, o.value)} shape="pill" />
-                ))
-              )}
-              {d.trailing}
-            </ShelfGroup>
-          ))}
+                ))}
+                {d.trailing}
+              </ShelfGroup>
+            ) : (
+              // A dropdown chip already carries its own label ("Blast ▾"), so
+              // it needs no group label — that is what keeps the row compact.
+              <span key={d.key} data-cg-shelf-group="" role="group" aria-label={d.label}>
+                {d.single ? (
+                  <ChipSelect
+                    label={d.label}
+                    value={d.value[0] ?? ""}
+                    options={d.options.map((o) => o.value)}
+                    onChange={(v) => d.onChange(v ? [v] : [])}
+                    labelFor={(v) => labelOf(d, v)}
+                    shape="rect"
+                  />
+                ) : (
+                  <ChipMultiSelect
+                    label={d.label}
+                    value={d.value}
+                    options={d.options.map((o) => o.value)}
+                    onChange={d.onChange}
+                    labelFor={(v) => labelOf(d, v)}
+                    shape="rect"
+                  />
+                )}
+                {d.trailing}
+              </span>
+            ),
+          )}
         </Shelf>
       )}
       {pulse && (

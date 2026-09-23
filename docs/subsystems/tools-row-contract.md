@@ -65,10 +65,18 @@ Measured in cmngrdn on 2026-09-22 at 1440×900:
 | Shelf | Opened by | Holds | Variant |
 |---|---|---|---|
 | Sort | the value half of `ChipSplit` | the sort field list | `row` |
-| Filter | `ShelfToggle badge={n}` | every dimension as a named `ShelfGroup` of `ChipToggle count` | `row` |
+| Filter | `FilterToggle badge={n}` | every dimension as a dropdown chip (`Status ▾ Form ▾ Blast ▾`); a FIXED vocabulary of ≤ 4 options may opt into toggles (`display: "toggles"`) | `row` |
 | Pulse | `ShelfToggle readout={…}` | the analytics grid | `panel` |
 | Selection | **nothing**; it opens when rows are selected | bulk actions | `row`, `tone="selection"` |
 
+- **DROPDOWN BY DEFAULT; TOGGLES BY OPT-IN.** The deciding factor is where a
+  dimension's options come from, not how many there are today. A fixed
+  vocabulary (status, state, kind — defined in code) of at most 4 short options
+  may render as toggle chips. Anything drawn from records (blasts, tags, forms,
+  calendars, artists) is always a dropdown: it grows, and its labels are
+  whatever someone typed. The first cut decided by count (≤ 8 → toggles), so
+  the same filter was chips in one workspace and a dropdown in the next, and
+  SMS Blasts' long campaign names took a whole shelf row.
 - **A SHUT SHELF MUST STILL SAY SOMETHING.** `ShelfToggle`'s type requires `badge` or `readout`. Folding a thing away without leaving a number is a regression.
 - **The applied readout is what makes the fold safe.** The badge says how many; the chips say which and remove one in place.
 - **One shelf at a time**, except Selection, which is orthogonal. Shelves close on surface change; shelf state is per surface.
