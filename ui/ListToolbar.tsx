@@ -116,14 +116,14 @@ type ShelfId = "sort" | "pulse" | null;
 
 export function ListToolbar({ label, sort, filters, pulse, search, view, create, extra }: ListToolbarProps) {
   const [shelf, setShelf] = useState<ShelfId>(null);
-  // THE FILTER DRAWER IS OPEN EXACTLY WHILE FILTERS ARE ON (Feather,
+  // THE FILTER DRAWER DEFAULTS TO OPEN WHILE FILTERS ARE ON (Feather,
   // 2026-09-23). It replaces the applied-filter chips beside search: the
   // drawer already names every active value, so a second readout of the same
-  // fact cost the bar its width. With nothing on, the Filter control opens it
-  // to pick the first one (`filterAsked`); once anything is on it stays open
-  // until the last filter is cleared, so what is narrowing the list is always
-  // in view. Independent of the one-at-a-time Sort/Pulse shelves.
-  const [filterAsked, setFilterAsked] = useState(false);
+  // fact cost the bar its width. The Filter control still toggles it either
+  // way — closing it with filters on is a choice, and the badge keeps saying
+  // how many. `null` = follow the default. Independent of the one-at-a-time
+  // Sort/Pulse shelves.
+  const [filterManual, setFilterManual] = useState<boolean | null>(null);
   const toggle = (id: Exclude<ShelfId, null>) => setShelf((cur) => (cur === id ? null : id));
   const uid = useId();
   const ids = { sort: `${uid}-sort`, filter: `${uid}-filter`, pulse: `${uid}-pulse` };
@@ -146,9 +146,9 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
   };
   const clearAll = () => {
     dims.forEach((d) => d.value.length > 0 && d.onChange([]));
-    setFilterAsked(false);
+    setFilterManual(null);
   };
-  const filterOpen = active > 0 || filterAsked;
+  const filterOpen = filterManual ?? active > 0;
   const sortLabel = sort?.options.find((o) => o.value === sort.value)?.label ?? sort?.value;
 
   return (
@@ -169,7 +169,7 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
             />
           )}
           {dims.length > 0 && (
-            <FilterToggle open={filterOpen} onToggle={() => (active > 0 ? undefined : setFilterAsked((o) => !o))} controls={ids.filter} badge={active} />
+            <FilterToggle open={filterOpen} onToggle={() => setFilterManual(!filterOpen)} controls={ids.filter} badge={active} />
           )}
           {extra}
         </>

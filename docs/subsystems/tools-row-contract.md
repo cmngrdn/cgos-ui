@@ -22,8 +22,8 @@ the first click-through. **Parts are not a standard; the assembly is.** So:
 - **The Filter drawer is open exactly while a filter is on** (2026-09-23). It
   replaced the applied-filter chips beside search — the drawer already names
   every active value, and a second readout of the same fact cost the bar its
-  width. With nothing on, Filter opens it to pick the first one; "Clear all"
-  lives in the drawer and closes it. So what is narrowing a list is always in
+  width. Filter still toggles it — closing it with filters on is allowed and the
+  badge keeps the count; "Clear all" lives in the drawer. So what is narrowing a list is always in
   view without an extra row of chips.
 - **Create is a square "+"** (icon-only `Button`; `label` is the tooltip and
   accessible name). Register the phone's create another way.
