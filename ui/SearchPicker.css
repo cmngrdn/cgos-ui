@@ -1,0 +1,151 @@
+/* SearchPicker — see ui/SearchPicker.tsx. Hoisted from cmngrdn's
+   `.ppd-add-*` (payroll Names tab) with the geometry unchanged. */
+
+.cg-search-picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--cg-space-sm);
+  /* Above the rows it overlays, and above their hover rims. */
+  z-index: 3;
+}
+
+.cg-search-picker-field {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cg-search-picker-leading {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  color: var(--cg-text-muted);
+  pointer-events: none;
+}
+
+/* Beats the atom's own padding — Input styles by `data-cg-input`, and the text
+   must start clear of the leading slot. A consumer with a wider leading label
+   ("To:") sets `--cg-search-picker-inset`. */
+.cg-search-picker-field[data-has-leading] .cg-search-picker-input[data-cg-input] {
+  padding-left: var(--cg-search-picker-inset, 30px);
+}
+
+.cg-search-picker-input[data-cg-input] {
+  width: 100%;
+}
+
+/* Feedback INSIDE the field's trailing edge: nothing below the field moves.
+   Only drawn while the field is empty. */
+.cg-search-picker-status {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100% - 44px);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  color: var(--cg-text-secondary);
+  pointer-events: none;
+}
+
+.cg-search-picker-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--cg-radius-md, 8px);
+  border: 1px solid var(--cg-glass-border-strong, var(--cg-glass-border));
+  background: var(--cg-bg-elevated);
+  box-shadow: var(--cg-elev-3);
+  overflow: hidden;
+}
+
+.cg-search-picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  max-height: calc(6 * 44px + 8px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.cg-search-picker-row {
+  display: flex;
+  align-items: center;
+  gap: var(--cg-space-sm);
+  height: 44px;
+  padding: 0 10px;
+  border-radius: var(--cg-radius-sm, 6px);
+  cursor: pointer;
+}
+
+.cg-search-picker-row[data-active] { background: var(--cg-fill-hover); }
+
+.cg-search-picker-row[data-disabled] {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.cg-search-picker-who {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cg-search-picker-label,
+.cg-search-picker-detail {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cg-search-picker-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cg-text);
+}
+
+.cg-search-picker-detail {
+  font-size: 11px;
+  color: var(--cg-text-muted);
+}
+
+.cg-search-picker-hint {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--cg-text-muted);
+}
+
+.cg-search-picker-row[data-active] .cg-search-picker-hint { color: var(--cg-text-secondary); }
+
+.cg-search-picker-empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cg-space-sm);
+  padding: 10px 10px 10px 14px;
+  font-size: 12px;
+  color: var(--cg-text-muted);
+}
+
+.cg-search-picker-more {
+  padding: 6px 14px 8px;
+  font-size: 11px;
+  color: var(--cg-text-muted);
+  border-top: var(--cg-hairline, 1px solid var(--cg-glass-border));
+}
+

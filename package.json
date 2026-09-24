@@ -1,6 +1,6 @@
 {
   "name": "cgos-ui",
-  "version": "0.74.0",
+  "version": "0.75.0",
   "description": "Shared design tokens, atoms, and visual primitives for the Common Garden ecosystem (cgos dashboard + cmngrdn + feather + reliquary).",
   "type": "module",
   "license": "UNLICENSED",
@@ -236,6 +236,11 @@
       "import": "./ui/TagPicker.tsx"
     },
     "./ui/TagPicker.css": "./ui/TagPicker.css",
+    "./ui/SearchPicker": {
+      "types": "./ui/SearchPicker.tsx",
+      "import": "./ui/SearchPicker.tsx"
+    },
+    "./ui/SearchPicker.css": "./ui/SearchPicker.css",
     "./lib/rcs-card": {
       "types": "./lib/rcs-card.ts",
       "import": "./lib/rcs-card.ts"

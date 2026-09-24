@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { ToolsRow } from "./ToolsRow";
 import { ChipSplit, SortGlyph } from "./ChipSplit";
 import { Shelf, ShelfGroup, FilterToggle, PulseToggle } from "./Shelf";
@@ -8,6 +8,7 @@ import { ChipAppliedClear } from "./ChipApplied";
 import { ChipToggle, ChipSelect, ChipMultiSelect, ChipGroup, ChipSegment } from "./ControlChip";
 import { Input } from "./Input";
 import { Button } from "./Button";
+import { Popover } from "./Popover";
 
 /**
  * ListToolbar — THE bar above every list, as configuration (v0.72.0).
@@ -31,7 +32,9 @@ import { Button } from "./Button";
  *   view     — the lens toggle.
  *   create   — a square "+" (icon only; `label` is its accessible name and
  *              tooltip). Hidden at narrow width — register the phone's create
- *              another way (cmngrdn: `usePageAction`).
+ *              another way (cmngrdn: `usePageAction`). With `choices` the +
+ *              asks WHICH new thing first, in a small menu under itself
+ *              (v0.75.0) — see `CreateControl`.
  *   extra    — surface-specific bar controls whose state this cannot see (a
  *              period picker). Rendered after Pulse.
  *
@@ -94,7 +97,7 @@ export interface ListToolbarProps {
     value: string;
     onChange: (value: string) => void;
   };
-  create?: { label: string; onClick: () => void; disabled?: boolean } | null;
+  create?: ListToolbarCreate | null;
   extra?: ReactNode;
   /** How many records the list shows — "1,804 items". Lives HERE, in the bar's
    *  right group, and nowhere in a header: in a column header it widened the
@@ -117,6 +120,121 @@ export interface ListToolbarProps {
 const TOGGLE_MAX = 4;
 
 type ShelfId = "sort" | "pulse" | null;
+
+export interface ListToolbarCreateChoice {
+  id: string;
+  label: string;
+  /** One line under the label — what this kind of new thing is for. */
+  description?: string;
+  icon?: ReactNode;
+  onSelect: () => void;
+}
+
+export interface ListToolbarCreate {
+  label: string;
+  /** What the + does when there are no `choices`. */
+  onClick?: () => void;
+  disabled?: boolean;
+  /**
+   * Two or more kinds of new thing from one list — the SMS inbox makes a
+   * one-to-one message OR a transmission. The + opens a menu of these rather
+   * than the bar growing a second create button, which is the whole reason it
+   * exists: a bar that grows a button per kind runs out of width first on a
+   * phone. The first choice is focused, so ↵ takes it.
+   */
+  choices?: ListToolbarCreateChoice[];
+}
+
+/**
+ * The bar's "+". Plain button without `choices`; a menu-button with them.
+ *
+ * The menu is keyboard-complete because the + is: ↓/↑ walk the choices, ↵ or
+ * Space takes one, Esc closes (Popover). Focus lands on the first choice when
+ * it opens and returns to the + when it closes without a pick, so a keyboard
+ * operator is never left focused on nothing.
+ */
+function CreateControl({ create }: { create: ListToolbarCreate }) {
+  const [open, setOpen] = useState(false);
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const choices = create.choices && create.choices.length > 0 ? create.choices : null;
+
+  useEffect(() => {
+    if (!open) return;
+    // After the Popover's own layout pass has placed the panel.
+    const raf = requestAnimationFrame(() => {
+      menuRef.current?.querySelector<HTMLButtonElement>("[data-cg-create-choice]")?.focus();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [open]);
+
+  const close = useCallback((refocus: boolean) => {
+    setOpen(false);
+    if (refocus) anchorRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
+  }, []);
+
+  function onMenuKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    const items = Array.from(
+      menuRef.current?.querySelectorAll<HTMLButtonElement>("[data-cg-create-choice]") ?? [],
+    );
+    const at = items.indexOf(document.activeElement as HTMLButtonElement);
+    const next = e.key === "ArrowDown" ? Math.min(at + 1, items.length - 1) : Math.max(at - 1, 0);
+    items[next]?.focus();
+  }
+
+  return (
+    <span ref={anchorRef} data-cg-create-anchor="">
+      <Button
+        variant="primary"
+        size="chip"
+        onClick={choices ? () => setOpen((v) => !v) : create.onClick}
+        disabled={create.disabled}
+        aria-label={create.label}
+        title={create.label}
+        aria-haspopup={choices ? "menu" : undefined}
+        aria-expanded={choices ? open : undefined}
+        iconLeft={<PlusGlyph />}
+      />
+      {choices && (
+        <Popover
+          open={open}
+          onClose={() => close(true)}
+          anchorRef={anchorRef}
+          minWidth={220}
+          preferredHeight={choices.length * 52 + 8}
+          role="menu"
+          ariaLabel={create.label}
+          className="cg-create-menu"
+        >
+          <div ref={menuRef} onKeyDown={onMenuKeyDown}>
+            {choices.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                role="menuitem"
+                data-cg-create-choice=""
+                onClick={() => {
+                  close(false);
+                  c.onSelect();
+                }}
+              >
+                {c.icon && <span className="cg-create-choice-icon" aria-hidden="true">{c.icon}</span>}
+                <span className="cg-create-choice-text">
+                  <span className="cg-create-choice-label">{c.label}</span>
+                  {c.description && (
+                    <span className="cg-create-choice-desc">{c.description}</span>
+                  )}
+                </span>
+              </button>
+            ))}
+          </div>
+        </Popover>
+      )}
+    </span>
+  );
+}
 
 export function ListToolbar({ label, sort, filters, pulse, search, view, create, extra, count }: ListToolbarProps) {
   const [shelf, setShelf] = useState<ShelfId>(null);
@@ -217,19 +335,7 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
           </>
         ) : undefined
       }
-      create={
-        create ? (
-          <Button
-            variant="primary"
-            size="chip"
-            onClick={create.onClick}
-            disabled={create.disabled}
-            aria-label={create.label}
-            title={create.label}
-            iconLeft={<PlusGlyph />}
-          />
-        ) : undefined
-      }
+      create={create ? <CreateControl create={create} /> : undefined}
     >
       {sort && (
         <Shelf open={shelf === "sort"} id={ids.sort} label="Sort by">
