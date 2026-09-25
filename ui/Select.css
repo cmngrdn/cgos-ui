@@ -1,8 +1,52 @@
-/* Select atom — focus + open + invalid pseudo-states.
+/* Select atom — the resting state, the sizes, and the pseudo-states.
+ * Auto-loaded via cgos-ui/index.css.
  *
- * Inline styles in Select.tsx handle the resting state; pseudo-states
- * need real CSS. Auto-loaded via cgos-ui/index.css.
+ * THE RESTING STATE IS CSS SINCE v0.76.0. It was inline in Select.tsx, which
+ * no stylesheet can outrank, so a consumer that needed a different height or
+ * a quiet (borderless) select had to use `!important`. Specificity is kept
+ * deliberately low and flat so a consumer's ONE class wins without a fight:
+ * the base at (0,1,0), each size at (0,2,0). An element selector (`select`,
+ * 0,0,1) still loses, so a page-wide form reset can't clobber the atom.
  */
+
+[data-cg-select] {
+  width: 100%;
+  background: var(--cg-bg);
+  border: 1px solid var(--cg-border);
+  color: var(--cg-text);
+  font-family: var(--cg-font);
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  transition: border-color var(--cg-duration-fast) var(--cg-ease);
+  box-sizing: border-box;
+}
+
+[data-cg-select]:disabled {
+  cursor: not-allowed;
+  opacity: var(--cg-disabled-opacity);
+}
+
+[data-cg-select][data-cg-size="chip"] {
+  height: var(--cg-control-h-chip, 28px);
+  padding: 0 1.625rem 0 0.625rem;
+  /* The chip family's corner, as `Input size="chip"`. */
+  border-radius: 6px;
+}
+
+[data-cg-select][data-cg-size="sm"] {
+  height: var(--cg-control-h-sm, 32px);
+  padding: 0 1.75rem 0 0.625rem;
+  border-radius: var(--cg-radius-md);
+}
+
+[data-cg-select][data-cg-size="md"] {
+  height: var(--cg-control-h-md, 40px);
+  padding: 0 2rem 0 0.875rem;
+  border-radius: var(--cg-radius-md);
+}
 
 /* Font size lives here, not inline, so the touch rule at the end can reach it. */
 [data-cg-select][data-cg-size="sm"],

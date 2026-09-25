@@ -30,33 +30,12 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
   children?: ReactNode
 }
 
-const SIZE_TOKENS: Record<
-  SelectSize,
-  { padding: string; height: string; radius: string; chevronSize: number; chevronRight: string }
-> = {
-  chip: {
-    padding: '0 1.625rem 0 0.625rem',
-    height: 'var(--cg-control-h-chip, 28px)',
-    // The chip family's corner, as `Input size="chip"` — in a row of chips it
-    // reads as one more control, not as a form field.
-    radius: '6px',
-    chevronSize: 12,
-    chevronRight: '0.5rem',
-  },
-  sm: {
-    padding: '0 1.75rem 0 0.625rem',
-    height: 'var(--cg-control-h-sm, 32px)',
-    radius: 'var(--cg-radius-md)',
-    chevronSize: 12,
-    chevronRight: '0.5rem',
-  },
-  md: {
-    padding: '0 2rem 0 0.875rem',
-    height: 'var(--cg-control-h-md, 40px)',
-    radius: 'var(--cg-radius-md)',
-    chevronSize: 14,
-    chevronRight: '0.625rem',
-  },
+/** What still varies by size in code: the chevron. Height, padding and corner
+ *  are CSS (`Select.css`) since v0.76.0. */
+const SIZE_TOKENS: Record<SelectSize, { chevronSize: number; chevronRight: string }> = {
+  chip: { chevronSize: 12, chevronRight: '0.5rem' },
+  sm: { chevronSize: 12, chevronRight: '0.5rem' },
+  md: { chevronSize: 14, chevronRight: '0.625rem' },
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
@@ -78,25 +57,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         data-cg-select=""
         data-cg-size={size}
         disabled={disabled}
-        style={{
-          width: '100%',
-          height: sizeStyle.height,
-          padding: sizeStyle.padding,
-          background: 'var(--cg-bg)',
-          border: '1px solid var(--cg-border)',
-          borderRadius: sizeStyle.radius,
-          color: 'var(--cg-text)',
-          fontFamily: 'var(--cg-font)',
-          outline: 'none',
-          appearance: 'none',
-          WebkitAppearance: 'none',
-          MozAppearance: 'none',
-          cursor: disabled ? 'not-allowed' : 'pointer',
-          opacity: disabled ? 'var(--cg-disabled-opacity)' : 1,
-          transition: 'border-color var(--cg-duration-fast) var(--cg-ease)',
-          boxSizing: 'border-box',
-          ...style,
-        }}
+        // RESTING STYLES LIVE IN `Select.css` since v0.76.0, not here. They were
+        // inline, and an inline style is the one thing no stylesheet can
+        // outrank: a consumer that needed a 26px select in a 26px column, or a
+        // borderless one in a table of rates, had to reach for `!important`
+        // (cmngrdn staffing, two places). `style` still passes through for a
+        // one-off.
+        style={style}
         {...rest}
       >
         {children}
