@@ -46,12 +46,24 @@ import "./ColumnHeader.css";
  *                       full-width cards, for a list's Cards view.
  *
  * THE SPREADSHEET MODEL (Google Sheets / Airtable — Feather, 2026-09-23).
- * Every column is a FIXED width — the name included — and ONE trailing filler
+ * Every column has a width — the name included — and ONE trailing filler
  * track (`minmax(0, 1fr)`) takes the leftover space. A column's grip is on its
  * RIGHT border; dragging it right widens that column and nothing else changes
  * size. When the columns outgrow the view the rows are wider than it and the
  * scroll container scrolls sideways (the header is inside the same scroller,
  * so it follows with no script).
+ *
+ * COMPRESS BEFORE SCROLLING (v0.77.0, Feather 2026-09-27: "maybe they just
+ * compress to get tighter? either way you can still scroll"). A column the
+ * operator has NOT resized is `minmax(floor, width)`: at full width it draws
+ * exactly as before, and when the view is narrower — an inspector open beside
+ * a list is the everyday case — every such column gives up space toward its
+ * floor before a single pixel scrolls. Measured before this: Inquiries needs
+ * 1046px and gets 640px beside an inspector at 1280, so Status was ALWAYS
+ * scrolled out of view. Nothing is dropped. A column the operator DID resize
+ * keeps the exact width they dragged it to — the spreadsheet promise stands
+ * for every column someone has touched. The floor is `compressTo`, else 60%
+ * of the width, never below `minWidth`.
  *
  * WHY THE ROWS ARE NOT `subgrid` ANY MORE. v0.71.0 made every row a subgrid
  * child so a track could be as wide as its widest label OR value. That is
@@ -106,6 +118,13 @@ export interface ColumnDef {
   defaultWidth?: number;
   /** Floor for resize. Default 48. */
   minWidth?: number;
+  /** Narrowest an UNRESIZED column compresses to before the table scrolls
+   *  sideways. Default 60% of its width (never below `minWidth`). Set it to
+   *  the width for a column whose content must never truncate. */
+  compressTo?: number;
+  /** The operator resized this column — it draws at exactly `width` and never
+   *  compresses. `columnsFrom` sets it from the engine. */
+  resized?: boolean;
   /** Header tooltip — what the column means when its label cannot say it. */
   title?: string;
   /** A funnel on the header: multi-select over `options`. */
@@ -137,7 +156,11 @@ export function columnsFrom<T extends ColumnDef>(defs: T[], engine: Pick<ListCol
   return engine.order
     .map((id) => byId.get(id))
     .filter((d): d is T => !!d)
-    .map((d) => ({ ...d, width: engine.widths[d.id] ?? d.width ?? d.defaultWidth ?? DEFAULT_COLUMN_WIDTH }));
+    .map((d) => ({
+      ...d,
+      width: engine.widths[d.id] ?? d.width ?? d.defaultWidth ?? DEFAULT_COLUMN_WIDTH,
+      resized: engine.widths[d.id] != null || d.resized === true,
+    }));
 }
 
 /** Move `from` to the position `to` holds — so dropping a column on its right
@@ -156,6 +179,23 @@ function widthOf(c: ColumnDef): number {
   return Math.round(c.width ?? c.defaultWidth ?? DEFAULT_COLUMN_WIDTH);
 }
 
+const COMPRESS_RATIO = 0.6;
+
+/** How narrow a column may draw before the table scrolls instead. A resized
+ *  column never compresses — it IS its width. */
+export function columnFloor(c: ColumnDef): number {
+  const w = widthOf(c);
+  if (c.resized) return w;
+  const floor = c.compressTo ?? Math.round(w * COMPRESS_RATIO);
+  return Math.min(w, Math.max(Math.round(floor), c.minWidth ?? 48));
+}
+
+function trackOf(c: ColumnDef): string {
+  const w = widthOf(c);
+  const f = columnFloor(c);
+  return f >= w ? `${w}px` : `minmax(${f}px, ${w}px)`;
+}
+
 /** The leading slot's width: checkbox · nesting rail · art, 10px apart. */
 function prefixWidth(select: boolean, nest: boolean, art: number): number {
   const parts = [select ? SELECT_W : 0, nest ? RAIL_W : 0, art].filter((w) => w > 0);
@@ -167,13 +207,14 @@ export interface ColumnTemplateOptions {
   prefixWidth?: number;
 }
 
-/** The grid template: `[prefix] columns… filler [anchor]`. Only the
- *  filler flexes, so resizing a column changes only that column. */
+/** The grid template: `[prefix] columns… filler [anchor]`. At full width only
+ *  the filler flexes, so resizing a column changes only that column; when the
+ *  view is narrower, unresized columns compress toward `columnFloor`. */
 export function columnTemplate(columns: ColumnDef[], opts: ColumnTemplateOptions = {}): string {
   const { anchorWidth = 0, prefixWidth: pw = 0 } = opts;
   return [
     ...(pw > 0 ? [`${pw}px`] : []),
-    ...columns.map((c) => `${widthOf(c)}px`),
+    ...columns.map(trackOf),
     "minmax(0, 1fr)",
     ...(anchorWidth > 0 ? [`${anchorWidth}px`] : []),
   ].join(" ");
@@ -255,7 +296,9 @@ export function ColumnGrid({
   // The tracks' own width (the filler at 0), for anything full-width that is
   // not a track row — a group label must reach as far as the rows when the
   // table scrolls sideways. Gaps and gutters are CSS vars, so the sum ends in CSS.
-  const fixed = [pw, ...columns.map(widthOf), anchorPx].filter((w) => w > 0);
+  // At the FLOOR, not the full widths: the rows only need to be this wide
+  // before they scroll, because every unresized column can compress to it.
+  const fixed = [pw, ...columns.map(columnFloor), anchorPx].filter((w) => w > 0);
   const vars = {
     "--cg-column-template": columnTemplate(columns, { anchorWidth: anchorPx, prefixWidth: pw }),
     "--cg-column-tracks-w": `calc(${fixed.reduce((a, b) => a + b, 0)}px + ${fixed.length} * var(--cg-column-gap))`,

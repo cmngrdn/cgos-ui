@@ -291,6 +291,44 @@
   to   { opacity: 0; transform: translateX(16px) scale(0.98); }
 }
 
+/* ── Touch hit area ──────────────────────────────────────────────────
+ * `data-cg-hit` gives ANY control the 44px touch target the atoms already
+ * carry (Button, IconButton, ControlChip and 17 others each have a copy of
+ * this rule). It exists for the controls that are not atoms — a consumer's
+ * tab, an inspector's close, a status pill that opens a menu, a row action —
+ * which is where every sub-44px control measured on a 390px phone actually
+ * was (cmngrdn, 2026-09-27: 23 on Inquiries, 78 on Catalog, 36 on Crew).
+ *
+ *   data-cg-hit      grows both axes, centred — a lone control, a corner button
+ *   data-cg-hit="y"  grows vertically only — a control in a horizontal row a
+ *                    few px from its neighbour, which a sideways extension
+ *                    would steal taps from (same rule as ControlChip)
+ *
+ * The visible control keeps its size; only the invisible hit box grows, and
+ * only on a coarse pointer. `:where()` holds the positioning at zero
+ * specificity so a control that positions itself still wins. It needs
+ * `::after` free — a control already drawing an `::after` should use its own
+ * pseudo or a wrapper instead. */
+@media (pointer: coarse) {
+  :where([data-cg-hit]) {
+    position: relative;
+  }
+  [data-cg-hit]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+  [data-cg-hit="y"]::after {
+    left: 0;
+    width: 100%;
+    transform: translateY(-50%);
+  }
+}
+
 /* ── Reduced motion ──────────────────────────────────────────────────
  * Honor `prefers-reduced-motion: reduce` for the design system's own
  * decorative animations. Deliberately SCOPED to cg-* animated surfaces
