@@ -16,8 +16,12 @@ import { forwardRef, type CSSProperties, type Ref } from 'react'
  * green semantically reads as "this is sending / publishing / actively
  * doing" (e.g. client confirmation email enabled).
  *
- * Companion CSS at `cgos-ui/ui/Toggle.css` carries the focus-visible ring
- * (auto-loaded via `cgos-ui/index.css`).
+ * Companion CSS at `cgos-ui/ui/Toggle.css` carries the WHOLE resting state
+ * (v0.77.0) — track, dot, tones, sizes, focus ring, touch hit area — keyed off
+ * `data-size` / `data-tone` / `data-checked`. It used to be inline, which is
+ * how the off track came to be `--cg-bg-surface`: invisible on a dark theme,
+ * so an off switch read as a lone white dot (AHLC → Modules, 2026-09-27) and
+ * nothing outside the atom could correct it.
  */
 
 export type ToggleTone = 'accent' | 'success' | 'warning' | 'danger'
@@ -35,29 +39,18 @@ export interface ToggleProps {
   className?: string
 }
 
-const SPECS = {
-  sm: { w: 26, h: 14, r: 7, dot: 10, on: 14, off: 2 },
-  md: { w: 32, h: 18, r: 9, dot: 14, on: 16, off: 2 },
-} as const
-
-const TONE_VARS: Record<ToggleTone, string> = {
-  accent: 'var(--cg-accent)',
-  success: 'var(--cg-status-success)',
-  warning: 'var(--cg-status-warning)',
-  danger: 'var(--cg-status-danger)',
-}
-
 export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(function Toggle(
   { checked, onChange, disabled, label, ariaLabel, size = 'md', tone = 'accent', style, className },
   ref,
 ) {
-  const t = SPECS[size]
-  const onColor = TONE_VARS[tone]
   const handleClick = () => {
     if (disabled) return
     onChange(!checked)
   }
 
+  // Resting state lives in Toggle.css (v0.77.0), keyed off these attributes,
+  // so a consumer's stylesheet can reach it. `style` stays the per-instance
+  // escape hatch and still wins.
   return (
     <button
       ref={ref as Ref<HTMLButtonElement>}
@@ -72,48 +65,12 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(function Toggle
       data-tone={tone}
       {...(checked ? { 'data-checked': '' } : {})}
       className={className}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 8,
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        opacity: disabled ? 'var(--cg-disabled-opacity)' : 1,
-        ...style,
-      }}
+      style={style}
     >
-      <span
-        data-cg-toggle-track=""
-        style={{
-          display: 'inline-block',
-          position: 'relative',
-          width: t.w,
-          height: t.h,
-          borderRadius: t.r,
-          background: checked ? onColor : 'var(--cg-bg-surface)',
-          boxShadow: checked ? 'none' : 'inset 0 0 0 1px var(--cg-border-hover)',
-          transition: 'background 150ms ease',
-          flexShrink: 0,
-        }}
-      >
-        <span
-          data-cg-toggle-dot=""
-          style={{
-            position: 'absolute',
-            top: 2,
-            left: checked ? t.on : t.off,
-            width: t.dot,
-            height: t.dot,
-            borderRadius: '50%',
-            background: 'white',
-            transition: 'left 150ms ease',
-          }}
-        />
+      <span data-cg-toggle-track="">
+        <span data-cg-toggle-dot="" />
       </span>
-      {label && (
-        <span data-cg-toggle-label="" style={{ fontSize: 12, color: 'var(--cg-text-secondary)' }}>
-          {label}
-        </span>
-      )}
+      {label && <span data-cg-toggle-label="">{label}</span>}
     </button>
   )
 })

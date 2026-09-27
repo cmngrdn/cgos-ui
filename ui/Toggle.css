@@ -6,12 +6,75 @@
  */
 
 [data-cg-toggle] {
+  --cg-toggle-on: var(--cg-accent, #2ec4c9);
+  --cg-toggle-w: 32px;
+  --cg-toggle-h: 18px;
+  --cg-toggle-dot: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border: none;
   background: transparent;
   padding: 0;
   font: inherit;
+  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   appearance: none;
+}
+[data-cg-toggle][data-size="sm"] {
+  --cg-toggle-w: 26px;
+  --cg-toggle-h: 14px;
+  --cg-toggle-dot: 10px;
+}
+[data-cg-toggle][data-tone="success"] { --cg-toggle-on: var(--cg-status-success, #3ecf8e); }
+[data-cg-toggle][data-tone="warning"] { --cg-toggle-on: var(--cg-status-warning, #f5a524); }
+[data-cg-toggle][data-tone="danger"]  { --cg-toggle-on: var(--cg-status-danger, #ef4444); }
+[data-cg-toggle]:disabled {
+  cursor: not-allowed;
+  opacity: var(--cg-disabled-opacity, 0.5);
+}
+
+/* The OFF track is a fill derived from the theme's own text colour, so it
+   reads on a dark world and a cream one alike. It used to be
+   `--cg-bg-surface`, which on a dark theme is within a shade of the page. */
+[data-cg-toggle-track] {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--cg-toggle-w);
+  height: var(--cg-toggle-h);
+  border-radius: calc(var(--cg-toggle-h) / 2);
+  background: color-mix(in srgb, var(--cg-text, #fff) 22%, transparent);
+  box-shadow: inset 0 0 0 1px var(--cg-border-hover, rgba(255, 255, 255, 0.12));
+  transition: background var(--cg-duration-fast, 150ms) ease;
+}
+[data-cg-toggle][data-checked] [data-cg-toggle-track] {
+  background: var(--cg-toggle-on);
+  box-shadow: none;
+}
+[data-cg-toggle-dot] {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: var(--cg-toggle-dot);
+  height: var(--cg-toggle-dot);
+  border-radius: 50%;
+  background: var(--cg-knob, #ffffff);
+  box-shadow: var(--cg-elev-1, 0 1px 2px rgba(0, 0, 0, 0.2));
+  transition: left var(--cg-duration-fast, 150ms) ease;
+}
+[data-cg-toggle][data-checked] [data-cg-toggle-dot] {
+  left: calc(var(--cg-toggle-w) - var(--cg-toggle-dot) - 2px);
+}
+[data-cg-toggle-label] {
+  font-size: 12px;
+  color: var(--cg-text-secondary, rgba(255, 255, 255, 0.72));
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-cg-toggle-track],
+  [data-cg-toggle-dot] {
+    transition: none;
+  }
 }
 
 [data-cg-toggle]:focus-visible {

@@ -282,6 +282,9 @@
   --cg-fill:                color-mix(in srgb, var(--cg-text) 4%, transparent);
   --cg-fill-hover:          color-mix(in srgb, var(--cg-text) 8%, transparent);
   --cg-fill-strong:         color-mix(in srgb, var(--cg-text) 12%, transparent);
+  /* A switch knob / slider thumb — white in every theme, the way every OS
+     draws one. (v0.77.0, first reader: Toggle.) */
+  --cg-knob:                #ffffff;
 
   /* ── Layer scale ────────────────────────────────────────────────────
      WHY THIS EXISTS. There were 41 distinct z-index values across 94 files
