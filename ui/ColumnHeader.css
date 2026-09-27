@@ -613,6 +613,21 @@
   [data-cg-column-edit-caret] {
     opacity: 1;
   }
+  /* The trigger is its pill — 18px on Crew's Tier and Crew cells, measured
+     2026-09-27 — so the hit box grows vertically to 44px (v0.78.0). Vertical
+     only: in the narrow reflow two edit cells sit side by side. */
+  :where([data-cg-column-edit]) {
+    position: relative;
+  }
+  [data-cg-column-edit]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: max(100%, 44px);
+    transform: translateY(-50%);
+  }
 }
 
 /* ── Narrow — reflow, never hide ──────────────────────────────────────── */

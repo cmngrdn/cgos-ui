@@ -37,6 +37,20 @@
   height: 24px;
   border-radius: var(--cg-radius-sm);
 }
+/* chip (v0.78.0): the 28px control-chip step, drawn as a chip — hairline
+   border on the surface fill — so it sits in a row of ControlChips and
+   `size="chip"` Buttons as one vocabulary. It exists because cmngrdn's
+   inspector header forced this look onto `size="sm"` with an inline `style`,
+   which also froze the background and killed every variant's hover. */
+[data-cg-icon-button][data-size="chip"] {
+  width: var(--cg-control-h-chip, 28px);
+  height: var(--cg-control-h-chip, 28px);
+  border: 1px solid var(--cg-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--cg-radius-sm, 6px);
+}
+[data-cg-icon-button][data-size="chip"]:not([data-active]) {
+  background: var(--cg-bg-surface, #151923);
+}
 [data-cg-icon-button][data-size="md"] {
   width: 32px;
   height: 32px;
@@ -55,12 +69,14 @@
 }
 [data-cg-icon-button][data-size="xs"] [data-cg-icon-button-icon] { width: 10px; height: 10px; }
 [data-cg-icon-button][data-size="sm"] [data-cg-icon-button-icon] { width: 14px; height: 14px; }
+[data-cg-icon-button][data-size="chip"] [data-cg-icon-button-icon] { width: 16px; height: 16px; }
 [data-cg-icon-button][data-size="md"] [data-cg-icon-button-icon] { width: 16px; height: 16px; }
 [data-cg-icon-button][data-size="lg"] [data-cg-icon-button-icon] { width: 20px; height: 20px; }
 
 /* SVG icons inherit the glyph slot dimensions */
 [data-cg-icon-button][data-size="xs"] [data-cg-icon-button-icon] svg { width: 10px; height: 10px; }
 [data-cg-icon-button][data-size="sm"] [data-cg-icon-button-icon] svg { width: 14px; height: 14px; }
+[data-cg-icon-button][data-size="chip"] [data-cg-icon-button-icon] svg { width: 16px; height: 16px; }
 [data-cg-icon-button][data-size="md"] [data-cg-icon-button-icon] svg { width: 16px; height: 16px; }
 [data-cg-icon-button][data-size="lg"] [data-cg-icon-button-icon] svg { width: 20px; height: 20px; }
 

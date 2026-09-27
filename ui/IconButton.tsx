@@ -35,7 +35,7 @@ import {
  */
 
 export type IconButtonVariant = 'ghost' | 'subtle' | 'accent' | 'danger' | 'overlay'
-export type IconButtonSize = 'xs' | 'sm' | 'md' | 'lg'
+export type IconButtonSize = 'xs' | 'sm' | 'chip' | 'md' | 'lg'
 
 interface IconButtonProps
   extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
