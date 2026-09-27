@@ -70,7 +70,7 @@ A tab body renders the entity's **CONTENT** — never a page surface. The chrome
 - **Use a canonical tab role** from the table below — do NOT re-list them here. This line held a second copy for months and drifted: it named `editor` and `activity` and `thread` (two retired, one superseded) while omitting `content`, `timeline`, `notifications` and `email`. One list, one place.
 - **Never drop a full-page route component into a tab.** A `/hq/...` page surface carries its own header + max-width container + page padding; mounting it verbatim "sticks a page in a box." Factor the chrome out (or gate it behind an in-inspector flag/context) so the body is content-only before mounting.
 
-This applies to ANY surface opened in the inspector — preview-bearing or not, present or future. The same discipline that keeps framing in one place (above) keeps titling + chrome there too. (cmngrdn 2026-06-03: the Activity pullout's `<ActivityBody>` was de-chromed to a content-only `activity`-role body; Pulse-card pullouts render their chart chromeless via a `PulseDetailContext` so the chart's own panel title doesn't echo the chrome title — see cmngrdn CLAUDE.md § Inspector Contract for the implementation.)
+This applies to ANY surface opened in the inspector — preview-bearing or not, present or future. The same discipline that keeps framing in one place (above) keeps titling + chrome there too. (cmngrdn 2026-06-03: the Activity pullout's `<ActivityBody>` was de-chromed to a content-only `activity`-role body; Pulse-card pullouts render their chart chromeless via a `PulseDetailContext` so the chart's own panel title doesn't echo the chrome title — see cmngrdn `docs/subsystems/inspector.md` for the implementation.)
 
 ### Preview slot + framePolicy
 
