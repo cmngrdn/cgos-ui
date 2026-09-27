@@ -387,7 +387,7 @@
     "audit:emoji": "tsx scripts/audit-emoji-search.mjs"
   },
   "devDependencies": {
-    "jsdom": "^26.0.0",
+    "jsdom": "^30.1.1",
     "react": "^19.2.8",
     "tsx": "^4.19.2"
   },
