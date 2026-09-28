@@ -87,68 +87,122 @@
   flex-shrink: 0;
 }
 
+/* ── The drawers' own furniture (ListToolbar, 2026-09-28) ──────────────── */
+
+/* ListToolbar's wrapper exists only to hold a ref; it must not be a box, or
+   the bar stops being a direct flex child of the module page. */
+[data-cg-list-toolbar] {
+  display: contents;
+}
+
+/* Search is a drawer: the field takes the drawer's whole width, so there is
+   nothing for it to grow into and nothing beside it to push. */
+[data-cg-shelf-search] {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  /* On a wide screen a full-width field is 1,100px of box for a query of five
+     to ten characters (Feather, 2026-09-28). 400px holds any real query with
+     room to read it; on a phone the drawer is narrower than this and the
+     field simply fills it. */
+  max-width: 400px;
+}
+
+/* The match count sits beside the query it answers, not at the far edge. */
+[data-cg-shelf-search] + [data-cg-shelf-count] {
+  margin-left: 4px;
+}
+
+/* The Search drawer is ONE line at every width: the field, then the match
+   count. With a zero basis the field only takes what the count leaves, so it
+   can never push the count onto a line of its own. */
+[data-cg-shelf][data-variant="row"] [data-cg-shelf-body]:has(> [data-cg-shelf-search]) {
+  flex-wrap: nowrap;
+}
+[data-cg-shelf-search] > * {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* "43 conversations" — the answer to "how many?", where the question is asked:
+   the end of the Search and Filter drawers, the head of Pulse. */
+[data-cg-shelf-count] {
+  font-family: var(--cg-font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: var(--cg-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+[data-cg-shelf-pulse-count] {
+  display: flex;
+  margin-bottom: 8px;
+}
+[data-cg-shelf-pulse-count] [data-cg-shelf-count] {
+  margin-left: 0;
+}
+
 /* ── Narrow ───────────────────────────────────────────────────────────── */
 
+/* ONE ROW AT EVERY WIDTH (2026-09-28). The bar used to wrap to two rows here —
+   controls, then a full-width search beside the view toggle — because search
+   was a box. Search is a drawer now, so the bar holds only fixed-size controls
+   and they fit one line at 375px once the Filter and Pulse WORDS fold away:
+   the funnel with its badge and the pulse glyph with its readout still say
+   what each is and what it holds. */
 @container cg-tools-row (max-width: 620px) {
   [data-cg-tools-row-bar] {
     --cg-tools-row-gutter: var(--cg-gutter-narrow, 12px);
-    height: auto;
-    flex-wrap: wrap;
-    padding-block: var(--cg-tools-row-pad);
-    row-gap: var(--cg-tools-row-pad);
   }
 
   [data-cg-shelf-body] {
     --cg-tools-row-gutter: var(--cg-gutter-narrow, 12px);
   }
 
-  /* ROW 1 IS THE FILTER CONTROLS, ROW 2 IS SEARCH + VIEW. `margin-left: auto`
-     on the right group stranded an icon-only toggle 32px from the nearest
-     labelled chip at 375 (left group ended at 295, toggle started at 328),
-     which reads as detached. Giving the left group the whole first row puts
-     the toggle at the end of the search row, where it has a neighbour. */
+  /* THE CONTROLS NEVER GIVE WAY; A READOUT DOES. Sort, Filter and Search keep
+     their full size. What yields is the Pulse readout, which ellipsises —
+     measured 2026-09-28: "314 blocking payroll" on the crew roster pushed
+     Filter and Search off the side of a 375px bar, while every control that
+     mattered was the part that disappeared. The number survives the cut ("314
+     block…"), and the whole of it is one tap away in the drawer. */
   [data-cg-tools-row-left] {
-    flex: 1 1 100%;
-    min-width: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
+    flex: 0 0 auto;
   }
-  [data-cg-tools-row-left]::-webkit-scrollbar {
+  [data-cg-tools-row-right] {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  [data-cg-tools-row-right] > [data-cg-shelf-toggle] {
+    min-width: 0;
+    flex: 0 1 auto;
+  }
+  [data-cg-shelf-toggle-readout] {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  [data-cg-shelf-toggle] [data-cg-shelf-toggle-label] {
     display: none;
   }
-
-  [data-cg-tools-row-search] {
-    order: 3;
-    flex: 1 1 auto;
-    min-width: 0;
+  [data-cg-shelf-toggle]:not([data-cg-search-toggle]) {
+    padding: 0 8px;
   }
 
-  [data-cg-tools-row-right] {
-    order: 4;
-    margin-left: 0;
-  }
-
-  /* The badge still says how many filters are on and the shelf says which; at
-     this width the chips would fight the controls for the same row. */
-  /* The COUNT stays — it is the one always-visible "how many results" readout
-     (Feather, 2026-09-23); it rides row 2 beside search + view. */
   [data-cg-tools-row-applied],
   [data-cg-tools-row-create] {
     display: none;
   }
 
-  /* A shelf of controls scrolls sideways rather than wrapping into a wall. */
-  [data-cg-shelf][data-variant="row"] [data-cg-shelf-body] {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  [data-cg-shelf][data-variant="row"] [data-cg-shelf-body]::-webkit-scrollbar {
-    display: none;
-  }
-  [data-cg-shelf-group] {
-    flex-wrap: nowrap;
-  }
+  /* A narrow drawer of controls WRAPS. The earlier rule here said "scroll
+     sideways, never wrap", but it never applied — Shelf.css sets
+     `flex-wrap: wrap` at the same specificity and loads after this file, and a
+     container query adds no specificity — so wrapping is what every phone has
+     shown, and it reads fine: the drawer is one you opened, and a chip pushed
+     off the side of it is one you would not know to look for. Forcing it on
+     (2026-09-28) squeezed the Filter drawer's groups into a stack. */
 }
 
 /* ── The create menu (ListToolbar `create.choices`, v0.75.0) ──────────────
