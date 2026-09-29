@@ -146,7 +146,7 @@ Below **620px of the row's own width** (`container: cg-tools-row`) the bar stays
 2. **The bar's height is derived.** Never set it.
 3. **Never `!important` against these atoms from a consumer.** If one cannot be themed, that is this repo's bug.
 4. **A shut shelf carries a readout.**
-5. **`@container`, never `@media`, for anything inside the list.**
+5. **`@container`, never `@media`, for anything inside the list — except the gutter.** Layout follows the row's width; the outer inset follows the PAGE, so it swaps at the page's phone breakpoint (767px) together with the chrome above and the rows below. Swapping it by container misaligned the bar against the workspace chip on any desktop window whose list pane was under 620px (2026-09-28).
 6. **`--cg-control-h-xs` is 24 and stays 24.** The chip is its own step.
 
 ## Not here

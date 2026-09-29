@@ -152,15 +152,22 @@
    and they fit one line at 375px once the Filter and Pulse WORDS fold away:
    the funnel with its badge and the pulse glyph with its readout still say
    what each is and what it holds. */
-@container cg-tools-row (max-width: 620px) {
-  [data-cg-tools-row-bar] {
-    --cg-tools-row-gutter: var(--cg-gutter-narrow, 12px);
-  }
-
+/* THE GUTTER FOLLOWS THE PAGE, NOT THE ROW (Feather, 2026-09-28: "everything
+   should line up on the outside padding"). The layout below is decided by the
+   row's own width, which is right — a list sits in splits and inspectors. But
+   the INSET is the page's: the workspace chip above and the rows below switch
+   to the narrow gutter at phone width, not when the list pane happens to be
+   under 620px. Swapping it here by container put the tools 12px left of the
+   chip and the rows on a desktop window just under 1,000px wide (measured at
+   848: chip 244, rows 244, tools 232). So the gutter swaps where they do. */
+@media (max-width: 767px) {
+  [data-cg-tools-row-bar],
   [data-cg-shelf-body] {
     --cg-tools-row-gutter: var(--cg-gutter-narrow, 12px);
   }
+}
 
+@container cg-tools-row (max-width: 620px) {
   /* THE CONTROLS NEVER GIVE WAY; A READOUT DOES. Sort, Filter and Search keep
      their full size. What yields is the Pulse readout, which ellipsises —
      measured 2026-09-28: "314 blocking payroll" on the crew roster pushed
