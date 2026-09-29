@@ -316,6 +316,19 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
       label={label}
       left={
         <>
+          {/* NARROWEST FIRST (Feather, 2026-09-28): Search finds one thing,
+              Filter narrows to a group, Sort orders what is left — so the row
+              reads from most targeted to broadest, and the two square
+              controls sit together at the edge. Search leads for a second
+              reason: on a phone the global "search anything" glyph lives in
+              the bottom-RIGHT corner, and a list search above it would read
+              as the same control. */}
+          {search && (
+            <SearchToggle open={shelf === "search"} onToggle={() => toggle("search")} controls={ids.search} query={query} />
+          )}
+          {dims.length > 0 && (
+            <FilterToggle open={shelf === "filter"} onToggle={() => toggle("filter")} controls={ids.filter} badge={active} />
+          )}
           {sort && (
             <ChipSplit
               label={sortLabel}
@@ -327,12 +340,6 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
               modifierLabel={sort.dir === "asc" ? "Ascending — press for descending" : "Descending — press for ascending"}
               onModifier={sort.onFlip}
             />
-          )}
-          {dims.length > 0 && (
-            <FilterToggle open={shelf === "filter"} onToggle={() => toggle("filter")} controls={ids.filter} badge={active} />
-          )}
-          {search && (
-            <SearchToggle open={shelf === "search"} onToggle={() => toggle("search")} controls={ids.search} query={query} />
           )}
           {extra}
         </>

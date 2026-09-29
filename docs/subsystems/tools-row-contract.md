@@ -81,7 +81,7 @@ Measured in cmngrdn on 2026-09-22 at 1440×900:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ [Date ⌄|↓] [⚲ Filter 2] [Pulse 1,804]  search…  Unread× Form×  124 [▤▦] [New] │  36px
+│ [🔍] [⚲ Filter 2] [Date ⌄|↓]                    [Pulse 1,804] [▤▦] [+]   │  36px
 ├──────────────────────────────────────────────────────────────────────────┤
 │  STATUS  New 7  Replied 14   FORM  Tattoo 112           ← a shelf        │
 └──────────────────────────────────────────────────────────────────────────┘
@@ -97,7 +97,7 @@ Measured in cmngrdn on 2026-09-22 at 1440×900:
 | `create` | `<Button size="chip">` | changes what EXISTS; hidden at narrow |
 | children | `<Shelf>`s | |
 
-**Order is `filters · search · actions`.** Search is the one elastic member and sits between two intrinsically-sized groups. `search · filters · actions` is on the lab deck as an open question, but only this order ships.
+**Order is `Search · Filter · Sort ····· Pulse · View · +`** (2026-09-28). The left group is what is IN the list and in what order, narrowest first: Search finds one thing, Filter narrows to a group, Sort orders what is left. The right group is how you SEE it, then create. Search leads partly because the phone's global "search anything" glyph sits bottom-right, and a list search above it would read as the same control. Every search placeholder names what it searches ("Search conversations…"), never a bare "Search…". (Superseded: `filters · search · actions`, from when search was the one elastic box.)
 
 ## Shelves
 
