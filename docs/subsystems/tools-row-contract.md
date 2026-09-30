@@ -4,6 +4,41 @@ The contract for the strip between a module's tabs and its first row: sort, filt
 
 Nothing governed this strip before, which is why cmngrdn grew four implementations of it at six heights. The rows beneath it are governed by [`../list-row-template.md`](../list-row-template.md). The design reasoning and the live measurements are in cmngrdn [`docs/list-chrome-standard.md`](https://github.com/cmngrdn/cmngrdn/blob/main/docs/list-chrome-standard.md); the working model is cmngrdn `/lab/list-chrome`.
 
+## 2026-09-28 — four drawers, one row, nothing moves unless you tapped it
+
+Measured on the SMS inbox at 375px: the list tools took **171px** — sort and
+filter, a full-width search row, count + Pulse + view, then the Filter drawer
+open on every visit because the inbox has a DEFAULT filter ("Wrote back") and
+the drawer opened whenever a filter was on. After: **one 36px row**, first
+conversation at 85px instead of 219px. Every list takes the same bar, so every
+list got the same row back.
+
+- **Search is a drawer.** The bar carries a square glyph (`SearchToggle`),
+  accent-coloured at rest so it is easy to find and FILLED while a query is
+  applied. The field is the Search drawer — full width on a phone, capped at
+  400px on a wide screen (a 1,100px field for a five-letter query was the old
+  problem moved). Opening it puts the cursor in the field; `/` opens it from
+  anywhere that is not a text field; Esc folds it and keeps the query.
+- **One drawer at a time — Sort, Filter, Search, Pulse — and a shut drawer
+  keeps working.** Closing never undoes what was set; it folds into the
+  control: the sort field on the split, `Filter 2` on the badge, the filled
+  search glyph. So there is never more than one drawer open and never any
+  doubt what is narrowing the list.
+- **Nothing opens on its own, and nothing grows sideways.** The Filter drawer
+  no longer opens because a filter is on (that was 2026-09-23; on a list with a
+  default filter it meant a drawer open on every visit). No control in the bar
+  changes width as you use it; the only movement is a drawer you tapped
+  sliding the list down beneath it.
+- **The count leaves the bar.** A total is the module's numbers, so it heads
+  the Pulse drawer; "how many matched?" is answered at the end of the Search
+  drawer (while a query is on) and the Filter drawer.
+- **Narrow: one row, and the controls never give way.** The Filter and Pulse
+  WORDS fold (glyph + badge / glyph + readout remain), and a long Pulse readout
+  ellipsises (`314 blocki…`) — measured on the crew roster, where it had pushed
+  Filter and Search off the side of the bar. A narrow Filter drawer wraps onto
+  a second line; the "scroll sideways" rule that claimed otherwise never
+  applied (see ToolsRow.css).
+
 ## v0.72.0 — the assembly is the standard, not the parts
 
 v0.71.0 shipped the parts and let each surface compose them. Within one sweep
@@ -19,12 +54,9 @@ the first click-through. **Parts are not a standard; the assembly is.** So:
 - **`FilterToggle` / `PulseToggle`** are the only Filter and Pulse controls —
   fixed word, fixed glyph. **Pulse sits on the right, beside the view toggle**
   (both change how you see the list, not what is in it).
-- **The Filter drawer is open exactly while a filter is on** (2026-09-23). It
-  replaced the applied-filter chips beside search — the drawer already names
-  every active value, and a second readout of the same fact cost the bar its
-  width. Filter still toggles it — closing it with filters on is allowed and the
-  badge keeps the count; "Clear all" lives in the drawer. So what is narrowing a list is always in
-  view without an extra row of chips.
+- ~~**The Filter drawer is open exactly while a filter is on** (2026-09-23).~~
+  **Superseded 2026-09-28:** the drawer opens only when tapped; the badge
+  carries the count. See the section above.
 - **Create is a square "+"** (icon-only `Button`; `label` is the tooltip and
   accessible name). Register the phone's create another way.
 - **Stat lenses are Pulse.** A row of counted `StatChip`s — focus lenses,
@@ -49,7 +81,7 @@ Measured in cmngrdn on 2026-09-22 at 1440×900:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ [Date ⌄|↓] [⚲ Filter 2] [Pulse 1,804]  search…  Unread× Form×  124 [▤▦] [New] │  36px
+│ [🔍] [⚲ Filter 2] [Date ⌄|↓]                    [Pulse 1,804] [▤▦] [+]   │  36px
 ├──────────────────────────────────────────────────────────────────────────┤
 │  STATUS  New 7  Replied 14   FORM  Tattoo 112           ← a shelf        │
 └──────────────────────────────────────────────────────────────────────────┘
@@ -58,14 +90,14 @@ Measured in cmngrdn on 2026-09-22 at 1440×900:
 | Slot | Holds | Rule |
 |---|---|---|
 | `left` | sort `ChipSplit`, Filter + Pulse `ShelfToggle`s | changes what you are LOOKING AT |
-| `search` | `<Input size="chip" type="search">` | a ceiling (280) AND a floor (200) |
+| `search` | unused by `ListToolbar` since 2026-09-28 (search is a drawer) | a ceiling (280) AND a floor (200) if a caller still passes one |
 | `applied` | `ChipApplied` × n, `ChipAppliedClear` when ≥2 | absent when nothing filters |
 | `count` | the number shown | mono, muted |
 | `right` | view toggle (`ChipGroup` + `ChipSegment`) | |
 | `create` | `<Button size="chip">` | changes what EXISTS; hidden at narrow |
 | children | `<Shelf>`s | |
 
-**Order is `filters · search · actions`.** Search is the one elastic member and sits between two intrinsically-sized groups. `search · filters · actions` is on the lab deck as an open question, but only this order ships.
+**Order is `Search · Filter · Sort ····· Pulse · View · +`** (2026-09-28). The left group is what is IN the list and in what order, narrowest first: Search finds one thing, Filter narrows to a group, Sort orders what is left. The right group is how you SEE it, then create. Search leads partly because the phone's global "search anything" glyph sits bottom-right, and a list search above it would read as the same control. Every search placeholder names what it searches ("Search conversations…"), never a bare "Search…". (Superseded: `filters · search · actions`, from when search was the one elastic box.)
 
 ## Shelves
 
@@ -73,7 +105,8 @@ Measured in cmngrdn on 2026-09-22 at 1440×900:
 |---|---|---|---|
 | Sort | the value half of `ChipSplit` | the sort field list | `row` |
 | Filter | `FilterToggle badge={n}` | every dimension as a dropdown chip (`Status ▾ Form ▾ Blast ▾`); a FIXED vocabulary of ≤ 4 options may opt into toggles (`display: "toggles"`) | `row` |
-| Pulse | `ShelfToggle readout={…}` | the analytics grid | `panel` |
+| Search | `SearchToggle` (square glyph; filled while a query is on) | the field (≤ 400px) + the match count | `row` |
+| Pulse | `ShelfToggle readout={…}` | the list total, then the analytics grid | `panel` |
 | Selection | **nothing**; it opens when rows are selected | bulk actions | `row`, `tone="selection"` |
 
 - **DROPDOWN BY DEFAULT; TOGGLES BY OPT-IN.** The deciding factor is where a
@@ -85,8 +118,8 @@ Measured in cmngrdn on 2026-09-22 at 1440×900:
   the same filter was chips in one workspace and a dropdown in the next, and
   SMS Blasts' long campaign names took a whole shelf row.
 - **A SHUT SHELF MUST STILL SAY SOMETHING.** `ShelfToggle`'s type requires `badge` or `readout`. Folding a thing away without leaving a number is a regression.
-- **The open drawer is what makes the fold safe.** The badge says how many; the drawer, open whenever anything filters, says which. (Superseded: an applied-chip readout beside search, removed 2026-09-23.)
-- **One shelf at a time**, except Selection, which is orthogonal. Shelves close on surface change; shelf state is per surface.
+- **The control is what makes the fold safe.** The badge says how many filters; the filled glyph says a query is on; the drawer, one tap away, says which. (Superseded: an applied-chip readout beside search, removed 2026-09-23; the always-open Filter drawer, removed 2026-09-28.)
+- **One shelf at a time — Search included** — except Selection, which is orthogonal. Shelves close on surface change; shelf state is per surface.
 - **Sort is one shell, two halves.** The value half opens the field list and the modifier half flips direction. The frequent action is one click; the rare one is behind the caret.
 
 ## Geometry
@@ -102,7 +135,7 @@ Verified at the runtime (`getBoundingClientRect` + `getComputedStyle`) in a comp
 
 ## Narrow — a container query, not a media query
 
-Below **620px of the row's own width** (`container: cg-tools-row`), row 1 is `left` and row 2 is search with the view toggle beside it. `applied` and `create` hide (the count stays — it is the always-visible result count), and shelves scroll sideways instead of wrapping. The container is the right trigger because a list sits in splits, rails and inspectors, not only in the window.
+Below **620px of the row's own width** (`container: cg-tools-row`) the bar stays **one row** (2026-09-28; it was two while search was a box). The Filter and Pulse words fold, the Pulse readout ellipsises before any control gives way, `applied` and `create` hide, and a drawer of controls wraps. The container is the right trigger because a list sits in splits, rails and inspectors, not only in the window.
 
 - ⚠️ **A surface that hides `create` at narrow MUST offer create another way on a phone** (cmngrdn: `usePageAction`), or it has none. Catalog shipped that way once.
 - iOS focus-zoom is handled by `Input`'s own `(pointer: coarse)` → 16px rule, which is the precise signal. Width is not the signal, so the lab's "16px/32px at narrow" is deliberately not reproduced: the search stays one chip tall.
@@ -113,7 +146,7 @@ Below **620px of the row's own width** (`container: cg-tools-row`), row 1 is `le
 2. **The bar's height is derived.** Never set it.
 3. **Never `!important` against these atoms from a consumer.** If one cannot be themed, that is this repo's bug.
 4. **A shut shelf carries a readout.**
-5. **`@container`, never `@media`, for anything inside the list.**
+5. **`@container`, never `@media`, for anything inside the list — except the gutter.** Layout follows the row's width; the outer inset follows the PAGE, so it swaps at the page's phone breakpoint (767px) together with the chrome above and the rows below. Swapping it by container misaligned the bar against the workspace chip on any desktop window whose list pane was under 620px (2026-09-28).
 6. **`--cg-control-h-xs` is 24 and stays 24.** The chip is its own step.
 
 ## Not here

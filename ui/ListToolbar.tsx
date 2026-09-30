@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { ToolsRow } from "./ToolsRow";
 import { ChipSplit, SortGlyph } from "./ChipSplit";
-import { Shelf, ShelfGroup, FilterToggle, PulseToggle } from "./Shelf";
+import { Shelf, ShelfGroup, FilterToggle, PulseToggle, SearchToggle } from "./Shelf";
 import { ChipAppliedClear } from "./ChipApplied";
 import { ChipToggle, ChipSelect, ChipMultiSelect, ChipGroup, ChipSegment } from "./ControlChip";
 import { Input } from "./Input";
@@ -28,7 +28,7 @@ import { Popover } from "./Popover";
  *              content mounts only while the shelf is open. Stat lenses (a
  *              row of counted `StatChip`s) belong HERE, not in a row of their
  *              own — they are the module's numbers that happen to filter.
- *   search   — always the same chip-height input.
+ *   search   — a square glyph on the bar; the field is its own drawer (2026-09-28).
  *   view     — the lens toggle.
  *   create   — a square "+" (icon only; `label` is its accessible name and
  *              tooltip). Hidden at narrow width — register the phone's create
@@ -99,9 +99,11 @@ export interface ListToolbarProps {
   };
   create?: ListToolbarCreate | null;
   extra?: ReactNode;
-  /** How many records the list shows — "1,804 items". Lives HERE, in the bar's
-   *  right group, and nowhere in a header: in a column header it widened the
-   *  column it sat in (2026-09-23). */
+  /** How many records the list shows — "1,804 items". NOT on the bar since
+   *  2026-09-28: a total is the module's numbers, so it heads the Pulse drawer,
+   *  and it answers "how many matched?" at the end of the Search and Filter
+   *  drawers. Never in a column header either — there it widened its column
+   *  (2026-09-23). */
   count?: ReactNode;
 }
 
@@ -119,7 +121,7 @@ export interface ListToolbarProps {
  */
 const TOGGLE_MAX = 4;
 
-type ShelfId = "sort" | "pulse" | null;
+type ShelfId = "sort" | "filter" | "search" | "pulse" | null;
 
 export interface ListToolbarCreateChoice {
   id: string;
@@ -237,26 +239,62 @@ function CreateControl({ create }: { create: ListToolbarCreate }) {
 }
 
 export function ListToolbar({ label, sort, filters, pulse, search, view, create, extra, count }: ListToolbarProps) {
+  // ONE DRAWER AT A TIME, AND A SHUT DRAWER KEEPS WORKING (2026-09-28).
+  // Sort, Filter, Search and Pulse are four drawers under one bar; opening one
+  // closes the other. Closing never undoes what was set in it — the choice
+  // folds into its control: the sort field on the split, "Filter 2" on the
+  // badge, a filled glyph for a live query. Nothing opens on its own: the
+  // Filter drawer used to open whenever a filter was on (2026-09-23), which on
+  // a list with a DEFAULT filter (the SMS inbox's "Wrote back") meant a drawer
+  // open on every visit. The badge carries the count; the drawer is a tap away.
   const [shelf, setShelf] = useState<ShelfId>(null);
-  // THE FILTER DRAWER DEFAULTS TO OPEN WHILE FILTERS ARE ON (Feather,
-  // 2026-09-23). It replaces the applied-filter chips beside search: the
-  // drawer already names every active value, so a second readout of the same
-  // fact cost the bar its width. The Filter control still toggles it either
-  // way — closing it with filters on is a choice, and the badge keeps saying
-  // how many. `null` = follow the default. Independent of the one-at-a-time
-  // Sort/Pulse shelves.
-  const [filterManual, setFilterManual] = useState<boolean | null>(null);
   const toggle = (id: Exclude<ShelfId, null>) => setShelf((cur) => (cur === id ? null : id));
   const uid = useId();
-  const ids = { sort: `${uid}-sort`, filter: `${uid}-filter`, pulse: `${uid}-pulse` };
+  const ids = { sort: `${uid}-sort`, filter: `${uid}-filter`, search: `${uid}-search`, pulse: `${uid}-pulse` };
+
+  const barRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+  // The glyph's readout needs the live query even when the search is
+  // uncontrolled (a URL-driven, debounced search keeps typing local).
+  const [typed, setTyped] = useState(search?.value ?? search?.defaultValue ?? "");
+  const query = search?.value !== undefined ? search.value : typed;
 
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onSearch = (v: string) => {
     if (!search) return;
+    setTyped(v);
     if (!search.debounceMs) return search.onChange(v);
     if (debounce.current) clearTimeout(debounce.current);
     debounce.current = setTimeout(() => search.onChange(v), search.debounceMs);
   };
+
+  // Opening the Search drawer puts the cursor in the field — the drawer IS the
+  // field, so a second tap to reach it would be the old box with extra steps.
+  useEffect(() => {
+    if (shelf !== "search") return;
+    const raf = requestAnimationFrame(() => searchRef.current?.focus({ preventScroll: true }));
+    return () => cancelAnimationFrame(raf);
+  }, [shelf]);
+
+  // "/" opens Search from anywhere on the page that is not already a text
+  // field — what makes a drawer as fast as a box on a keyboard. Only a bar
+  // that is actually on screen answers, so a hidden split's bar stays quiet.
+  const hasSearch = !!search;
+  useEffect(() => {
+    if (!hasSearch) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      // The wrapper is `display: contents` (no box of its own), so ask the row.
+      const row = barRef.current?.firstElementChild;
+      if (!row || row.getClientRects().length === 0) return;
+      e.preventDefault();
+      setShelf("search");
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [hasSearch]);
 
   const dims = (filters ?? []).filter((d) => d.options.length > 0);
   const labelOf = (d: ListFilterDimension, v: string) => d.options.find((o) => o.value === v)?.label ?? v;
@@ -268,17 +306,29 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
   };
   const clearAll = () => {
     dims.forEach((d) => d.value.length > 0 && d.onChange([]));
-    setFilterManual(null);
   };
-  const filterOpen = filterManual ?? active > 0;
   const sortLabel = sort?.options.find((o) => o.value === sort.value)?.label ?? sort?.value;
+  const countLine = count !== undefined && count !== null ? <span data-cg-shelf-count="" aria-live="polite">{count}</span> : null;
 
   return (
+    <div ref={barRef} data-cg-list-toolbar="">
     <ToolsRow
       label={label}
-      count={count}
       left={
         <>
+          {/* NARROWEST FIRST (Feather, 2026-09-28): Search finds one thing,
+              Filter narrows to a group, Sort orders what is left — so the row
+              reads from most targeted to broadest, and the two square
+              controls sit together at the edge. Search leads for a second
+              reason: on a phone the global "search anything" glyph lives in
+              the bottom-RIGHT corner, and a list search above it would read
+              as the same control. */}
+          {search && (
+            <SearchToggle open={shelf === "search"} onToggle={() => toggle("search")} controls={ids.search} query={query} />
+          )}
+          {dims.length > 0 && (
+            <FilterToggle open={shelf === "filter"} onToggle={() => toggle("filter")} controls={ids.filter} badge={active} />
+          )}
           {sort && (
             <ChipSplit
               label={sortLabel}
@@ -291,29 +341,8 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
               onModifier={sort.onFlip}
             />
           )}
-          {dims.length > 0 && (
-            <FilterToggle open={filterOpen} onToggle={() => setFilterManual(!filterOpen)} controls={ids.filter} badge={active} />
-          )}
           {extra}
         </>
-      }
-      search={
-        search ? (
-          <Input
-            size="chip"
-            type="search"
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            data-1p-ignore=""
-            data-lpignore="true"
-            placeholder={search.placeholder ?? "Search…"}
-            aria-label={search.placeholder ?? "Search"}
-            {...(search.value !== undefined ? { value: search.value } : { defaultValue: search.defaultValue })}
-            onChange={(e) => onSearch(e.target.value)}
-          />
-        ) : undefined
       }
       right={
         pulse || (view && view.segments.length > 1) ? (
@@ -354,8 +383,41 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
           </ShelfGroup>
         </Shelf>
       )}
+      {search && (
+        <Shelf open={shelf === "search"} id={ids.search} label="Search">
+          <span data-cg-shelf-search="">
+            <Input
+              ref={searchRef}
+              size="chip"
+              type="search"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              data-1p-ignore=""
+              data-lpignore="true"
+              placeholder={search.placeholder ?? "Search…"}
+              aria-label={search.placeholder ?? "Search"}
+              {...(search.value !== undefined ? { value: search.value } : { defaultValue: search.defaultValue })}
+              onChange={(e) => onSearch(e.target.value)}
+              onKeyDown={(e) => {
+                // Esc folds the drawer away and KEEPS the query — the glyph
+                // stays filled, so the list still says it is searched.
+                if (e.key === "Escape") {
+                  e.preventDefault();
+                  setShelf(null);
+                }
+              }}
+            />
+          </span>
+          {/* No clear chip: a `type="search"` field carries the platform's own
+              clear button, and a second one beside it read as two ways to do
+              one thing (and "Clear all" is the wrong word for a query). */}
+          {query.trim() && countLine}
+        </Shelf>
+      )}
       {dims.length > 0 && (
-        <Shelf open={filterOpen} id={ids.filter} label="Filters">
+        <Shelf open={shelf === "filter"} id={ids.filter} label="Filters">
           {dims.map((d) =>
             d.display === "toggles" && d.options.length <= TOGGLE_MAX ? (
               // Toggles: the group label names the row of chips.
@@ -393,14 +455,21 @@ export function ListToolbar({ label, sort, filters, pulse, search, view, create,
             ),
           )}
           {active > 0 && <ChipAppliedClear onClear={clearAll} />}
+          {countLine}
         </Shelf>
       )}
       {pulse && (
         <Shelf open={shelf === "pulse"} id={ids.pulse} label={pulse.title ?? "Pulse"} variant="panel">
-          {shelf === "pulse" && pulse.render()}
+          {shelf === "pulse" && (
+            <>
+              {countLine && <div data-cg-shelf-pulse-count="">{countLine}</div>}
+              {pulse.render()}
+            </>
+          )}
         </Shelf>
       )}
     </ToolsRow>
+    </div>
   );
 }
 

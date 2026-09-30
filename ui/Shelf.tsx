@@ -105,7 +105,9 @@ export function ShelfToggle({ label, icon, open, onToggle, controls, badge, read
       aria-controls={controls}
     >
       {icon && <span data-cg-shelf-toggle-icon="">{icon}</span>}
-      {label}
+      {/* The word folds away on a narrow row (ToolsRow.css); the glyph and the
+          readout stay, so the control still says what it is and what it holds. */}
+      <span data-cg-shelf-toggle-label="">{label}</span>
       {badge !== undefined && badge > 0 && (
         <span data-cg-shelf-toggle-badge="" aria-label={`${badge} active`}>
           {badge}
@@ -128,6 +130,55 @@ export function FilterToggle(props: Omit<ShelfToggleBase, "label" | "icon"> & { 
 
 export function PulseToggle(props: Omit<ShelfToggleBase, "label" | "icon"> & { readout: ReactNode }) {
   return <ShelfToggle {...props} label="Pulse" icon={<PulseGlyph />} />;
+}
+
+/**
+ * SEARCH IS A DRAWER, NOT A BOX IN THE BAR (2026-09-28).
+ *
+ * A search box sized for the longest query anybody types still cost the bar
+ * 200–280px of a 375px phone for something typed a few times a session, and
+ * pushed everything else onto a second row. So the bar carries a square
+ * glyph and the field lives on its own drawer, full width, like Sort, Filter
+ * and Pulse. Nothing grows sideways in the row you are using.
+ *
+ * A SHUT DRAWER MUST STILL SAY SOMETHING — here the readout is the fill: the
+ * glyph is accent-coloured at rest so it is easy to find, and FILLED while a
+ * query is applied, so a searched list can never pass for a whole one. The
+ * query itself rides the accessible name and the tooltip.
+ */
+export function SearchToggle({
+  open,
+  onToggle,
+  controls,
+  query,
+}: Omit<ShelfToggleBase, "label" | "icon"> & { query: string }) {
+  const active = query.trim().length > 0;
+  const name = active ? `Search: ${query.trim()}` : "Search";
+  return (
+    <button
+      type="button"
+      data-cg-shelf-toggle=""
+      data-cg-search-toggle=""
+      {...(open ? { "data-open": "" } : {})}
+      {...(active ? { "data-active": "" } : {})}
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-controls={controls}
+      aria-label={name}
+      title={name}
+    >
+      <SearchGlyph />
+    </button>
+  );
+}
+
+function SearchGlyph() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+      <circle cx="7" cy="7" r="4.75" />
+      <line x1="10.5" y1="10.5" x2="14" y2="14" />
+    </svg>
+  );
 }
 
 function FunnelGlyph() {

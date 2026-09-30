@@ -134,6 +134,31 @@
   outline-offset: 1px;
 }
 
+/* ── Search: a square glyph that opens its own drawer (2026-09-28) ──────
+   Accent at rest so it is easy to find; FILLED while a query is applied, which
+   is this control's readout — a searched list must not pass for a whole one. */
+[data-cg-search-toggle] {
+  width: var(--cg-control-h-chip, 28px);
+  padding: 0;
+  justify-content: center;
+  color: var(--cg-accent);
+}
+
+[data-cg-search-toggle]:hover {
+  color: var(--cg-accent);
+  border-color: var(--cg-accent-dim);
+}
+
+[data-cg-search-toggle][data-active] {
+  color: var(--cg-bg);
+  background: var(--cg-accent);
+  border-color: var(--cg-accent);
+}
+
+[data-cg-search-toggle][data-active][data-open] {
+  box-shadow: 0 0 0 2px var(--cg-accent-glow);
+}
+
 [data-cg-shelf-toggle-icon] {
   display: inline-flex;
   flex-shrink: 0;
