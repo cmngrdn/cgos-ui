@@ -77,6 +77,26 @@
       "import": "./ui/GlyphToggleRow.tsx"
     },
     "./ui/GlyphToggleRow.css": "./ui/GlyphToggleRow.css",
+    "./ui/Mark": {
+      "types": "./ui/Mark.tsx",
+      "import": "./ui/Mark.tsx"
+    },
+    "./ui/Mark.css": "./ui/Mark.css",
+    "./ui/Window": {
+      "types": "./ui/Window.tsx",
+      "import": "./ui/Window.tsx"
+    },
+    "./ui/Window.css": "./ui/Window.css",
+    "./ui/RecordWindowHead": {
+      "types": "./ui/RecordWindowHead.tsx",
+      "import": "./ui/RecordWindowHead.tsx"
+    },
+    "./ui/RecordWindowHead.css": "./ui/RecordWindowHead.css",
+    "./ui/Stub": {
+      "types": "./ui/Stub.tsx",
+      "import": "./ui/Stub.tsx"
+    },
+    "./ui/Stub.css": "./ui/Stub.css",
     "./ui/GlassSurface": {
       "types": "./ui/GlassSurface.tsx",
       "import": "./ui/GlassSurface.tsx"

@@ -217,6 +217,29 @@
   --cg-app-finances:        #96aec3;
 
   /* ============================================================
+     Marks + the window (cgos docs/hq-system.md §4, §8). The four
+     marks a row may carry — the dot (frost), your turn (sol), the
+     stage (the pale stage family, off the status hues) and a
+     booking's own dot — and the window's geometry. A consumer with
+     its own world-derived palette (cmngrdn's `.lv`) re-points these.
+     ============================================================ */
+  --cg-aurora:              #1bd3c3;  /* done · booked · held */
+  --cg-sol:                 #f29d52;  /* waiting — your turn */
+  --cg-ember:               #f26e50;  /* blocked · no-show */
+  --cg-frost:               #5fc6ff;  /* unread */
+  --cg-iris:                #f257c9;  /* live */
+  --cg-stage-new:           var(--cg-text-secondary);
+  --cg-stage-talking:       #b8aeea;
+  --cg-stage-quoted:        #ded38d;
+  --cg-stage-booked:        #a9ce96;
+  --cg-stage-done:          var(--cg-text-dim);
+  --cg-stage-closed:        var(--cg-text-muted);
+  --cg-window-radius:       18px;   /* a window's outer corner */
+  --cg-window-band-h:       48px;   /* W1: the band, on the line */
+  --cg-window-gutter:       16px;   /* W6: one gutter inside a window */
+  --cg-record-w:            460px;  /* R4: one record width */
+
+  /* ============================================================
      Elevation scale (HIG-style depth)
      Layered shadows for surface hierarchy. Pair with --cg-glass-*
      when the surface is translucent.
@@ -412,6 +435,15 @@
    all inherit from the dark default.
    ============================================================ */
 :root[data-theme="light"] {
+  /* marks, light (cgos docs/hq-system.md §8) — deeper so they clear contrast on cream */
+  --cg-aurora:              #009084;
+  --cg-sol:                 oklch(0.62 0.15 55);
+  --cg-ember:               oklch(0.57 0.19 32);
+  --cg-frost:               oklch(0.56 0.14 240);
+  --cg-stage-talking:       #6c58ad;
+  --cg-stage-quoted:        #8f791b;
+  --cg-stage-booked:        #54803a;
+
   --cg-bg:                  #faf6f0;
   --cg-bg-elevated:         #fdfaf5;
   --cg-bg-surface:          #f3ede3;

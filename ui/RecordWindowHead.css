@@ -1,0 +1,60 @@
+/* A record window's head (cgos docs/hq-system.md R4–R6) — see ui/RecordWindowHead.tsx.
+   The panel standard (cmngrdn patterns, 2026-10-15): the card 11px in, the controls 8px inside its corner. */
+
+[data-cg-record-head] {
+  --_app: var(--cg-record-app, transparent);
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "face title   controls"
+    "face context context"
+    "face details status";
+  column-gap: 12px; row-gap: 3px; align-items: center;
+  padding: 11px;
+  border-radius: var(--cg-radius-md, 12px);
+  background: var(--cg-glass-bg-elevated, color-mix(in srgb, #16161f 75%, transparent));
+  border: 1px solid var(--cg-glass-border, color-mix(in srgb, #e8e6e1 8%, transparent));
+  box-shadow: inset 0 1px 0 var(--cg-glass-border-top, color-mix(in srgb, #e8e6e1 38%, transparent)), var(--cg-elev-2, 0 2px 6px rgba(0, 0, 0, 0.25));
+  min-width: 0;
+}
+/* R5: the home app's colour on the head's surface — a wash, never the text */
+[data-cg-record-head][data-tinted] {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--_app) 16%, transparent), color-mix(in srgb, var(--_app) 6%, transparent)),
+    var(--cg-glass-bg-elevated, color-mix(in srgb, #16161f 75%, transparent));
+  border-color: color-mix(in srgb, var(--_app) 26%, var(--cg-glass-border, transparent));
+}
+[data-cg-record-face] { grid-area: face; align-self: start; display: inline-flex; width: 44px; height: 44px; }
+[data-cg-record-face] > * { width: 100%; height: 100%; }
+[data-cg-record-title] {
+  grid-area: title; min-width: 0;
+  font-size: 16px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; color: var(--cg-text, #e8e6e1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+[data-cg-record-controls] { grid-area: controls; align-self: start; display: inline-flex; gap: 4px; margin: -3px -3px 0 4px; }
+[data-cg-record-controls] [data-cg-icon-button] { border-radius: 50%; }
+[data-cg-record-context] {
+  grid-area: context; min-width: 0; font-size: 12.5px; line-height: 1.35; color: var(--cg-text-secondary, #8a8880);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* a link inside an ellipsized line must not vanish whole: the line becomes a flex row and the link shrinks */
+[data-cg-record-context]:has(> :is(a, button)) { display: flex; align-items: center; white-space: pre; }
+[data-cg-record-context] > :is(a, button) { flex: 0 1 auto; min-width: 2.5em; overflow: hidden; text-overflow: ellipsis; }
+[data-cg-record-details] {
+  grid-area: details; min-width: 0; font-size: 12px; line-height: 1.4; color: var(--cg-text-dim, rgba(232, 230, 225, 0.45));
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+[data-cg-record-status] { grid-area: status; justify-self: end; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+[data-cg-record-saved] { font-size: 11.5px; color: var(--cg-text-dim, rgba(232, 230, 225, 0.45)); }
+[data-cg-record-head][data-compact] [data-cg-record-face] { width: 40px; height: 40px; }
+[data-cg-record-head][data-compact] [data-cg-record-title] { font-size: 15px; }
+[data-cg-record-progress] {
+  position: absolute; left: 11px; right: 11px; bottom: 4px; height: 2px; border-radius: 1px;
+  background: color-mix(in srgb, var(--cg-text, #e8e6e1) 8%, transparent); overflow: hidden;
+}
+[data-cg-record-progress]::after {
+  content: ""; position: absolute; inset: 0 auto 0 0; width: calc(var(--cg-record-progress, 0) * 100%);
+  background: var(--cg-aurora, #1bd3c3);
+  box-shadow: 0 0 calc(4px + var(--cg-record-progress, 0) * 8px) color-mix(in srgb, var(--cg-aurora, #1bd3c3) 70%, transparent);
+}

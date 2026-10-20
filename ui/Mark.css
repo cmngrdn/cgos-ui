@@ -1,0 +1,47 @@
+/* The marks (cgos docs/hq-system.md K1–K4) — see ui/Mark.tsx. */
+
+[data-cg-mark] { flex: none; }
+
+/* K1 the dot: frost, one arrival pop */
+[data-cg-mark="dot"] {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--cg-frost, #5fc6ff);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--cg-frost, #5fc6ff) 55%, transparent);
+  animation: cg-mark-arrive 420ms cubic-bezier(.3, 1.4, .5, 1) both;
+}
+@keyframes cg-mark-arrive { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { [data-cg-mark="dot"] { animation: none; } }
+
+/* K2 your turn: sol on a 14% fill, a 38% hairline */
+[data-cg-mark="turn"] {
+  display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px 0 6px; border-radius: 999px;
+  color: var(--cg-sol, #f29d52);
+  background: color-mix(in srgb, var(--cg-sol, #f29d52) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cg-sol, #f29d52) 38%, transparent);
+}
+[data-cg-mark-n] { font: 600 11px/1 var(--cg-font-mono, ui-monospace, monospace); font-variant-numeric: tabular-nums; }
+
+/* K3 the stage: a word and a pale dot */
+[data-cg-mark="stage"] {
+  --_s: var(--cg-stage-new, #8a8880);
+  display: inline-flex; align-items: center; gap: 5px; min-width: 0;
+  font-size: 12px; line-height: 1.2; color: var(--_s); white-space: nowrap;
+}
+[data-cg-mark="stage"] > i { width: 7px; height: 7px; border-radius: 50%; background: var(--_s); flex: none; }
+[data-cg-mark="stage"][data-stage="talking"] { --_s: var(--cg-stage-talking, #b8aeea); }
+[data-cg-mark="stage"][data-stage="quoted"]  { --_s: var(--cg-stage-quoted, #ded38d); }
+[data-cg-mark="stage"][data-stage="booked"]  { --_s: var(--cg-stage-booked, #a9ce96); }
+[data-cg-mark="stage"][data-stage="done"]    { --_s: var(--cg-stage-done, rgba(232, 230, 225, 0.45)); }
+[data-cg-mark="stage"][data-stage="closed"]  { --_s: var(--cg-stage-closed, rgba(232, 230, 225, 0.30)); }
+[data-cg-mark="stage"][data-stage="closed"] > i { background: none; box-shadow: inset 0 0 0 1.5px var(--_s); }
+[data-cg-mark="stage"][data-dim] { opacity: 0.6; }
+[data-cg-mark-more] { color: var(--cg-text-dim, rgba(232, 230, 225, 0.45)); }
+
+/* K4 a booking's own dot — a fact, not a live ask: no glow */
+[data-cg-mark="booking"] {
+  --_b: var(--cg-aurora, #1bd3c3);
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--_b);
+}
+[data-cg-mark="booking"][data-booking="no_show"] { --_b: var(--cg-ember, #f26e50); }
+[data-cg-mark="booking"][data-booking="cancelled"] { --_b: var(--cg-text-muted, rgba(232, 230, 225, 0.30)); background: none; box-shadow: inset 0 0 0 1.5px var(--_b); }
+[data-cg-mark="booking"][data-booking="unconfirmed"] { --_b: var(--cg-text-dim, rgba(232, 230, 225, 0.45)); background: none; box-shadow: inset 0 0 0 1.5px var(--_b); }

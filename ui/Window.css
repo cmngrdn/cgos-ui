@@ -1,0 +1,110 @@
+/* THE WINDOW and its BAND (cgos docs/hq-system.md §4–§5) — see ui/Window.tsx.
+   `--cg-window-app` is the band's colour (an app's `--cg-app-<id>`). */
+
+[data-cg-window] {
+  --_app: var(--cg-window-app, var(--cg-accent, #2dd4a8));
+  display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden;
+  background: var(--cg-glass-bg, color-mix(in srgb, #101018 70%, transparent));
+  -webkit-backdrop-filter: var(--cg-glass-blur, blur(20px) saturate(140%));
+  backdrop-filter: var(--cg-glass-blur, blur(20px) saturate(140%));
+  border: 1px solid var(--cg-glass-border, color-mix(in srgb, #e8e6e1 8%, transparent));
+  border-radius: var(--cg-window-radius, 18px);
+  box-shadow: inset 0 1px 0 var(--cg-glass-border-top, color-mix(in srgb, #e8e6e1 38%, transparent)), var(--cg-elev-2, 0 2px 6px rgba(0, 0, 0, 0.25));
+}
+[data-cg-window-room] { flex: 1; min-height: 0; display: flex; }
+[data-cg-window-panel] { flex: none; width: 320px; max-width: 45%; overflow: auto; border-right: 1px solid var(--cg-glass-border, color-mix(in srgb, #e8e6e1 8%, transparent)); }
+[data-cg-window-body] { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+
+/* ── the band: 48px in the app's colour (W1), the name and tabs on the left, the modes at the right end ── */
+[data-cg-window-band] {
+  --_app: var(--cg-window-app, var(--cg-accent, #2dd4a8));
+  container: cgwin / inline-size;
+  position: relative; flex: none;
+  display: flex; align-items: center; gap: 6px;
+  min-height: var(--cg-window-band-h, 48px); padding: 0 8px 0 10px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--_app) 22%, transparent), color-mix(in srgb, var(--_app) 9%, transparent));
+  border-bottom: 1px solid color-mix(in srgb, var(--_app) 28%, transparent);
+}
+
+/* the name is the app's home (W2): one box whether or not it is home — only its fill changes */
+[data-cg-window-namewrap] { flex: none; display: inline-flex; align-items: center; min-width: 0; }
+[data-cg-window-name] {
+  appearance: none; border: 0; background: none; font: inherit; cursor: pointer;
+  flex: none; display: inline-flex; align-items: center; gap: 9px; height: 34px; padding: 0 12px 0 5px; margin-right: 6px;
+  border-radius: 12px; text-decoration: none; transition: background 140ms ease;
+}
+[data-cg-window-name]:hover { background: color-mix(in srgb, var(--cg-text, #e8e6e1) 6%, transparent); }
+[data-cg-window-chip] { display: inline-flex; }
+[data-cg-window-label] { font-size: 17px; font-weight: 600; letter-spacing: -0.015em; color: var(--_app); white-space: nowrap; }
+[data-cg-window-name]:hover [data-cg-window-label] { filter: brightness(1.12); }
+
+/* the tabs (W3): no counts; "you are here" is a pill of the window's own ground ringed in the app's colour */
+[data-cg-window-tabs] { flex: 0 1 auto; display: flex; align-items: center; gap: 2px; min-width: 0; overflow: hidden; }
+[data-cg-window-tab] {
+  appearance: none; border: 0; background: none; font: inherit; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 12px; border-radius: 10px;
+  color: var(--cg-text-secondary, #8a8880); font-size: 13px; text-decoration: none; white-space: nowrap;
+  transition: color 140ms ease, background 140ms ease, opacity 140ms ease;
+}
+[data-cg-window-tab]:hover { color: var(--cg-text, #e8e6e1); background: color-mix(in srgb, var(--cg-text, #e8e6e1) 8%, transparent); }
+[data-cg-window-tab]:is([aria-current], [aria-pressed="true"]) { color: var(--cg-text, #e8e6e1); font-weight: 600; }
+[data-cg-window-tab][data-soon] { color: var(--cg-text-dim, rgba(232, 230, 225, 0.45)); opacity: 0.55; }
+:is([data-cg-window-name][aria-current], [data-cg-window-band] [data-cg-window-tab]:is([aria-current], [aria-pressed="true"])) {
+  background: color-mix(in srgb, var(--cg-glass-bg, #101018) 78%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--_app) 45%, transparent);
+}
+[data-cg-window-spacer] { flex: 1; }
+
+/* narrow: the soon tabs step aside first, then the tabs fold into the name's menu — by MEASURE, never a guess (W4) */
+[data-cg-window-menu] { display: none; }
+[data-cg-window-band][data-fold="soon"] [data-cg-window-tab][data-soon] { display: none; }
+[data-cg-window-band][data-fold="menu"] [data-cg-window-tabs] { display: none; }
+[data-cg-window-band][data-fold="menu"] [data-cg-window-menu] { display: inline-flex; }
+[data-cg-window-band][data-measure] [data-cg-window-tabs] { display: flex; }
+[data-cg-window-band][data-measure] [data-cg-window-menu] { display: none; }
+[data-cg-window-band][data-measure="all"] [data-cg-window-tab][data-soon] { display: inline-flex; }
+[data-cg-window-band][data-measure="soon"] [data-cg-window-tab][data-soon] { display: none; }
+[data-cg-window-menu-trigger] {
+  appearance: none; border: 0; background: none; font: inherit; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 10px; border-radius: 10px;
+  color: var(--_app); font-size: 16px; font-weight: 600; white-space: nowrap;
+}
+[data-cg-window-menu-trigger]:hover { background: color-mix(in srgb, var(--cg-text, #e8e6e1) 6%, transparent); }
+[data-cg-window-menu-list] { display: flex; flex-direction: column; padding: 4px; min-width: 180px; }
+[data-cg-window-menu-list] [data-cg-window-tab] { justify-content: space-between; height: 36px; width: 100%; }
+
+/* the right end: a Show's chip, then the four modes (§5) */
+[data-cg-window-end] { margin-left: auto; flex: none; display: inline-flex; align-items: center; gap: 6px; }
+[data-cg-window-show] { display: inline-flex; align-items: center; }
+[data-cg-window-modes] { display: inline-flex; align-items: center; gap: 2px; }
+[data-cg-window-modes] [data-cg-icon-button] { border-radius: 10px; color: var(--cg-text-secondary, #8a8880); }
+[data-cg-window-modes] [data-cg-icon-button]:hover:not(:disabled) { color: var(--cg-text, #e8e6e1); }
+[data-cg-window-modes] [data-cg-icon-button][data-active] {
+  color: var(--_app);
+  background: color-mix(in srgb, var(--cg-glass-bg, #101018) 78%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--_app) 45%, transparent);
+}
+/* entering a mode dims the tabs */
+[data-cg-window-band][data-mode] [data-cg-window-tabs] { opacity: 0.4; }
+
+/* Search is a state (M1): the field grows across the band */
+[data-cg-window-search] {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 6px 0 12px; border-radius: 10px;
+  color: var(--_app);
+  background: color-mix(in srgb, var(--cg-bg, #0a0a0f) 55%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--_app) 40%, transparent), 0 0 0 3px color-mix(in srgb, var(--_app) 10%, transparent);
+}
+[data-cg-window-search] input {
+  flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: none; padding: 0;
+  font: inherit; font-size: 15px; color: var(--cg-text, #e8e6e1);
+}
+[data-cg-window-search] input::-webkit-search-cancel-button { display: none; }
+[data-cg-window-search] input::placeholder { color: var(--cg-text-dim, rgba(232, 230, 225, 0.45)); }
+
+/* a narrow window tightens before it folds anything (three short tabs stay tabs at ~300px) */
+@container cgwin (max-width: 440px) {
+  [data-cg-window-band] { gap: 4px; padding-left: 8px; }
+  [data-cg-window-name] { gap: 7px; }
+  [data-cg-window-label] { font-size: 15px; }
+  [data-cg-window-tab] { padding: 0 9px; font-size: 12.5px; }
+}
