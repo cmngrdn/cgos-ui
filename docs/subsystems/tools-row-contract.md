@@ -1,5 +1,7 @@
 # Tools row contract — the bar above a list
 
+> **History (2026-10-20).** Superseded by [`window-contract.md`](window-contract.md) and cgos [`docs/hq-system.md`](https://github.com/cmngrdn/cgos/blob/main/docs/hq-system.md) (W5: the tools row is gone; §5: the band's four modes). Kept while `ListToolbar` / `ToolsRow` still have consumers; they retire in build plan Phase 3.
+
 The contract for the strip between a module's tabs and its first row: sort, filter, search, view, create. Atoms landed in **v0.71.0**: `ToolsRow`, `ChipSplit`, `Shelf` (+ `ShelfToggle`, `ShelfGroup`), `ChipApplied` (+ `ChipAppliedClear`), with `Input` / `Select` / `Button` `size="chip"`.
 
 Nothing governed this strip before, which is why cmngrdn grew four implementations of it at six heights. The rows beneath it are governed by [`../list-row-template.md`](../list-row-template.md). The design reasoning and the live measurements are in cmngrdn [`docs/list-chrome-standard.md`](https://github.com/cmngrdn/cmngrdn/blob/main/docs/list-chrome-standard.md); the working model is cmngrdn `/lab/list-chrome`.

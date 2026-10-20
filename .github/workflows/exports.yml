@@ -30,3 +30,4 @@ jobs:
         with:
           node-version: 22
       - run: node scripts/audit-exports.mjs
+      - run: node scripts/audit-app-colors.mjs

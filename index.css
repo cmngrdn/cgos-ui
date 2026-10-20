@@ -19,6 +19,13 @@
 @import "./ui/EmojiPicker.css";
 @import "./ui/StatChip.css";
 @import "./ui/SendMeter.css";
+@import "./ui/GlassSurface.css";
+@import "./ui/ModuleIconChip.css";
+/* The window kit (v0.80.0, cgos docs/hq-system.md §4–§8). */
+@import "./ui/Mark.css";
+@import "./ui/Window.css";
+@import "./ui/RecordWindowHead.css";
+@import "./ui/Stub.css";
 /* The list chrome (v0.71.0). */
 @import "./ui/ChipSplit.css";
 @import "./ui/ChipApplied.css";

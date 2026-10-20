@@ -53,4 +53,15 @@ Empty is the correct starting state — entries arrive as sessions learn things,
 
 - **Per-column pieces a sticky header holds must be portalled.** Funnel and inline-edit menus are placed by `placeMenuFor` into `<body>`; list actions in the header end cell are `position: sticky; right: 0` so Export stays in reach when the table scrolls sideways.
 
+## The window kit (2026-10-20, v0.80.0)
+
+- **An atom that styles itself inline is untestable as a design-system atom: convert it the moment another atom will sit on it.** `GlassSurface` and `ModuleIconChip` set every resting value in `style={}`, so cmngrdn's `.hq-nav-tile[data-active] .hq-nav-tile-icon` glow had been losing silently since 2026-08 (its own comment says so), and the window, the stub and the record head were about to inherit the same wall.
+  **How to apply:** move the resting state to `ui/<Atom>.css` keyed off `data-cg-*`; a per-instance VALUE (a radius, a tint, a size) travels as a custom property, which a consumer rule can still override. Expect dormant consumer rules to start working — read them before releasing.
+
+- **A colour two files must agree on gets an audit, not a comment.** The app colours live as `--cg-app-<id>` tokens and as `lib/apps.ts` fallback literals (a `var()` without a fallback makes the whole declaration invalid on a stale `tokens.css`). `scripts/audit-app-colors.mjs` reads both and runs in the Exports CI; its negative control (one hex changed) fails with the exact pair.
+  **How to apply:** whenever a literal is mirrored for a fallback, add the pair to an audit in the same commit.
+
+- **Overlaying a new atom into a consumer's `node_modules` needs a dev-server restart when `index.css` gains an `@import`.** Turbopack's postcss resolver cached the miss for `./ui/Window.css` and kept 500ing after the file existed — touching the CSS did not clear it.
+  **How to apply:** copy every new file BEFORE the changed `index.css`; if the resolver already missed, restart the dev server.
+
 <!-- Add entries above this line, newest last. -->

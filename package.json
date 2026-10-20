@@ -1,6 +1,6 @@
 {
   "name": "cgos-ui",
-  "version": "0.79.1",
+  "version": "0.80.0",
   "description": "Shared design tokens, atoms, and visual primitives for the Common Garden ecosystem (cgos dashboard + cmngrdn + feather + reliquary).",
   "type": "module",
   "license": "UNLICENSED",
@@ -77,10 +77,31 @@
       "import": "./ui/GlyphToggleRow.tsx"
     },
     "./ui/GlyphToggleRow.css": "./ui/GlyphToggleRow.css",
+    "./ui/Mark": {
+      "types": "./ui/Mark.tsx",
+      "import": "./ui/Mark.tsx"
+    },
+    "./ui/Mark.css": "./ui/Mark.css",
+    "./ui/Window": {
+      "types": "./ui/Window.tsx",
+      "import": "./ui/Window.tsx"
+    },
+    "./ui/Window.css": "./ui/Window.css",
+    "./ui/RecordWindowHead": {
+      "types": "./ui/RecordWindowHead.tsx",
+      "import": "./ui/RecordWindowHead.tsx"
+    },
+    "./ui/RecordWindowHead.css": "./ui/RecordWindowHead.css",
+    "./ui/Stub": {
+      "types": "./ui/Stub.tsx",
+      "import": "./ui/Stub.tsx"
+    },
+    "./ui/Stub.css": "./ui/Stub.css",
     "./ui/GlassSurface": {
       "types": "./ui/GlassSurface.tsx",
       "import": "./ui/GlassSurface.tsx"
     },
+    "./ui/GlassSurface.css": "./ui/GlassSurface.css",
     "./ui/Input": {
       "types": "./ui/Input.tsx",
       "import": "./ui/Input.tsx"
@@ -104,6 +125,7 @@
       "types": "./ui/ModuleIconChip.tsx",
       "import": "./ui/ModuleIconChip.tsx"
     },
+    "./ui/ModuleIconChip.css": "./ui/ModuleIconChip.css",
     "./ui/PulseSummaryCard": {
       "types": "./ui/PulseSummaryCard.tsx",
       "import": "./ui/PulseSummaryCard.tsx"
@@ -221,6 +243,10 @@
     "./ui/composer-detections": {
       "types": "./ui/composer-detections.ts",
       "import": "./ui/composer-detections.ts"
+    },
+    "./lib/apps": {
+      "types": "./lib/apps.ts",
+      "import": "./lib/apps.ts"
     },
     "./lib/activity": {
       "types": "./lib/activity.tsx",
@@ -384,7 +410,8 @@
   "scripts": {
     "audit:composer": "tsx scripts/audit-composer-paste.mts",
     "audit:exports": "node scripts/audit-exports.mjs",
-    "audit:emoji": "tsx scripts/audit-emoji-search.mjs"
+    "audit:emoji": "tsx scripts/audit-emoji-search.mjs",
+    "audit:apps": "node scripts/audit-app-colors.mjs"
   },
   "devDependencies": {
     "jsdom": "^30.1.1",
