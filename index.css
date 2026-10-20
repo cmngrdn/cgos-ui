@@ -20,6 +20,7 @@
 @import "./ui/StatChip.css";
 @import "./ui/SendMeter.css";
 @import "./ui/GlassSurface.css";
+@import "./ui/ModuleIconChip.css";
 /* The list chrome (v0.71.0). */
 @import "./ui/ChipSplit.css";
 @import "./ui/ChipApplied.css";

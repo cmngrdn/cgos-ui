@@ -1,4 +1,5 @@
 import { type CSSProperties, type ComponentType, type SVGProps } from 'react'
+import { appColor, type AppId } from '../lib/apps'
 
 /**
  * ModuleIconChip — module-tile icon surface. Two recipes via `variant`.
@@ -46,6 +47,11 @@ import { type CSSProperties, type ComponentType, type SVGProps } from 'react'
  * Always pass the module's color hex / token; the chip handles all the
  * tint math so all surfaces stay visually identical.
  *
+ * Styling lives in `ui/ModuleIconChip.css` (imported by `cgos-ui/index.css`);
+ * the per-instance values travel as custom properties, so a consumer
+ * stylesheet can restyle it (U2). Pass `app` for an HQ app — its colour is
+ * the `--cg-app-<id>` token (K6) — instead of a hex `color`.
+ *
  * Pure presentational atom — does not own hover, focus, or active states.
  * The parent button/anchor owns those.
  */
@@ -53,8 +59,10 @@ import { type CSSProperties, type ComponentType, type SVGProps } from 'react'
 export type ModuleIconChipVariant = 'translucent' | 'iridescent'
 
 export interface ModuleIconChipProps {
-  /** Module accent color — hex string (`#2dd4a8`) or CSS var (`var(--cg-accent)`). */
-  color: string
+  /** An HQ app: its colour is the `--cg-app-<id>` token. Preferred over `color`. */
+  app?: AppId
+  /** Accent colour — a CSS var (`var(--cg-accent)`) or, for non-app tiles, a literal. Ignored when `app` is set. */
+  color?: string
   /** Icon component rendered inside the chip. Receives width/height. */
   icon: ComponentType<SVGProps<SVGSVGElement>>
   /**
@@ -90,40 +98,8 @@ export interface ModuleIconChipProps {
   ariaLabel?: string
 }
 
-function translucentStyle(color: string, iconColor?: string): CSSProperties {
-  return {
-    background: `color-mix(in srgb, ${color} 24%, var(--cg-glass-bg))`,
-    WebkitBackdropFilter: 'var(--cg-glass-blur)',
-    backdropFilter: 'var(--cg-glass-blur)',
-    border: `1px solid color-mix(in srgb, ${color} 45%, var(--cg-glass-border))`,
-    boxShadow: 'inset 0 1px 0 var(--cg-glass-border-top), var(--cg-elev-2)',
-    color: iconColor ?? color,
-  }
-}
-
-function iridescentStyle(color: string, iconColor?: string): CSSProperties {
-  return {
-    // Radial highlight layered over a vertical 3-stop gradient — keeps the
-    // gradient in the accent's hue family (color-mix with white/black) so
-    // the chip stays "in the color" while still feeling lit from above.
-    background: [
-      'radial-gradient(ellipse 75% 60% at 30% 18%, rgba(255,255,255,0.32), transparent 65%)',
-      `linear-gradient(180deg, color-mix(in srgb, ${color} 90%, white 10%) 0%, ${color} 55%, color-mix(in srgb, ${color} 85%, black 15%) 100%)`,
-    ].join(', '),
-    border: '1px solid transparent',
-    // Apple HIG "lifted glass": rim highlight at the top edge + subtle
-    // inset bottom shadow + outer accent glow + drop shadow.
-    boxShadow: [
-      'inset 0 1px 0 rgba(255, 255, 255, 0.55)',
-      'inset 0 -1px 0 rgba(0, 0, 0, 0.16)',
-      `0 0 24px color-mix(in srgb, ${color} 35%, transparent)`,
-      '0 6px 14px rgba(0, 0, 0, 0.30)',
-    ].join(', '),
-    color: iconColor ?? 'rgba(255, 255, 255, 0.97)',
-  }
-}
-
 export function ModuleIconChip({
+  app,
   color,
   icon: Icon,
   variant = 'translucent',
@@ -136,28 +112,21 @@ export function ModuleIconChip({
   ariaLabel,
 }: ModuleIconChipProps) {
   const iconPx = Math.round(size * iconScale)
-  const variantStyle =
-    variant === 'iridescent'
-      ? iridescentStyle(color, iconColor)
-      : translucentStyle(color, iconColor)
+  const vars = {
+    '--cg-chip-color': app ? appColor(app) : color,
+    '--cg-chip-size': `${size}px`,
+    '--cg-chip-radius': `${radius}px`,
+    ...(iconColor ? { '--cg-chip-icon': iconColor } : null),
+  } as CSSProperties
   return (
     <span
       data-module-chip-variant={variant}
+      data-cg-app={app}
       className={className}
       role={ariaLabel ? 'img' : undefined}
       aria-label={ariaLabel}
       aria-hidden={ariaLabel ? undefined : true}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-        width: size,
-        height: size,
-        borderRadius: radius,
-        ...variantStyle,
-        ...style,
-      }}
+      style={{ ...vars, ...style }}
     >
       <Icon width={iconPx} height={iconPx} />
     </span>

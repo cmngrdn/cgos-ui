@@ -1,0 +1,43 @@
+/* ModuleIconChip — resting state (U2). The per-instance values arrive as
+   custom properties: --cg-chip-color (the app colour, from `app` via
+   appColor() or a passed `color`), --cg-chip-size, --cg-chip-radius and
+   optionally --cg-chip-icon. Consumers can now restyle it — before v0.80.0
+   it was inline and a stylesheet rule on it silently lost. */
+
+[data-module-chip-variant] {
+  --_c: var(--cg-chip-color, var(--cg-accent, #2dd4a8));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--cg-chip-size, 56px);
+  height: var(--cg-chip-size, 56px);
+  border-radius: var(--cg-chip-radius, 14px);
+}
+
+[data-module-chip-variant="translucent"] {
+  background: color-mix(in srgb, var(--_c) 24%, var(--cg-glass-bg, color-mix(in srgb, #101018 70%, transparent)));
+  -webkit-backdrop-filter: var(--cg-glass-blur, blur(20px) saturate(140%));
+  backdrop-filter: var(--cg-glass-blur, blur(20px) saturate(140%));
+  border: 1px solid color-mix(in srgb, var(--_c) 45%, var(--cg-glass-border, color-mix(in srgb, #e8e6e1 8%, transparent)));
+  box-shadow:
+    inset 0 1px 0 var(--cg-glass-border-top, color-mix(in srgb, #e8e6e1 38%, transparent)),
+    var(--cg-elev-2, 0 2px 6px rgba(0, 0, 0, 0.25));
+  color: var(--cg-chip-icon, var(--_c));
+}
+
+/* The embossed app-icon: a radial dome highlight over a vertical 3-stop
+   gradient kept in the colour's own hue family; rim + inset base + accent
+   glow + drop shadow. Solid, so no backdrop blur. */
+[data-module-chip-variant="iridescent"] {
+  background:
+    radial-gradient(ellipse 75% 60% at 30% 18%, rgba(255, 255, 255, 0.32), transparent 65%),
+    linear-gradient(180deg, color-mix(in srgb, var(--_c) 90%, white 10%) 0%, var(--_c) 55%, color-mix(in srgb, var(--_c) 85%, black 15%) 100%);
+  border: 1px solid transparent;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.16),
+    0 0 24px color-mix(in srgb, var(--_c) 35%, transparent),
+    0 6px 14px rgba(0, 0, 0, 0.30);
+  color: var(--cg-chip-icon, rgba(255, 255, 255, 0.97));
+}
