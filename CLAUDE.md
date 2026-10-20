@@ -67,8 +67,9 @@ Per-subsystem material that used to live in this file moved to `docs/subsystems/
 | Subsystem | Covers | Doc |
 |---|---|---|
 | Atom inventory | the single-source-of-truth table — Need / Import from / Notes for every token, base utility and v1 atom, plus the consumer-homed rows (hoist candidates) | [atom-inventory](docs/subsystems/atom-inventory.md) |
-| Tools row | the bar above a list — slots, shelves, the one-control-height rule, narrow behaviour | [tools-row-contract](docs/subsystems/tools-row-contract.md) |
-| Inspector Contract | cross-repo chrome rules for every inspector / drawer / sheet — architectural model, chrome shape + optional slots, Pattern A/B, `framePolicy`, tab discipline, container rules | [inspector-contract](docs/subsystems/inspector-contract.md) |
+| Window | the app window, its band and four modes, the record head, the stub, the marks — cites cgos `hq-system.md` | [window-contract](docs/subsystems/window-contract.md) |
+| Tools row (history) | the bar above a list — retiring (W5) | [tools-row-contract](docs/subsystems/tools-row-contract.md) |
+| Inspector Contract (history) | cross-repo chrome rules for every inspector / drawer / sheet — architectural model, chrome shape + optional slots, Pattern A/B, `framePolicy`, tab discipline, container rules | [inspector-contract](docs/subsystems/inspector-contract.md) |
 
 ## Hard rules
 

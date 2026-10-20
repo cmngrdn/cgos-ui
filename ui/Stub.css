@@ -2,7 +2,7 @@
 
 [data-cg-stub] {
   --_app: var(--cg-stub-app, var(--cg-text-secondary, #8a8880));
-  display: flex; flex-direction: column; align-items: stretch; min-height: 0; height: 100%; width: 52px;
+  flex: 1; display: flex; flex-direction: column; align-items: stretch; min-height: 0; width: 100%;
   border-radius: var(--cg-window-radius, 18px); overflow: hidden; color: var(--cg-text-secondary, #8a8880);
   background: var(--cg-glass-bg, color-mix(in srgb, #101018 70%, transparent));
   border: 1px solid var(--cg-glass-border, color-mix(in srgb, #e8e6e1 8%, transparent));
@@ -19,9 +19,9 @@
   flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 14px 6px; overflow: hidden;
 }
 [data-cg-stub-back]:focus-visible { outline: 2px solid color-mix(in srgb, var(--cg-accent, #2dd4a8) 60%, transparent); outline-offset: -2px; }
-[data-cg-stub-icon] { position: relative; display: inline-flex; flex: none; }
-[data-cg-stub-badge] { position: absolute; right: -3px; top: -3px; width: 7px; height: 7px; border-radius: 50%; background: var(--cg-accent, #2dd4a8); }
-[data-cg-stub-label] { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-[data-cg-stub][data-tinted] [data-cg-stub-label] { color: var(--_app); filter: brightness(1.15); }
+[data-cg-stub-icon] { position: relative; display: grid; place-items: center; width: 28px; height: 28px; flex: none; }
+[data-cg-stub-badge] { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: var(--cg-accent, #2dd4a8); box-shadow: 0 0 0 2px var(--cg-bg, #0a0a0f); }
+[data-cg-stub-label] { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-height: 60%; }
+[data-cg-stub]:hover { color: var(--cg-text, #e8e6e1); }
 [data-cg-stub-acts] { flex: none; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 0 10px; border-top: 1px solid var(--cg-glass-border, color-mix(in srgb, #e8e6e1 8%, transparent)); }
 [data-cg-stub-acts] [data-cg-icon-button] { border-radius: 50%; }

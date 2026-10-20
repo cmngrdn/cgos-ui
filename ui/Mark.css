@@ -9,7 +9,7 @@
   box-shadow: 0 0 6px color-mix(in srgb, var(--cg-frost, #5fc6ff) 55%, transparent);
   animation: cg-mark-arrive 420ms cubic-bezier(.3, 1.4, .5, 1) both;
 }
-@keyframes cg-mark-arrive { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes cg-mark-arrive { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.22); opacity: 1; } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { [data-cg-mark="dot"] { animation: none; } }
 
 /* K2 your turn: sol on a 14% fill, a 38% hairline */
@@ -25,7 +25,7 @@
 [data-cg-mark="stage"] {
   --_s: var(--cg-stage-new, #8a8880);
   display: inline-flex; align-items: center; gap: 5px; min-width: 0;
-  font-size: 12px; line-height: 1.2; color: var(--_s); white-space: nowrap;
+  font-size: 11px; line-height: 1.2; color: var(--_s); white-space: nowrap;
 }
 [data-cg-mark="stage"] > i { width: 7px; height: 7px; border-radius: 50%; background: var(--_s); flex: none; }
 [data-cg-mark="stage"][data-stage="talking"] { --_s: var(--cg-stage-talking, #b8aeea); }
