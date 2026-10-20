@@ -29,6 +29,11 @@ import { forwardRef, type CSSProperties, type HTMLAttributes, type ReactNode, ty
  *   4: modal / drawer
  *   5: floating overlay / mobile sheet
  *
+ * Styling lives in `ui/GlassSurface.css` (imported by `cgos-ui/index.css`),
+ * keyed off `data-cg-glass-surface` / `data-cg-elevation` / `data-cg-radius`,
+ * so a consumer stylesheet can theme it (U2). Until v0.80.0 it styled itself
+ * inline and no stylesheet could reach it.
+ *
  * Rim highlight (Apple HIG "Highlights" pattern): every elevation
  * adds an `inset 0 1px 0 var(--cg-glass-border-top)` to the box-shadow
  * — a brighter top edge that gives the "lifted glass" read even when
@@ -71,68 +76,18 @@ export interface GlassSurfaceProps extends Omit<HTMLAttributes<HTMLElement>, 'st
   children?: ReactNode
 }
 
-const RADIUS_TOKEN: Record<GlassRadius, string> = {
-  sm: 'var(--cg-glass-radius-sm)',
-  md: 'var(--cg-glass-radius-md)',
-  lg: 'var(--cg-glass-radius-lg)',
-  pill: 'var(--cg-glass-radius-pill)',
-}
+const RADIUS_PRESETS: readonly GlassRadius[] = ['sm', 'md', 'lg', 'pill']
 
-const ELEVATION_TOKEN: Record<GlassElevation, string> = {
-  0: 'var(--cg-elev-0)',
-  1: 'var(--cg-elev-1)',
-  2: 'var(--cg-elev-2)',
-  3: 'var(--cg-elev-3)',
-  4: 'var(--cg-elev-4)',
-  5: 'var(--cg-elev-5)',
+function isPreset(radius: GlassRadius | string): radius is GlassRadius {
+  return (RADIUS_PRESETS as readonly string[]).includes(radius)
 }
-
-function variantStyles(variant: GlassVariant, tintColor: string): CSSProperties {
-  switch (variant) {
-    case 'frosted':
-      return {
-        background: 'var(--cg-glass-bg)',
-        WebkitBackdropFilter: 'var(--cg-glass-blur)',
-        backdropFilter: 'var(--cg-glass-blur)',
-        border: '1px solid var(--cg-glass-border)',
-      }
-    case 'clear':
-      return {
-        background: 'color-mix(in srgb, var(--cg-bg-elevated) 40%, transparent)',
-        WebkitBackdropFilter: 'blur(12px) saturate(130%)',
-        backdropFilter: 'blur(12px) saturate(130%)',
-        border: '1px solid var(--cg-glass-border)',
-      }
-    case 'tinted':
-      return {
-        background: `color-mix(in srgb, ${tintColor} 8%, var(--cg-glass-bg))`,
-        WebkitBackdropFilter: 'var(--cg-glass-blur)',
-        backdropFilter: 'var(--cg-glass-blur)',
-        border: `1px solid color-mix(in srgb, ${tintColor} 22%, var(--cg-glass-border))`,
-      }
-    case 'chrome':
-      return {
-        background: 'var(--cg-glass-bg-strong)',
-        WebkitBackdropFilter: 'var(--cg-glass-blur-strong)',
-        backdropFilter: 'var(--cg-glass-blur-strong)',
-        border: '1px solid var(--cg-glass-border-strong)',
-      }
-  }
-}
-
-function resolveRadius(radius: GlassRadius | string): string {
-  if (radius in RADIUS_TOKEN) return RADIUS_TOKEN[radius as GlassRadius]
-  return radius
-}
-
-const RIM_HIGHLIGHT = 'inset 0 1px 0 var(--cg-glass-border-top)'
 
 export const GlassSurface = forwardRef<HTMLElement, GlassSurfaceProps>(function GlassSurface(
   {
     variant = 'frosted',
     elevation = 2,
     radius = 'md',
-    tintColor = 'var(--cg-accent)',
+    tintColor,
     as: Tag = 'div',
     style,
     children,
@@ -140,24 +95,21 @@ export const GlassSurface = forwardRef<HTMLElement, GlassSurfaceProps>(function 
   },
   ref,
 ) {
-  const variantCss = variantStyles(variant, tintColor)
-  // Rim highlight: a brighter top edge composes with the elevation
-  // shadow. At elevation 0 (`--cg-elev-0` resolves to `none`), we drop
-  // the `none` and emit just the rim — `box-shadow: <inset>, none` is
-  // invalid CSS.
-  const elevToken = ELEVATION_TOKEN[elevation]
-  const boxShadow = elevation === 0 ? RIM_HIGHLIGHT : `${RIM_HIGHLIGHT}, ${elevToken}`
+  // The resting state is ui/GlassSurface.css, keyed off these attributes.
+  // Only per-instance VALUES travel inline, as custom properties a consumer
+  // rule can still override: a non-preset radius and a tint colour.
+  const preset = isPreset(radius)
+  const vars: Record<string, string> = {}
+  if (!preset) vars['--cg-glass-surface-radius'] = radius
+  if (variant === 'tinted' && tintColor) vars['--cg-glass-tint'] = tintColor
+  const merged = Object.keys(vars).length || style ? ({ ...vars, ...style } as CSSProperties) : undefined
   return (
     <Tag
       ref={ref as Ref<HTMLElement> as Ref<HTMLDivElement>}
       data-cg-glass-surface={variant}
       data-cg-elevation={String(elevation)}
-      style={{
-        ...variantCss,
-        borderRadius: resolveRadius(radius),
-        boxShadow,
-        ...style,
-      }}
+      data-cg-radius={preset ? radius : undefined}
+      style={merged}
       {...rest}
     >
       {children}

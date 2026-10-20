@@ -19,6 +19,7 @@
 @import "./ui/EmojiPicker.css";
 @import "./ui/StatChip.css";
 @import "./ui/SendMeter.css";
+@import "./ui/GlassSurface.css";
 /* The list chrome (v0.71.0). */
 @import "./ui/ChipSplit.css";
 @import "./ui/ChipApplied.css";

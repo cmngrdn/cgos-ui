@@ -81,6 +81,7 @@
       "types": "./ui/GlassSurface.tsx",
       "import": "./ui/GlassSurface.tsx"
     },
+    "./ui/GlassSurface.css": "./ui/GlassSurface.css",
     "./ui/Input": {
       "types": "./ui/Input.tsx",
       "import": "./ui/Input.tsx"
