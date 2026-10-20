@@ -168,9 +168,18 @@ export function WindowBand({
       setFold(fits ? 'soon' : 'menu')
     }
     measure()
+    // the band AND the strip: a stylesheet or a font arriving after the first measure changes the strip's width without
+    // touching the band's, and a fold decided then would otherwise stick
     const ro = new ResizeObserver(measure)
     ro.observe(el)
-    return () => ro.disconnect()
+    const strip = el.querySelector<HTMLElement>('[data-cg-window-tabs]')
+    if (strip) ro.observe(strip)
+    let live = true
+    document.fonts?.ready.then(() => live && measure())
+    return () => {
+      live = false
+      ro.disconnect()
+    }
   }, [tabs?.length, mode])
 
   // §5: Esc leaves the mode (search keeps its query); `/` opens Search

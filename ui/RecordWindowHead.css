@@ -7,11 +7,11 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-areas:
-    "face title   controls"
+    "face title   title"
     "face context context"
     "face details status";
   column-gap: 12px; row-gap: 3px; align-items: center;
-  padding: 11px;
+  padding: 12px;
   border-radius: var(--cg-radius-md, 12px);
   background: var(--cg-glass-bg-elevated, color-mix(in srgb, #16161f 75%, transparent));
   border: 1px solid var(--cg-glass-border, color-mix(in srgb, #e8e6e1 8%, transparent));
@@ -25,27 +25,31 @@
     var(--cg-glass-bg-elevated, color-mix(in srgb, #16161f 75%, transparent));
   border-color: color-mix(in srgb, var(--_app) 26%, var(--cg-glass-border, transparent));
 }
-[data-cg-record-face] { grid-area: face; align-self: start; display: inline-flex; width: 44px; height: 44px; }
+[data-cg-record-face] { grid-area: face; align-self: start; display: inline-flex; width: 44px; height: 44px; margin-top: 1px; }
 [data-cg-record-face] > * { width: 100%; height: 100%; }
 [data-cg-record-title] {
   grid-area: title; min-width: 0;
-  font-size: 16px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; color: var(--cg-text, #e8e6e1);
+  height: 21px; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; line-height: 21px; color: var(--cg-text, #e8e6e1);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-[data-cg-record-controls] { grid-area: controls; align-self: start; display: inline-flex; gap: 4px; margin: -3px -3px 0 4px; }
+/* expand and close: 8px inside the card's corner, over the title row, which leaves them room (the panel standard) */
+[data-cg-record-controls] { position: absolute; top: 8px; right: 8px; z-index: 1; display: inline-flex; gap: 4px; }
 [data-cg-record-controls] [data-cg-icon-button] { border-radius: 50%; }
+[data-cg-record-head][data-controls="1"] [data-cg-record-title] { padding-right: 32px; }
+[data-cg-record-head][data-controls="2"] [data-cg-record-title] { padding-right: 64px; }
 [data-cg-record-context] {
-  grid-area: context; min-width: 0; font-size: 12.5px; line-height: 1.35; color: var(--cg-text-secondary, #8a8880);
+  grid-area: context; min-width: 0; font-size: 12px; line-height: 19px; color: var(--cg-text-secondary, #8a8880);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 /* a link inside an ellipsized line must not vanish whole: the line becomes a flex row and the link shrinks */
 [data-cg-record-context]:has(> :is(a, button)) { display: flex; align-items: center; white-space: pre; }
 [data-cg-record-context] > :is(a, button) { flex: 0 1 auto; min-width: 2.5em; overflow: hidden; text-overflow: ellipsis; }
 [data-cg-record-details] {
-  grid-area: details; min-width: 0; font-size: 12px; line-height: 1.4; color: var(--cg-text-dim, rgba(232, 230, 225, 0.45));
+  grid-area: details; min-width: 0; font-size: 12px; line-height: 17px; color: var(--cg-text-dim, rgba(232, 230, 225, 0.45));
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-[data-cg-record-status] { grid-area: status; justify-self: end; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+/* the status never grows its row: a 22px chip centres on the 17px details line */
+[data-cg-record-status] { grid-area: status; justify-self: end; height: 17px; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
 [data-cg-record-saved] { font-size: 11.5px; color: var(--cg-text-dim, rgba(232, 230, 225, 0.45)); }
 [data-cg-record-head][data-compact] [data-cg-record-face] { width: 40px; height: 40px; }
 [data-cg-record-head][data-compact] [data-cg-record-title] { font-size: 15px; }

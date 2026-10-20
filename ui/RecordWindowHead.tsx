@@ -74,6 +74,7 @@ export function RecordWindowHead({
       data-cg-app={app}
       data-tinted={tint ? '' : undefined}
       data-compact={compact || undefined}
+      data-controls={(expand ? 1 : 0) + (onClose ? 1 : 0) || undefined}
       className={className}
       style={tint ? ({ '--cg-record-app': tint } as CSSProperties) : undefined}
     >
@@ -85,13 +86,13 @@ export function RecordWindowHead({
             <IconButton
               icon={expand.on ? <ArrowsInSimple /> : <ArrowsOutSimple />}
               label={expand.on ? 'Collapse — bring the others back' : 'Expand'}
-              size="md"
+              size="chip"
               variant="subtle"
               active={expand.on}
               onClick={expand.onToggle}
             />
           )}
-          {onClose && <IconButton icon={<X />} label={closeLabel} size="md" variant="subtle" onClick={onClose} />}
+          {onClose && <IconButton icon={<X />} label={closeLabel} size="chip" variant="subtle" onClick={onClose} />}
         </span>
       )}
       {context && <span data-cg-record-context="">{context}</span>}
