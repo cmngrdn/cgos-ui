@@ -17,7 +17,8 @@ import { appColor, type AppId } from '../lib/apps'
  *   booking Bookings blue, a person Audience pink, a project Library orange.
  *   The head's text keeps two colours: the status and the parent link.
  * - The status is alone, bottom right (R6); the saved state sits beside it (R12).
- * - Expand and close sit inside the head card, top right (R6).
+ * - Expand and close sit inside the head card, top right (R6); the record's
+ *   own controls (`actions`) sit just left of them, in the same cluster.
  * - Next is NOT here: it is the first lit chip of the record's bar (R8).
  * - `progress` is the thin line hugging the card's bottom edge, only for a
  *   record with a real completeness to measure.
@@ -40,6 +41,8 @@ export interface RecordWindowHeadProps {
   status?: ReactNode
   /** the autosave state, beside the status (R12) */
   saved?: ReactNode
+  /** the record's own controls (mark unread, a preview toggle) — left of expand and close, in the same corner */
+  actions?: ReactNode
   expand?: { on: boolean; onToggle: () => void }
   onClose?: () => void
   closeLabel?: string
@@ -59,6 +62,7 @@ export function RecordWindowHead({
   details,
   status,
   saved,
+  actions,
   expand,
   onClose,
   closeLabel = 'Close',
@@ -74,14 +78,14 @@ export function RecordWindowHead({
       data-cg-app={app}
       data-tinted={tint ? '' : undefined}
       data-compact={compact || undefined}
-      data-controls={(expand ? 1 : 0) + (onClose ? 1 : 0) || undefined}
       className={className}
       style={tint ? ({ '--cg-record-app': tint } as CSSProperties) : undefined}
     >
       {face && <span data-cg-record-face="">{face}</span>}
       <span data-cg-record-title="">{title}</span>
-      {(expand || onClose) && (
+      {(actions || expand || onClose) && (
         <span data-cg-record-controls="">
+          {actions}
           {expand && (
             <IconButton
               icon={expand.on ? <ArrowsInSimple /> : <ArrowsOutSimple />}
