@@ -11,7 +11,7 @@ Landed in **v0.80.0**. Visual shells only: routing, context, auth and role gatin
 | Atom | Rules | What the consumer passes |
 |---|---|---|
 | `ui/Window` → `Window`, `WindowBand` | W1–W5, M1–M5 | `app` (an `AppId`), `name`, `icon` (a `ModuleIconChip`), `homeHref`/`onHome`, `atHome`, `tabs` (`href` or `onSelect`, `current`, `soon`), `modes` (which of the four this viewer sees), `mode` + `onMode`, `query` + `onQuery`, `show` (a Show's chip), `renderLink` (the router's link). `Window` adds the glass frame, `panel` (the open mode's) and the body. |
-| `ui/RecordWindowHead` | R5, R6, R12 | `app` (the record's HOME app — the tint), `face`, `title`, `context`, `details`, `status`, `saved`, `expand`, `onClose`, `progress`, `compact`. |
+| `ui/RecordWindowHead` | R5, R6, R12 | `app` (the record's HOME app — the tint), `face`, `title`, `context`, `details`, `status`, `saved`, `actions` (v0.81.0 — the record's own controls, left of expand/close), `expand`, `onClose`, `progress`, `compact`. |
 | `ui/Stub` | R3 | `app` (or `color`), `icon`, `label`, `onBack`, optional `onExpand` / `onClose`, `narrowed`. Untinted it is a folded record. |
 | `ui/Mark` → `Dot`, `TurnChip`, `StageMark`, `BookingDot`, `fmtWaitShort` | K1–K5 | the fact only: a label; minutes + why; a `Stage` (+ `dim`, `more`); a `BookingMark` + its word. |
 | `lib/apps` → `APP_IDS`, `AppId`, `appColor`, `isAppId`, `APP_HEX` | K6 | — `appColor(id)` is `var(--cg-app-<id>, #hex)`; nobody passes hex. |
@@ -27,7 +27,8 @@ Landed in **v0.80.0**. Visual shells only: routing, context, auth and role gatin
 - **Tabs fold by measure** (W4): lay out everything, step the `soon` tabs aside, then fold into the name's menu (`data-fold`). Never a width breakpoint.
 - **The four modes** are always Search · Adjust · Create · Setup, in that order, with the same glyphs. One at a time; a lit mode dims the tabs; **Esc** or the glyph again leaves; **`/`** opens Search when it is offered and focus is not in a field. A mode never opens by itself — the atom has no `defaultMode`.
 - **Search keeps its query** when you leave it (M1): the atom never clears `query`; the consumer decides what an empty query shows.
-- **The status sits alone bottom right; expand and close inside the head card top right** (R6). Next is not a head slot (R8).
+- **The status sits alone bottom right; the record's own controls, then expand and close, inside the head card top right** (R6). Next is not a head slot (R8).
+- **Every row is one fixed height** (title 21 · context 19 · details 17), so heads match without padding whatever a line holds.
 - **A link inside the context line shrinks, it never vanishes whole** (`:has(> :is(a, button))` turns the line into a flex row).
 
 ## Adoption (cmngrdn `hq/frame-round-2`)
@@ -37,7 +38,7 @@ Landed in **v0.80.0**. Visual shells only: routing, context, auth and role gatin
 | `Mark` | `fluid/marks.tsx` (deleted), `.mk-*` in `living.css`, the Inbox's `.fi-unread` look and `.fi-stage` |
 | `WindowBand` | `WindowHead`'s `.fl-wedge` / `.fl-wbadge` / `.fl-wtab` / `LensTab` in `fluid/engine.tsx` |
 | `Stub` | `Strip` in `fluid/engine.tsx` now renders it (`.fl-strip*` retired) |
-| `RecordWindowHead` | **Phase 3.5** — the engine's `RecordPlate` / `CardHead rich` carry tuned variants (a Studio's bare head, phone sheets, a card's own actions beside expand/close) and the close button's place is open (spec O2, pictures first). It replaces `RecordPlate` there, with the R5 tint, in one step. |
+| `RecordWindowHead` | **v0.81.0 (Phase 3.5)** — the engine's `RecordPlate` renders it: `RecordHead` reads the plate's tint, status, controls and progress from context, so every record head (a card's, a Studio's own plate, the phone sheet's, the Inbox's records) is this atom. The close button's place is R6's for every record window: inside the head card, top right. |
 | `Window` (the frame + the four modes) | **Phase 3.1** — the tools row retires app by app as the modes land. |
 
 `ListToolbar` / `ToolsRow`, the inspector chrome, `HqTab` for app tabs, `ListHeader` (name collision: cmngrdn's engine has its own `ListHeader`) and `--hq-chrome-*` retire as Phase 3 replaces them — never side by side for long.
