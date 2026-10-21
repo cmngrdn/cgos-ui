@@ -25,8 +25,9 @@ Landed in **v0.80.0**. Visual shells only: routing, context, auth and role gatin
 ## Behaviour the atoms own (no opt-out props, U3)
 
 - **Tabs fold by measure** (W4): lay out everything, step the `soon` tabs aside, then fold into the name's menu (`data-fold`). Never a width breakpoint.
-- **The four modes** are always Search · Adjust · Create · Setup, in that order, with the same glyphs. One at a time; a lit mode dims the tabs; **Esc** or the glyph again leaves; **`/`** opens Search when it is offered and focus is not in a field. A mode never opens by itself — the atom has no `defaultMode`.
+- **The band reads left to right (v0.82.0, Feather 2026-10-21):** name · tabs · **Setup as the last tab** (a gear — it changes what you look at, as a tab does) · then **Create · Adjust · Search**, right after the tabs (a hairline between). **Search is one control**: its glyph widens into the field, growing rightward with the query, so nothing to its left moves and the tabs stay readable. With `searchOpen`/`onSearchOpen` Search runs **beside** the other modes (a query and Adjust at once); without them it is one of the modes, as before. **Esc** steps back one at a time (search first, keeping its query, then the mode); **`/`** opens Search; the **name** leaves any mode, Setup included. A mode never opens by itself — the atom has no `defaultMode`.
 - **Search keeps its query** when you leave it (M1): the atom never clears `query`; the consumer decides what an empty query shows.
+- **No `MagnifyingGlass` inside the field**: the field IS the glyph's box (one control, v0.82.0).
 - **The status sits alone bottom right; the record's own controls, then expand and close, inside the head card top right** (R6). Next is not a head slot (R8).
 - **Every row is one fixed height** (title 21 · context 19 · details 17), so heads match without padding whatever a line holds.
 - **A link inside the context line shrinks, it never vanishes whole** (`:has(> :is(a, button))` turns the line into a flex row).
