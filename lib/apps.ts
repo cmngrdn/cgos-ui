@@ -36,6 +36,24 @@ export const APP_HEX: Readonly<Record<AppId, string>> = {
   finances: '#96aec3', // steel
 }
 
+/**
+ * The Day value of each app colour (v0.84.0) — the same hue, deep enough to
+ * read as text on a light ground. Lives in `tokens.css`'s light block; this is
+ * its fallback literal and the audit's other half, nothing more.
+ */
+export const APP_HEX_DAY: Readonly<Record<AppId, string>> = {
+  inbox: '#016b24',
+  bookings: '#2256bb',
+  library: '#9c3f00',
+  knowledge: '#6c5a2a',
+  offerings: '#735803',
+  dispatch: '#6841c1',
+  audience: '#a32b6f',
+  crew: '#b90144',
+  productions: '#05656e',
+  finances: '#396081',
+}
+
 export function isAppId(id: string): id is AppId {
   return (APP_IDS as readonly string[]).includes(id)
 }

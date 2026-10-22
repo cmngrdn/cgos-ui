@@ -4,13 +4,19 @@
 [data-cg-window] {
   --_app: var(--cg-window-app, var(--cg-accent, #2dd4a8));
   flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden;
-  background: var(--cg-glass-bg, color-mix(in srgb, #101018 70%, transparent));
+  /* the light catching the top of the glass: a look's `--cg-glass-edge` (v0.84.0 — Reliquary's gilt,
+     Holographic Academia's iridescence) as a hairline under the band; none where a look names no edge */
+  background:
+    var(--cg-glass-edge, none) top center / 72% 1px no-repeat,
+    var(--cg-glass-bg, color-mix(in srgb, #101018 70%, transparent));
   -webkit-backdrop-filter: var(--cg-glass-blur, blur(20px) saturate(140%));
   backdrop-filter: var(--cg-glass-blur, blur(20px) saturate(140%));
   border: 1px solid var(--cg-glass-border, color-mix(in srgb, #e8e6e1 8%, transparent));
   border-radius: var(--cg-window-radius, 18px);
   box-shadow: inset 0 1px 0 var(--cg-glass-border-top, color-mix(in srgb, #e8e6e1 38%, transparent)), var(--cg-elev-2, 0 2px 6px rgba(0, 0, 0, 0.25));
 }
+/* Flat: a hairline of light needs light */
+:root[data-cg-flat] [data-cg-window] { background: var(--cg-glass-bg, color-mix(in srgb, #101018 70%, transparent)); }
 [data-cg-window-room] { flex: 1; min-height: 0; display: flex; }
 [data-cg-window-panel] { flex: none; width: 320px; max-width: 45%; overflow: auto; border-right: 1px solid var(--cg-glass-border, color-mix(in srgb, #e8e6e1 8%, transparent)); }
 [data-cg-window-body] { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }

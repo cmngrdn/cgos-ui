@@ -204,7 +204,9 @@
      the band, the stub, a record's head tint and the rail chip —
      through `appColor(id)` in `cgos-ui/lib/apps`, which carries the
      same literal as its fallback. `npm run audit:apps` holds the two
-     in step. Theme-independent: one value in both themes.
+     in step. These are the NIGHT values; the light block below carries
+     a Day value per app — same hue, deep enough to read as text on
+     paper (v0.84.0: Knowledge's bone measured 1.4:1 on a light world).
      ============================================================ */
   --cg-app-inbox:           #40c95d;
   --cg-app-bookings:        #568ef9;
@@ -235,6 +237,8 @@
   --cg-stage-booked:        #a9ce96;
   --cg-stage-done:          var(--cg-text-dim);
   --cg-stage-closed:        var(--cg-text-muted);
+  --cg-mark-hollow:         var(--cg-text-muted);  /* a cancelled booking's ring */
+  --cg-mark-hollow-dim:     var(--cg-text-dim);    /* an unconfirmed one's */
   --cg-window-radius:       18px;   /* a window's outer corner */
   --cg-window-band-h:       48px;   /* W1: the band, on the line */
   --cg-window-gutter:       16px;   /* W6: one gutter inside a window */
@@ -444,6 +448,24 @@
   --cg-stage-talking:       #6c58ad;
   --cg-stage-quoted:        #8f791b;
   --cg-stage-booked:        #54803a;
+  --cg-iris:                oklch(0.56 0.23 345);
+  /* hollow rings, light — at the dark theme's text alphas they vanished on cream */
+  --cg-mark-hollow:         rgba(28, 24, 20, 0.50);
+  --cg-mark-hollow-dim:     rgba(28, 24, 20, 0.64);
+
+  /* app colours, Day (v0.84.0) — the night hue, walked down in OKLCH until it
+     clears 4.5:1 as text on every light ground the curated looks have, and
+     6.6:1 under a white glyph. `npm run audit:apps` asserts both. */
+  --cg-app-inbox:           #016b24;
+  --cg-app-bookings:        #2256bb;
+  --cg-app-library:         #9c3f00;
+  --cg-app-knowledge:       #6c5a2a;
+  --cg-app-offerings:       #735803;
+  --cg-app-dispatch:        #6841c1;
+  --cg-app-audience:        #a32b6f;
+  --cg-app-crew:            #b90144;
+  --cg-app-productions:     #05656e;
+  --cg-app-finances:        #396081;
 
   --cg-bg:                  #faf6f0;
   --cg-bg-elevated:         #fdfaf5;
@@ -495,4 +517,20 @@
   --cg-data-both:           #5f9e10;  /* both — deeper lime */
   --cg-data-unreachable:    #8a8076;  /* neither — warm grey */
 
+}
+
+/* ============================================================
+   Flat (v0.84.0) — Reduce Transparency. `data-cg-flat` on the root
+   turns every glass token opaque and drops the blur: the same
+   surfaces from the same theme, solid. The consumer decides who
+   sets it (cmngrdn: the person, per device, with a world's look
+   allowed to suggest it).
+   ============================================================ */
+:root[data-cg-flat] {
+  --cg-glass-bg:            var(--cg-bg-elevated);
+  --cg-glass-bg-elevated:   var(--cg-bg-surface);
+  --cg-glass-bg-strong:     var(--cg-bg-elevated);
+  --cg-glass-blur:          none;
+  --cg-glass-blur-strong:   none;
+  --cg-glass-border-top:    var(--cg-glass-border);
 }

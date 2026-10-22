@@ -18,7 +18,9 @@ Landed in **v0.80.0**. Visual shells only: routing, context, auth and role gatin
 
 ## Tokens (v0.80.0)
 
-- `--cg-app-<id>` — the nine app colours (palette C′). `npm run audit:apps` (CI) holds them equal to `lib/apps.ts`'s fallbacks.
+- `--cg-app-<id>` — the app colours (palette C′), with a **Day value per app in the light block** (v0.84.0: same hue, deep enough to read as text on paper). `npm run audit:apps` (CI) holds both equal to `lib/apps.ts` (`APP_HEX`, `APP_HEX_DAY`) and measures the Day values.
+- `--cg-glass-edge` — optional; a consumer sets it to a gradient for a look that lights the top edge of its glass (v0.84.0). `Window` draws it as a hairline; unset, nothing.
+- `--cg-mark-hollow` · `--cg-mark-hollow-dim` — the rings of a cancelled / unconfirmed booking (v0.84.0), deeper in the light theme.
 - `--cg-aurora · --cg-sol · --cg-ember · --cg-frost · --cg-iris` and `--cg-stage-{new,talking,quoted,booked,done,closed}` — the marks' hues, deeper in the light theme. A consumer with a world-derived palette re-points them (cmngrdn's `.lv` maps them to `--lv-*`).
 - `--cg-window-radius 18 · --cg-window-band-h 48 · --cg-window-gutter 16 · --cg-record-w 460` — W1, W6, R4.
 
