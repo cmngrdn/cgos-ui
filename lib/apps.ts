@@ -12,6 +12,7 @@ export const APP_IDS = [
   'inbox',
   'bookings',
   'library',
+  'knowledge',
   'offerings',
   'dispatch',
   'audience',
@@ -26,6 +27,7 @@ export const APP_HEX: Readonly<Record<AppId, string>> = {
   inbox: '#40c95d', // green, like iMessage
   bookings: '#568ef9', // blue
   library: '#e36927', // burnt orange
+  knowledge: '#d8c9a3', // bone (Feather, 2026-10-22)
   offerings: '#deb95c', // gold
   dispatch: '#9270f4', // purple
   audience: '#f779ba', // pink
