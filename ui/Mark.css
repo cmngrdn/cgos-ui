@@ -43,5 +43,6 @@
   display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--_b);
 }
 [data-cg-mark="booking"][data-booking="no_show"] { --_b: var(--cg-ember, #f26e50); }
-[data-cg-mark="booking"][data-booking="cancelled"] { --_b: var(--cg-text-muted, rgba(232, 230, 225, 0.30)); background: none; box-shadow: inset 0 0 0 1.5px var(--_b); }
-[data-cg-mark="booking"][data-booking="unconfirmed"] { --_b: var(--cg-text-dim, rgba(232, 230, 225, 0.45)); background: none; box-shadow: inset 0 0 0 1.5px var(--_b); }
+/* the hollow rings read their own tokens (v0.84.0) — at a text colour's low alpha they vanished on paper */
+[data-cg-mark="booking"][data-booking="cancelled"] { --_b: var(--cg-mark-hollow, var(--cg-text-muted, rgba(232, 230, 225, 0.30))); background: none; box-shadow: inset 0 0 0 1.5px var(--_b); }
+[data-cg-mark="booking"][data-booking="unconfirmed"] { --_b: var(--cg-mark-hollow-dim, var(--cg-text-dim, rgba(232, 230, 225, 0.45))); background: none; box-shadow: inset 0 0 0 1.5px var(--_b); }

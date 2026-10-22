@@ -56,7 +56,7 @@ import { appColor, type AppId } from '../lib/apps'
  * The parent button/anchor owns those.
  */
 
-export type ModuleIconChipVariant = 'translucent' | 'iridescent'
+export type ModuleIconChipVariant = 'translucent' | 'iridescent' | 'adaptive'
 
 export interface ModuleIconChipProps {
   /** An HQ app: its colour is the `--cg-app-<id>` token. Preferred over `color`. */
@@ -68,7 +68,10 @@ export interface ModuleIconChipProps {
   /**
    * Visual variant. Defaults `'translucent'` (Liquid Glass tinted) for
    * backward-compat with the V2 Phase A ship. Pass `'iridescent'` for the
-   * solid-color embossed treatment.
+   * solid-color embossed treatment. `'adaptive'` is translucent on a dark
+   * ground and a SOLID chip with a white glyph on a light one (v0.84.0): a
+   * tinted chip with a coloured glyph glows at night and washes out to a
+   * smudge on paper, the way an iOS icon never does.
    */
   variant?: ModuleIconChipVariant
   /** Chip side length in px. Default 56 (swatch baseline). */

@@ -15,7 +15,8 @@
   border-radius: var(--cg-chip-radius, 14px);
 }
 
-[data-module-chip-variant="translucent"] {
+[data-module-chip-variant="translucent"],
+[data-module-chip-variant="adaptive"] {
   background: color-mix(in srgb, var(--_c) 24%, var(--cg-glass-bg, color-mix(in srgb, #101018 70%, transparent)));
   -webkit-backdrop-filter: var(--cg-glass-blur, blur(20px) saturate(140%));
   backdrop-filter: var(--cg-glass-blur, blur(20px) saturate(140%));
@@ -40,4 +41,19 @@
     0 0 24px color-mix(in srgb, var(--_c) 35%, transparent),
     0 6px 14px rgba(0, 0, 0, 0.30);
   color: var(--cg-chip-icon, rgba(255, 255, 255, 0.97));
+}
+
+/* ADAPTIVE on a light ground (v0.84.0): solid, in the app's DAY colour, with a
+   white glyph. The Day app colours clear 6.6:1 under white, so the glyph is
+   legible by construction; the tinted chip it replaces left a bone or gold
+   glyph at ~1.5:1 on paper. Dark grounds keep the translucent chip above. */
+:root[data-theme="light"] [data-module-chip-variant="adaptive"] {
+  background: var(--_c);
+  border-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    var(--cg-elev-1, 0 1px 2px rgba(0, 0, 0, 0.2));
+  color: var(--cg-chip-icon, #ffffff);
 }
