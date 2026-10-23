@@ -17,6 +17,7 @@ third-party facts (nobody's here — dated, never generated).
 | What Feather wants prioritised now | [`cgos/OPS.md`](https://github.com/cmngrdn/cgos/blob/main/OPS.md) — current intent only |
 | What is built, blocked, technically next | [`cgos/SCOPE.md`](https://github.com/cmngrdn/cgos/blob/main/SCOPE.md) — the buildboard |
 | This repo's conventions and invariants | **this file** — locally authoritative, and it references authority rather than restating it |
+| Paired Drive folder | **none** — this repo is public and never carries Drive ids |
 | Live facts | the code and the database. Always. |
 
 > **OPS chooses the destination. SCOPE determines the technically valid route.**
