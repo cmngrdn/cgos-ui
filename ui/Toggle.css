@@ -67,7 +67,7 @@
   left: calc(var(--cg-toggle-w) - var(--cg-toggle-dot) - 2px);
 }
 [data-cg-toggle-label] {
-  font-size: 12px;
+  font-size: var(--cg-type-detail-size, 12px);
   color: var(--cg-text-secondary, rgba(255, 255, 255, 0.72));
 }
 @media (prefers-reduced-motion: reduce) {

@@ -19,13 +19,13 @@
   background: color-mix(in srgb, var(--cg-sol, #f29d52) 14%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cg-sol, #f29d52) 38%, transparent);
 }
-[data-cg-mark-n] { font: 600 11px/1 var(--cg-font-mono, ui-monospace, monospace); font-variant-numeric: tabular-nums; }
+[data-cg-mark-n] { font: 600 var(--cg-type-detail-size, 12px)/1 var(--cg-font-mono, ui-monospace, monospace); font-variant-numeric: tabular-nums; }
 
 /* K3 the stage: a word and a pale dot */
 [data-cg-mark="stage"] {
   --_s: var(--cg-stage-new, #8a8880);
   display: inline-flex; align-items: center; gap: 5px; min-width: 0;
-  font-size: 11px; line-height: 1.2; color: var(--_s); white-space: nowrap;
+  font-size: var(--cg-type-detail-size, 12px); line-height: 1.2; color: var(--_s); white-space: nowrap;
 }
 [data-cg-mark="stage"] > i { width: 7px; height: 7px; border-radius: 50%; background: var(--_s); flex: none; }
 [data-cg-mark="stage"][data-stage="talking"] { --_s: var(--cg-stage-talking, #b8aeea); }

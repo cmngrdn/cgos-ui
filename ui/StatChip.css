@@ -61,14 +61,14 @@ button[data-cg-stat-chip][data-active] .cg-stat-chip-label {
 }
 
 .cg-stat-chip-value {
-  font-size: 13px;
+  font-size: var(--cg-type-small-size, 13px);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--cg-text);
 }
 
 .cg-stat-chip-label {
-  font-size: 11px;
+  font-size: var(--cg-type-detail-size, 12px);
   color: var(--cg-text-secondary);
 }
 

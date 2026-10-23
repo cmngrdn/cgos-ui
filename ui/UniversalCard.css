@@ -109,7 +109,7 @@
 }
 
 .ucard-media-mark {
-  font-size: 22px;
+  font-size: var(--cg-type-title-size, 20px);
   opacity: 0.6;
 }
 
@@ -128,15 +128,15 @@
 }
 
 .ucard-date-m {
-  font-size: 8px;
-  letter-spacing: 0.12em;
+  font-size: var(--cg-type-label-size, 11px);
+  letter-spacing: var(--cg-type-label-track, 0.06em);
   text-transform: uppercase;
   color: var(--cg-text-secondary);
   font-weight: 600;
 }
 
 .ucard-date-d {
-  font-size: 19px;
+  font-size: var(--cg-type-title-size, 20px);
   font-weight: 600;
   letter-spacing: -0.02em;
   margin-top: 1px;
@@ -159,8 +159,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 10px;
-  letter-spacing: 0.12em;
+  font-size: var(--cg-type-label-size, 11px);
+  letter-spacing: var(--cg-type-label-track, 0.06em);
   text-transform: uppercase;
   color: var(--cg-text-muted);
   font-weight: 600;
@@ -188,7 +188,7 @@
 }
 
 .ucard-name {
-  font-size: 15px;
+  font-size: var(--cg-type-heading-size, 16px);
   font-weight: 600;
   color: var(--cg-text);
   line-height: 1.25;
@@ -215,14 +215,14 @@
 }
 
 .ucard-fact-k {
-  font-size: 9.5px;
-  letter-spacing: 0.08em;
+  font-size: var(--cg-type-label-size, 11px);
+  letter-spacing: var(--cg-type-label-track, 0.06em);
   text-transform: uppercase;
   color: var(--cg-text-muted);
 }
 
 .ucard-fact-v {
-  font-size: 13.5px;
+  font-size: var(--cg-type-small-size, 13px);
   font-weight: 600;
   color: var(--cg-text);
   font-variant-numeric: tabular-nums;
@@ -248,14 +248,14 @@
 }
 
 .ucard-sig-lbl {
-  font-size: 9.5px;
-  letter-spacing: 0.1em;
+  font-size: var(--cg-type-label-size, 11px);
+  letter-spacing: var(--cg-type-label-track, 0.06em);
   text-transform: uppercase;
   color: var(--cg-text-muted);
 }
 
 .ucard-sig-val {
-  font-size: 12px;
+  font-size: var(--cg-type-detail-size, 12px);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -265,7 +265,7 @@
 }
 
 .ucard-sig-stat {
-  font-size: 16px;
+  font-size: var(--cg-type-heading-size, 16px);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -296,7 +296,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--cg-type-detail-size, 12px);
   font-weight: 600;
   padding: 4px 11px;
   border-radius: 999px;
@@ -316,8 +316,8 @@
 }
 
 .ucard-chip {
-  font-size: 10px;
-  letter-spacing: 0.05em;
+  font-size: var(--cg-type-label-size, 11px);
+  letter-spacing: var(--cg-type-label-track, 0.06em);
   text-transform: uppercase;
   font-weight: 600;
   padding: 3px 9px;

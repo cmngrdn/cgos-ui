@@ -103,7 +103,7 @@
  * lifts to the chip's own colour when the chip is on. */
 [data-cg-chip-count] {
   font-family: var(--cg-font-mono, ui-monospace, monospace);
-  font-size: 10.5px;
+  font-size: var(--cg-type-detail-size, 12px);
   color: var(--cg-text-muted);
   font-variant-numeric: tabular-nums;
 }

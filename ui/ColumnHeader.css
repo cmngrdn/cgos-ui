@@ -55,9 +55,9 @@
 
 [data-cg-column-head-label] {
   font-family: var(--cg-font);
-  font-size: 9.5px;
+  font-size: var(--cg-type-label-size, 11px);
   font-weight: 500;
-  letter-spacing: 0.13em;
+  letter-spacing: var(--cg-type-label-track, 0.06em);
   text-transform: uppercase;
   color: var(--cg-text-muted);
   white-space: nowrap;
@@ -164,7 +164,7 @@
   height: 100%;
   white-space: nowrap;
   /* No overflow: it would clip the bulk menus' popovers (see ListHeader.css). */
-  font-size: 12px;
+  font-size: var(--cg-type-detail-size, 12px);
 }
 
 [data-cg-column-head][data-busy] [data-cg-column-head-bulk] {
@@ -173,7 +173,7 @@
 }
 
 [data-cg-column-head-selected] {
-  font-size: 12px;
+  font-size: var(--cg-type-detail-size, 12px);
   font-weight: 500;
   color: var(--cg-text);
   margin-right: 4px;
@@ -275,7 +275,7 @@
   outline-offset: 1px;
 }
 [data-cg-column-funnel-n] {
-  font-size: 9px;
+  font-size: var(--cg-type-detail-size, 12px);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
 }
@@ -309,7 +309,7 @@
   padding: 6px 8px;
   border-radius: var(--cg-radius-sm, 5px);
   font-family: inherit;
-  font-size: 12px;
+  font-size: var(--cg-type-detail-size, 12px);
   text-align: start;
   color: var(--cg-text-secondary);
   cursor: pointer;
@@ -348,19 +348,19 @@
   margin-top: 2px;
   border-top: 1px solid var(--cg-border);
   border-radius: 0 0 var(--cg-radius-sm, 5px) var(--cg-radius-sm, 5px);
-  font-size: 11px;
+  font-size: var(--cg-type-detail-size, 12px);
   color: var(--cg-text-muted);
 }
 [data-cg-column-menu-empty] {
   padding: 8px;
-  font-size: 11px;
+  font-size: var(--cg-type-detail-size, 12px);
   color: var(--cg-text-muted);
 }
 
 @media (pointer: coarse) {
   [data-cg-column-menu-item] {
     padding: 11px 12px;
-    font-size: 13px;
+    font-size: var(--cg-type-small-size, 13px);
   }
 }
 
@@ -505,7 +505,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: var(--cg-type-detail-size, 12px);
   color: var(--cg-text-secondary);
   font-variant-numeric: tabular-nums;
 }
@@ -539,9 +539,9 @@
   box-sizing: border-box;
   padding: 11px var(--cg-gutter, 24px) 10px;
   border-bottom: 1px solid var(--cg-border);
-  font-size: 11px;
+  font-size: var(--cg-type-label-size, 11px);
   font-weight: 600;
-  letter-spacing: 0.07em;
+  letter-spacing: var(--cg-type-label-track, 0.06em);
   text-transform: uppercase;
   color: var(--cg-text-muted);
   user-select: none;
@@ -568,7 +568,7 @@
 }
 [data-cg-column-group-count] {
   font-family: var(--cg-font-mono, ui-monospace, monospace);
-  font-size: 10px;
+  font-size: var(--cg-type-detail-size, 12px);
   font-weight: 400;
   letter-spacing: 0;
   color: var(--cg-text-muted);
@@ -595,7 +595,7 @@
 /* Reserved whether or not it is painted (opacity, never display): a cell that
    grows on hover makes the whole column twitch as the pointer moves down. */
 [data-cg-column-edit-caret] {
-  font-size: 9px;
+  font-size: var(--cg-type-detail-size, 12px);
   line-height: 1;
   color: var(--cg-text-muted);
   opacity: 0;
@@ -697,8 +697,8 @@
   }
   [data-cg-column-cell]::before {
     content: attr(data-label);
-    font-size: 8.5px;
-    letter-spacing: 0.14em;
+    font-size: var(--cg-type-label-size, 11px);
+    letter-spacing: var(--cg-type-label-track, 0.06em);
     text-transform: uppercase;
     color: var(--cg-text-muted);
   }

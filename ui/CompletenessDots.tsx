@@ -173,7 +173,7 @@ export function CompletenessDots({
         >
           <span
             style={{
-              fontSize: 10,
+              fontSize: "var(--cg-type-label-size, 11px)",
               fontWeight: 600,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
@@ -184,7 +184,7 @@ export function CompletenessDots({
             Missing
           </span>
           {unfilled.map((f) => (
-            <span key={f.key} style={{ fontSize: 12, color: "var(--cg-text)" }}>
+            <span key={f.key} style={{ fontSize: "var(--cg-type-detail-size, 12px)", color: "var(--cg-text)" }}>
               {f.label}
             </span>
           ))}

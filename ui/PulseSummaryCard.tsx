@@ -264,7 +264,7 @@ function MetricCell({ metric }: { metric: PulseMetric }) {
       <span
         style={{
           fontFamily: 'var(--cg-font)',
-          fontSize: 22,
+          fontSize: "var(--cg-type-title-size, 20px)",
           fontWeight: 600,
           color: 'var(--cg-text)',
           lineHeight: 1.1,

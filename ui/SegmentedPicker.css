@@ -43,7 +43,7 @@
   border-radius: calc(var(--cg-radius-md) - 3px);
   background: none;
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--cg-type-small-size, 13px);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1;

@@ -111,7 +111,7 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  font-size: 18px;
+  font-size: var(--cg-type-heading-size, 16px);
   opacity: 0.7;
 }
 
@@ -154,7 +154,7 @@
 }
 
 .ulr-name {
-  font-size: 13px;
+  font-size: var(--cg-type-small-size, 13px);
   font-weight: 500;
   color: var(--cg-text);
   white-space: nowrap;
@@ -164,7 +164,7 @@
 }
 
 .ulr-sub-meta {
-  font-size: 11px;
+  font-size: var(--cg-type-detail-size, 12px);
   color: var(--cg-text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -211,28 +211,28 @@
 }
 
 .ulr-coverage-more {
-  font-size: 10px;
+  font-size: var(--cg-type-detail-size, 12px);
   font-family: var(--cg-font-mono);
   color: var(--cg-text-muted);
   letter-spacing: 0.04em;
 }
 
 .ulr-coverage-empty {
-  font-size: 10px;
+  font-size: var(--cg-type-label-size, 11px);
   color: var(--cg-text-muted);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--cg-type-label-track, 0.06em);
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .ulr-time {
-  font-size: 10px;
+  font-size: var(--cg-type-label-size, 11px);
   color: var(--cg-text-muted);
-  font-family: var(--cg-font-mono);
+  font-family: var(--cg-font, 'Outfit', system-ui, sans-serif);
   white-space: nowrap;
   min-width: 75px;
   text-align: right;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--cg-type-label-track, 0.06em);
   text-transform: uppercase;
 }
 
@@ -269,7 +269,7 @@
 
   .ulr-time {
     min-width: 60px;
-    font-size: 9px;
+    font-size: var(--cg-type-detail-size, 12px);
   }
 
   /* Mobile collapses the action cluster — consumers handle overflow via
