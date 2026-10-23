@@ -2,7 +2,7 @@
 
 Shared design tokens, atoms, and visual primitives for the Common Garden ecosystem — one source of truth across `cgos`, `cmngrdn`, `feather`, and `reliquary`.
 
-> **Status:** v0.20.0 — Phases 1 + 2 + 3 + 4.1 complete; cross-cutting `preview/` module landed (2026-05-08). Tokens + atoms + lifted libs + DevicePreview v2. Both consumer repos (cgos dashboard + cmngrdn) consume directly.
+> **Consumers:** `cmngrdn`, `feather` and `reliquary` (Next.js), each pinned to a tag in its own `package.json` — that file owns the version, so this README states none. The cgos Vite dashboard that once consumed it was deleted 2026-06-03.
 
 See [`docs/design-system-unification-plan.md`](https://github.com/cmngrdn/cgos/blob/main/docs/design-system-unification-plan.md) in the cgos repo for the multi-phase plan, audit findings, and architecture decisions.
 
@@ -141,11 +141,11 @@ When iterating on `cgos-ui` changes from a consumer repo, use `npm link` to avoi
 # In ~/GitHub/cgos-ui:
 npm link
 
-# In ~/cgos (or any consumer):
+# In the consumer repo (cmngrdn, feather, reliquary):
 npm link cgos-ui
 ```
 
-Now edits to `~/GitHub/cgos-ui/tokens.css` are immediately picked up by the consumer's dev server (Vite HMR / Next.js Fast Refresh).
+Now edits to `~/GitHub/cgos-ui/tokens.css` are immediately picked up by the consumer's dev server (Next.js Fast Refresh).
 
 To stop linking and go back to the GitHub-hosted version:
 
@@ -154,12 +154,6 @@ To stop linking and go back to the GitHub-hosted version:
 npm unlink --no-save cgos-ui
 npm install
 ```
-
-### Vite + npm-link gotcha — clear `.vite` cache after adding new `@import` entries
-
-When you add a new `@import "./ui/X.css"` to `cgos-ui/index.css` and the consumer is on `npm link`, Vite's per-package CSS dependency graph sometimes caches the previous `@import` chain and silently drops the new file. Symptom: the new atom's CSS is fetched (visible in the network tab) but its rules don't appear in the page's loaded stylesheets, so styles don't apply.
-
-**Fix:** stop the dev server, `rm -rf node_modules/.vite` in the consumer repo, restart. The chain re-resolves cleanly. No fix needed when consuming via `github:` URL — only an issue with linked packages.
 
 ### Next.js + Turbopack — add `transpilePackages: ["cgos-ui"]`
 
@@ -172,8 +166,6 @@ const nextConfig = {
   // ...
 }
 ```
-
-cgos's Vite handles this natively via `@vitejs/plugin-react` — no opt-in needed.
 
 ## Architecture decisions
 
