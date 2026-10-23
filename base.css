@@ -368,3 +368,19 @@
     animation: none !important;
   }
 }
+
+/* ============================================================
+   UI type roles (v0.85.0) — one class per role from tokens.css,
+   setting the whole set (size, weight, line height, tracking).
+   For app interfaces; the marketing scale above is separate.
+   docs/subsystems/type-and-space.md
+   ============================================================ */
+.cg-type-display { font-size: var(--cg-type-display-size, 28px); font-weight: var(--cg-type-display-weight, 600); line-height: var(--cg-type-display-lh, 1.1); letter-spacing: var(--cg-type-display-track, -0.02em); }
+.cg-type-title   { font-size: var(--cg-type-title-size, 20px);   font-weight: var(--cg-type-title-weight, 600);   line-height: var(--cg-type-title-lh, 1.2);   letter-spacing: var(--cg-type-title-track, -0.015em); }
+.cg-type-heading { font-size: var(--cg-type-heading-size, 16px); font-weight: var(--cg-type-heading-weight, 600); line-height: var(--cg-type-heading-lh, 1.3); letter-spacing: var(--cg-type-heading-track, -0.01em); }
+.cg-type-body    { font-size: var(--cg-type-body-size, 14px);    font-weight: var(--cg-type-body-weight, 400);    line-height: var(--cg-type-body-lh, 1.5);    letter-spacing: var(--cg-type-body-track, 0em); }
+.cg-type-small   { font-size: var(--cg-type-small-size, 13px);   font-weight: var(--cg-type-small-weight, 400);   line-height: var(--cg-type-small-lh, 1.4);   letter-spacing: var(--cg-type-small-track, 0em); }
+.cg-type-detail  { font-size: var(--cg-type-detail-size, 12px);  font-weight: var(--cg-type-detail-weight, 400);  line-height: var(--cg-type-detail-lh, 1.35); letter-spacing: var(--cg-type-detail-track, 0.005em); }
+.cg-type-label   { font-size: var(--cg-type-label-size, 11px);   font-weight: var(--cg-type-label-weight, 600);   line-height: var(--cg-type-label-lh, 1.2);   letter-spacing: var(--cg-type-label-track, 0.06em); text-transform: uppercase; }
+/* a code or a column of figures: mono, every digit the same width */
+.cg-type-figure  { font-family: var(--cg-font-figure, 'JetBrains Mono', monospace); font-variant-numeric: tabular-nums; letter-spacing: 0; }
