@@ -262,7 +262,7 @@ function EventRow({ event }: { event: JourneyEventPreview }) {
           borderRadius: '50%',
           background: `color-mix(in srgb, ${tint} 12%, transparent)`,
           color: tint,
-          fontSize: 11,
+          fontSize: "var(--cg-type-detail-size, 12px)",
           fontWeight: 600,
           flexShrink: 0,
           marginTop: 1,

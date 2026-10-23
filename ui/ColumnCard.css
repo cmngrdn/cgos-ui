@@ -164,7 +164,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 15px;
+  font-size: var(--cg-type-heading-size, 16px);
   font-weight: 600;
   line-height: 1.25;
   color: var(--cg-text);
@@ -174,7 +174,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: var(--cg-type-detail-size, 12px);
   letter-spacing: 0.01em;
   color: var(--cg-text-secondary);
 }
@@ -192,9 +192,9 @@
   min-width: 0;
 }
 [data-cg-column-card-fact-k] {
-  font-size: 9.5px;
+  font-size: var(--cg-type-label-size, 11px);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--cg-type-label-track, 0.06em);
   text-transform: uppercase;
   color: var(--cg-text-muted);
 }
@@ -202,7 +202,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: var(--cg-type-detail-size, 12px);
   font-variant-numeric: tabular-nums;
   color: var(--cg-text-secondary);
 }
@@ -228,9 +228,9 @@
   margin-top: 3px;
 }
 [data-cg-column-card-needs-label] {
-  font-size: 9.5px;
+  font-size: var(--cg-type-label-size, 11px);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--cg-type-label-track, 0.06em);
   text-transform: uppercase;
   color: var(--cg-status-warning);
 }
@@ -239,7 +239,7 @@
   border: 1px solid color-mix(in srgb, var(--cg-status-warning) 35%, transparent);
   border-radius: 999px;
   background: color-mix(in srgb, var(--cg-status-warning) 8%, transparent);
-  font-size: 10.5px;
+  font-size: var(--cg-type-detail-size, 12px);
   white-space: nowrap;
   color: var(--cg-text-secondary);
 }
@@ -250,7 +250,7 @@
   color: var(--cg-text-muted);
 }
 [data-cg-column-card-ready] {
-  font-size: 11px;
+  font-size: var(--cg-type-detail-size, 12px);
   font-weight: 600;
   color: var(--cg-status-success);
 }
@@ -261,7 +261,7 @@
   overflow: hidden;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  font-size: 12px;
+  font-size: var(--cg-type-detail-size, 12px);
   line-height: 1.5;
   color: var(--cg-text-secondary);
 }

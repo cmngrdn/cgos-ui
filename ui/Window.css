@@ -42,7 +42,7 @@
 }
 [data-cg-window-name]:hover { background: color-mix(in srgb, var(--cg-text, #e8e6e1) 6%, transparent); }
 [data-cg-window-chip] { display: inline-flex; }
-[data-cg-window-label] { font-size: 17px; font-weight: 600; letter-spacing: -0.015em; color: var(--_app); white-space: nowrap; }
+[data-cg-window-label] { font-size: var(--cg-type-heading-size, 16px); font-weight: 600; letter-spacing: -0.015em; color: var(--_app); white-space: nowrap; }
 [data-cg-window-name]:hover [data-cg-window-label] { filter: brightness(1.12); }
 
 /* the tabs (W3): no counts; "you are here" is a pill of the window's own ground ringed in the app's colour */
@@ -50,7 +50,7 @@
 [data-cg-window-tab] {
   appearance: none; border: 0; background: none; font: inherit; cursor: pointer;
   display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 12px; border-radius: 10px;
-  color: var(--cg-text-secondary, #8a8880); font-size: 13px; text-decoration: none; white-space: nowrap;
+  color: var(--cg-text-secondary, #8a8880); font-size: var(--cg-type-small-size, 13px); text-decoration: none; white-space: nowrap;
   transition: color 140ms ease, background 140ms ease, opacity 140ms ease;
 }
 [data-cg-window-tab]:hover { color: var(--cg-text, #e8e6e1); background: color-mix(in srgb, var(--cg-text, #e8e6e1) 8%, transparent); }
@@ -75,7 +75,7 @@
 [data-cg-window-menu-trigger] {
   appearance: none; border: 0; background: none; font: inherit; cursor: pointer; min-width: 0;
   display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 8px; border-radius: 10px;
-  color: var(--cg-text, #e8e6e1); font-size: 17px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap;
+  color: var(--cg-text, #e8e6e1); font-size: var(--cg-type-heading-size, 16px); font-weight: 600; letter-spacing: -0.015em; white-space: nowrap;
   transition: background 140ms ease;
 }
 [data-cg-window-menu-trigger]:is(:hover, [aria-expanded="true"]) { background: color-mix(in srgb, var(--cg-text, #e8e6e1) 7%, transparent); }
@@ -128,7 +128,7 @@
 }
 [data-cg-window-searchbox] input {
   flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: none; padding: 0;
-  font: inherit; font-size: 15px; color: var(--cg-text, #e8e6e1);
+  font: inherit; font-size: var(--cg-type-heading-size, 16px); color: var(--cg-text, #e8e6e1);
 }
 [data-cg-window-searchbox] input::-webkit-search-cancel-button { display: none; }
 [data-cg-window-searchbox] input::placeholder { color: var(--cg-text-dim, rgba(232, 230, 225, 0.45)); }
@@ -137,7 +137,7 @@
 @container cgwin (max-width: 440px) {
   [data-cg-window-band] { gap: 10px; }
   [data-cg-window-name] { gap: 7px; }
-  [data-cg-window-tab] { font-size: 12.5px; }
+  [data-cg-window-tab] { font-size: var(--cg-type-detail-size, 12px); }
 }
 /* very narrow (a phone-width window): the name's word steps aside — its chip is still home — so the modes never clip */
 @container cgwin (max-width: 360px) {

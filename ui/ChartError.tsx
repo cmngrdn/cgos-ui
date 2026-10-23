@@ -56,7 +56,7 @@ export function ChartError({
           borderRadius: '50%',
           background: 'color-mix(in srgb, var(--cg-status-danger) 14%, transparent)',
           color: 'var(--cg-status-danger)',
-          fontSize: 16,
+          fontSize: "var(--cg-type-heading-size, 16px)",
           fontWeight: 600,
           lineHeight: 1,
         }}

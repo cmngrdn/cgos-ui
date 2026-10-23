@@ -37,7 +37,7 @@
 
 .cg-send-meter-tag {
   font-family: var(--cg-font-mono);
-  font-size: 9px;
+  font-size: var(--cg-type-detail-size, 12px);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-align: center;
@@ -50,7 +50,7 @@
 
 .cg-send-meter-fact {
   font-family: var(--cg-font-mono);
-  font-size: 10px;
+  font-size: var(--cg-type-detail-size, 12px);
   color: var(--cg-text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;

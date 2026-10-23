@@ -260,7 +260,7 @@ function Avatar({ avatar }: { avatar: LinkedAvatar }) {
         borderRadius: radius,
         background: `color-mix(in srgb, ${tint} 14%, transparent)`,
         color: tint,
-        fontSize: 12,
+        fontSize: "var(--cg-type-detail-size, 12px)",
         fontWeight: 600,
         flexShrink: 0,
       }}

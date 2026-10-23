@@ -34,7 +34,7 @@
   gap: 5px;
   min-width: 0;
   padding: 3px 9px;
-  font-size: 11px;
+  font-size: var(--cg-type-detail-size, 12px);
   font-weight: 500;
   line-height: 1.5;
 }
@@ -55,7 +55,7 @@
      not a 10px glyph floating in it. */
   align-self: stretch;
   padding: 0 7px 1px 3px;
-  font-size: 14px;
+  font-size: var(--cg-type-body-size, 14px);
   line-height: 1;
   opacity: 0.55;
 }
@@ -123,14 +123,14 @@
   [data-cg-entity-chip-body] {
     min-height: 34px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: var(--cg-type-small-size, 13px);
   }
   [data-cg-entity-chip][data-removable] [data-cg-entity-chip-body] {
     padding-right: 4px;
   }
   [data-cg-entity-chip-remove] {
     padding: 0 10px 1px 4px;
-    font-size: 16px;
+    font-size: var(--cg-type-heading-size, 16px);
   }
 }
 

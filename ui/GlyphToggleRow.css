@@ -50,7 +50,7 @@
   justify-content: center;
   /* A rung renders as text and a badge as an SVG; both have to sit on the same
      optical centre or a mixed row looks like two rows. */
-  font-size: 12px;
+  font-size: var(--cg-type-detail-size, 12px);
   font-weight: 600;
   letter-spacing: 0.04em;
   line-height: 1;

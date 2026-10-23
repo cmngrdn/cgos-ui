@@ -30,7 +30,7 @@
   border: 0;
   background: transparent;
   font: inherit;
-  font-size: 11px;
+  font-size: var(--cg-type-detail-size, 12px);
   font-weight: 500;
   line-height: 1;
   color: var(--cg-text-secondary);
