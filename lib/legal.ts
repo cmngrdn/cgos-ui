@@ -157,10 +157,12 @@ export const MERCEDES_CREATIVE: LegalEntity = {
   legalName: "Mercedes Creative LLC",
   brandName: "Reliquary",
   origin: "https://reliquaryarchives.com",
-  // Mercedes Creative's own inbox — NOT contact@cmngrdn.com. A page whose whole
-  // job is establishing this entity as the controller cannot route its privacy
-  // requests to the platform's inbox.
-  supportEmail: "contact@mercedescreative.com",
+  // The studio's own inbox — NOT contact@cmngrdn.com. A page whose whole job is
+  // establishing this entity as the controller cannot route its privacy
+  // requests to the platform's inbox. On the brand's domain (Feather,
+  // 2026-10-28): it is the address the HELP auto-reply names, and a reviewer
+  // checks the Terms and the HELP reply against each other.
+  supportEmail: "contact@reliquaryarchives.com",
   businessDescription:
     "a multi-disciplinary tattoo and creative practice in Nashville, Tennessee",
   jurisdiction: "the State of Tennessee",
@@ -185,7 +187,9 @@ export const AMERICAN_HORSE: LegalEntity = {
   legalName: "American Horse Labor Company",
   brandName: "American Horse Labor Company",
   origin: "https://americanhorselabor.com",
-  supportEmail: "contact@americanhorselabor.com",
+  // support@, not contact@ (Feather, 2026-10-28): the inbox the HELP
+  // auto-reply names, so the Terms and the reply agree.
+  supportEmail: "support@americanhorselabor.com",
   businessDescription:
     "a production labor and stagehand staffing company serving venues, promoters, and production clients",
   jurisdiction: "the State of Minnesota",
@@ -398,9 +402,15 @@ export function buildHelpAndOptOut(entity: LegalEntity): string {
   // unfinished enumeration.
   const [primary, ...rest] = STOP_KEYWORDS;
   const alts = `${rest.slice(0, -1).join(", ")}, or ${rest[rest.length - 1]}`;
+  // Opens with the carrier-standard "Reply HELP for help." verbatim. Twilio's
+  // RCS review (AHLC, 2026-10) checks the Terms for that exact sentence and a
+  // contact beside it; the clause used to say it only in its own words, which
+  // a reviewer reading for the phrase did not credit. The contact is the
+  // entity's support email (closing sentence) — no phone, by decision.
   return (
-    `Reply HELP to any message from ${entity.brandName} for information about ` +
-    `the program and how to reach us. Reply ${primary} (or ${alts}) to stop ` +
+    `Reply HELP for help. A reply of HELP to any message from ` +
+    `${entity.brandName} returns information about the program and how to ` +
+    `reach us. Reply ${primary} (or ${alts}) to stop ` +
     `receiving further SMS messages. You will receive one confirmation of your ` +
     `opt-out, after which no further marketing or transactional SMS will be ` +
     `sent. To resume, reply START or opt in again through the methods above. ` +
