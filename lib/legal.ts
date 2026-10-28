@@ -393,28 +393,55 @@ export function buildOptInDisclosure(entity: LegalEntity): string {
   );
 }
 
+/** The carrier-standard opening of every help clause, verbatim. Twilio's RCS
+ *  review (AHLC, 2026-10) checks the Terms for this exact sentence and a
+ *  contact beside it. Both help builders open with it, so no page says it in
+ *  its own words. */
+export const HELP_LINE = "Reply HELP for help.";
+
+/** "STOP (or A, B, … or Z)" — matches the already-carrier-approved shape on
+ *  cmngrdn.com/privacy rather than a bare comma list, which reads as an
+ *  unfinished enumeration. */
+function stopKeywordPhrase(): string {
+  const [primary, ...rest] = STOP_KEYWORDS;
+  return `${primary} (or ${rest.slice(0, -1).join(", ")}, or ${rest[rest.length - 1]})`;
+}
+
 /** HELP / STOP / re-subscribe. The opt-out set must match what the
  *  backend actually honors, or a carrier-blocked contact stays flagged
  *  "subscribed" in our own data. */
 export function buildHelpAndOptOut(entity: LegalEntity): string {
-  // "STOP (or A, B, … or Z)" — matches the already-carrier-approved shape on
-  // cmngrdn.com/privacy rather than a bare comma list, which reads as an
-  // unfinished enumeration.
-  const [primary, ...rest] = STOP_KEYWORDS;
-  const alts = `${rest.slice(0, -1).join(", ")}, or ${rest[rest.length - 1]}`;
-  // Opens with the carrier-standard "Reply HELP for help." verbatim. Twilio's
-  // RCS review (AHLC, 2026-10) checks the Terms for that exact sentence and a
-  // contact beside it; the clause used to say it only in its own words, which
-  // a reviewer reading for the phrase did not credit. The contact is the
-  // entity's support email (closing sentence) — no phone, by decision.
+  // The clause used to say HELP only in its own words, which a reviewer
+  // reading for the phrase did not credit. The contact is the entity's support
+  // email (closing sentence) — no phone, by decision.
   return (
-    `Reply HELP for help. A reply of HELP to any message from ` +
+    `${HELP_LINE} A reply of HELP to any message from ` +
     `${entity.brandName} returns information about the program and how to ` +
-    `reach us. Reply ${primary} (or ${alts}) to stop ` +
+    `reach us. Reply ${stopKeywordPhrase()} to stop ` +
     `receiving further SMS messages. You will receive one confirmation of your ` +
     `opt-out, after which no further marketing or transactional SMS will be ` +
     `sent. To resume, reply START or opt in again through the methods above. ` +
     `You may also contact us at ${entity.supportEmail} at any time.`
+  );
+}
+
+/**
+ * The same clause for the platform itself, which sends from many Artists'
+ * numbers rather than one sender's. `buildHelpAndOptOut` names one brand and
+ * says a STOP ends "further SMS messages" — true of a door with one number,
+ * wrong for cmngrdn.com, where a STOP ends one Artist's messages and leaves
+ * the rest. Same opening, same keywords, same contact; only the scope differs.
+ */
+export function buildPlatformHelpAndOptOut(entity: LegalEntity): string {
+  return (
+    `${HELP_LINE} A reply of HELP to any message from an Artist's number ` +
+    `returns information about the program and how to reach us. Reply ` +
+    `${stopKeywordPhrase()} to any message from an Artist's number to stop ` +
+    `receiving further SMS messages from that Artist. You will receive one ` +
+    `confirmation of your opt-out. Opting out of one Artist's messages does ` +
+    `not opt you out of any other Artist on the Platform. To resume, reply ` +
+    `START or opt in again through the methods above. You may also contact ` +
+    `us at ${entity.supportEmail} at any time.`
   );
 }
 
