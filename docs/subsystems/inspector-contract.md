@@ -2,7 +2,7 @@
 
 > **History (2026-10-20).** Superseded by [`window-contract.md`](window-contract.md) and cgos [`docs/hq-system.md`](https://github.com/cmngrdn/cgos/blob/main/docs/hq-system.md) (§6: an entity opens as its own record window; R4–R6, R13). Kept while the classic inspector chrome still has consumers.
 
-Moved out of `CLAUDE.md` on 2026-09-19 by the Q4 context-diet pass ([q4-audit-2026-09.md](https://github.com/cmngrdn/cgos/blob/main/docs/q4-audit-2026-09.md)).
+Moved out of `CLAUDE.md` on 2026-09-19 by the Q4 context-diet pass ([q4-audit-2026-09.md](https://github.com/cmngrdn/cgos/blob/main/docs/_archive/audits/q4-audit-2026-09.md)).
 It was 21,770 bytes of a 51KB file that is read **in full at every session start**, and it is only relevant when you are working on this subsystem.
 
 **Nothing here was rewritten** — the text is verbatim, byte-for-byte, from the section it replaced. It is reached from the routing table in `CLAUDE.md`, and from a nested `CLAUDE.md` or a path-scoped rule where this repo's layout allows one.

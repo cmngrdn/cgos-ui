@@ -19,7 +19,7 @@ Entry shape — three parts, in this order:
 3. **How to apply** — what a future session should actually do differently.
 
 Created 2026-09-19 as part of the Q4 context-diet pass
-([q4-audit-2026-09.md](https://github.com/cmngrdn/cgos/blob/main/docs/q4-audit-2026-09.md)).
+([q4-audit-2026-09.md](https://github.com/cmngrdn/cgos/blob/main/docs/_archive/audits/q4-audit-2026-09.md)).
 Empty is the correct starting state — entries arrive as sessions learn things, via
 `/closedown` step 1.
 
