@@ -1,6 +1,6 @@
 # Atom inventory — single source of truth
 
-Moved out of `CLAUDE.md` on 2026-09-19 by the Q4 context-diet pass ([q4-audit-2026-09.md](https://github.com/cmngrdn/cgos/blob/main/docs/q4-audit-2026-09.md)).
+Moved out of `CLAUDE.md` on 2026-09-19 by the Q4 context-diet pass ([q4-audit-2026-09.md](https://github.com/cmngrdn/cgos/blob/main/docs/_archive/audits/q4-audit-2026-09.md)).
 It was 62,210 bytes of a 112KB file that is read **in full at every session start**, and it is only relevant when you are working on this subsystem.
 
 **Nothing here was rewritten** — the text is verbatim, byte-for-byte, from the section it replaced. It is reached from the routing table in `CLAUDE.md`, and from a nested `CLAUDE.md` or a path-scoped rule where this repo's layout allows one.
