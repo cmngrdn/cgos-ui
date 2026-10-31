@@ -115,7 +115,11 @@
      not need learning. Blue for mail, green for a text is already in
      everybody's pocket. Borrow it.
      ───────────────────────────────────────────────────────────────── */
-  --cg-channel-email:       var(--cg-module-dispatch); /* #3d5afe indigo */
+  /* LAVENDER, no longer the Dispatch indigo (2026-10-31). Once the social
+     platforms took their own colours, indigo mail sat beside Facebook's blue
+     (#0866FF) and the two read as one at glyph size. Mail stays cool-toned and
+     leaves blue to Facebook. */
+  --cg-channel-email:       #a78bfa;                   /* lavender */
   /* GREEN, not a blue sibling. Every phone on earth has taught people that a
      green bubble is a text and a blue one isn't, so borrowing that costs no
      teaching at all — where two shades of blue had to be learned. Deliberately
@@ -123,6 +127,15 @@
      (hue ~157, emerald): they sit adjacent in a feed, one meaning "a text" and
      the other "it worked", and 15 degrees is what keeps them apart. */
   --cg-channel-sms:         #34c759;                   /* message green */
+  /* The platforms each wear their own brand colour (the same hexes
+     `SocialBrandIcon` `tone="brand"` fills with — keep the two in step), so a
+     row's glyph says where it went before its words do. Signals is Common
+     Garden's own feed, with no brand: cyan, kept clear of Facebook's blue. */
+  --cg-channel-instagram:   #ff0069;
+  --cg-channel-facebook:    #0866ff;
+  --cg-channel-youtube:     #ff0000;
+  --cg-channel-google-business: #4285f4;
+  --cg-channel-signals:     #22d3ee;                   /* cyan */
 
   /* ── Data-viz palette (Pulse analytics charts) ───────────────────
      Categorical series colors 1..6 for charts (stacked bars, multi-
