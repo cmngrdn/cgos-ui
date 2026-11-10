@@ -58,6 +58,66 @@
   height: 100%;
 }
 
+/* SEND IN THE TOOLS ROW (`sendIn="tools"`): the control keeps its own size and
+   sits after the cluster, so the spacer pins both to the trailing edge. */
+.cg-composer-send[data-in='tools'] {
+  align-items: center;
+  margin-left: 6px;
+}
+
+.cg-composer-send[data-in='tools'] > * {
+  height: auto;
+}
+
+/* ── The leading line ──────────────────────────────────────────────────────
+   Above the editor, inside the field: the channel chip and whatever reads
+   beside it. One row; it wraps on a narrow host rather than clipping. */
+.cg-composer-leading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  min-width: 0;
+  padding: 8px 8px 0;
+}
+
+/* ── The flat surface (`surface="flat"`) ───────────────────────────────────
+   The host is the card. The field draws nothing of its own, and the tools row
+   moves under the editor with no band: leading · editor · readout · tools ·
+   footer. `order`, not a second render path, so the DOM (and what a consumer's
+   selectors reach) is the same on both surfaces. */
+.cg-composer[data-surface='flat'] .cg-composer-card {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  overflow: visible;
+}
+
+.cg-composer[data-surface='flat'] .cg-composer-leading {
+  order: 0;
+}
+
+.cg-composer[data-surface='flat'] .cg-composer-editor {
+  order: 1;
+}
+
+.cg-composer[data-surface='flat'] .cg-composer-hud {
+  order: 2;
+}
+
+.cg-composer[data-surface='flat'] .cg-composer-toolbar {
+  order: 3;
+  border-bottom: 0;
+  background: none;
+  padding: 0 8px 8px;
+}
+
+.cg-composer[data-surface='flat'] .cg-composer-footer {
+  order: 4;
+  border-top: 0;
+  background: none;
+}
+
 /* ── Toolbar ─────────────────────────────────────────────────────────────── */
 
 .cg-composer-toolbar {
@@ -203,6 +263,17 @@
 .cg-composer-editor ol {
   margin: 4px 0;
   padding-left: 20px;
+}
+
+/* THE MARKS ARE THE ATOM'S TO DRAW. A consumer's reset (`list-style: none` on
+   every list) removed them, so a bulleted reply looked like plain lines in
+   every composer and each surface would have had to put them back. */
+.cg-composer-editor ul {
+  list-style: disc;
+}
+
+.cg-composer-editor ol {
+  list-style: decimal;
 }
 
 .cg-composer-editor p {

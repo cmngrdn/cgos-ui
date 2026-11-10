@@ -179,6 +179,27 @@ export interface ComposerProps {
    * action bar somewhere else entirely, which is still right.
    */
   send?: ReactNode
+  /**
+   * WHO DRAWS THE CARD (v0.91.0). `'card'` (the default) is the bordered field
+   * every surface has had. `'flat'` draws no background, border, corner or
+   * focus ring, and puts the tools row UNDER the editor with no band — for a
+   * host that already IS the card (the Inbox's dock), where the atom's own
+   * field would be a card inside a card. The host lights its own edge from
+   * `.cg-composer:focus-within`.
+   */
+  surface?: 'card' | 'flat'
+  /**
+   * A LINE ABOVE THE EDITOR, inside the field: what this composer sends
+   * through and to whom (a channel chip, a meter beside it). The atom owns the
+   * position, as it does for `actions` and `send`; the surface owns the words.
+   */
+  leading?: ReactNode
+  /**
+   * WHERE `send` SITS. `'side'` (the default) is the full-height column beside
+   * the field. `'tools'` puts it at the trailing end of the tools row, at the
+   * tools' own height — one small send for a composer that rests small.
+   */
+  sendIn?: 'side' | 'tools'
   ariaLabel?: string
   /** Extra class on the root, for surface-specific sizing. */
   className?: string
@@ -261,6 +282,9 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   detectionText,
   footer,
   send,
+  surface = 'card',
+  leading,
+  sendIn = 'side',
   ariaLabel = 'Message body',
   className,
 }, ref) {
@@ -269,7 +293,8 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   const trailing = actions ?? toolbarExtras
   // A toolbar with only a right-hand cluster is still a toolbar — that is the
   // SMS case, and it is why this is an OR rather than a check on `caps`.
-  const showToolbar = caps.length > 0 || Boolean(trailing)
+  const sendInTools = sendIn === 'tools' && Boolean(send)
+  const showToolbar = caps.length > 0 || Boolean(trailing) || sendInTools
 
   // A channel that cannot RENDER formatting must not RETAIN it on paste. Asked
   // for `rich` on an SMS surface, keeping the markup would mean the operator
@@ -500,8 +525,9 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
        the composer through custom properties inherited from the root, and
        moving the name would have meant editing six stylesheets to change none
        of their intent. */
-    <div className={`cg-composer${className ? ` ${className}` : ''}`}>
+    <div className={`cg-composer${className ? ` ${className}` : ''}`} data-surface={surface === 'flat' ? 'flat' : undefined}>
       <div className="cg-composer-card">
+        {leading && <div className="cg-composer-leading">{leading}</div>}
         {showToolbar && (
           <div className="cg-composer-toolbar" role="toolbar" aria-label="Formatting">
             {BUTTONS.filter((b) => caps.includes(b.cap)).map((b) => (
@@ -547,6 +573,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
                 exists to remove. */}
             <span className="cg-composer-spacer" aria-hidden />
             {trailing && <span className="cg-composer-actions">{trailing}</span>}
+            {sendInTools && <span className="cg-composer-send" data-in="tools">{send}</span>}
           </div>
         )}
 
@@ -590,7 +617,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
         {footer && <div className="cg-composer-footer">{footer}</div>}
       </div>
 
-      {send && <div className="cg-composer-send">{send}</div>}
+      {send && !sendInTools && <div className="cg-composer-send">{send}</div>}
     </div>
   )
 })
