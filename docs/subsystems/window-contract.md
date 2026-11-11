@@ -13,7 +13,7 @@ Landed in **v0.80.0**. Visual shells only: routing, context, auth and role gatin
 | `ui/Window` → `Window`, `WindowBand` | W1–W5, M1–M5 | `app` (an `AppId`), `name`, `icon` (a `ModuleIconChip`), `homeHref`/`onHome`, `atHome`, `tabs` (`href` or `onSelect`, `current`, `soon`), `modes` (which of the four this viewer sees), `mode` + `onMode`, `query` + `onQuery`, `show` (a Show's chip), `renderLink` (the router's link). `Window` adds the glass frame, `panel` (the open mode's) and the body. |
 | `ui/RecordWindowHead` | R5, R6, R12 | `app` (the record's HOME app — the tint), `face`, `title`, `context`, `details`, `status`, `saved`, `actions` (v0.81.0 — the record's own controls, left of expand/close), `expand`, `onClose`, `progress`, `compact`. |
 | `ui/Stub` | R3 | `app` (or `color`), `icon`, `label`, `onBack`, optional `onExpand` / `onClose`, `narrowed`. Untinted it is a folded record. |
-| `ui/Mark` → `Dot`, `TurnChip`, `StageMark`, `BookingDot`, `fmtWaitShort` | K1–K5 | the fact only: a label; minutes + why; a `Stage` (+ `dim`, `more`); a `BookingMark` + its word. |
+| `ui/Mark` → `Dot`, `TurnChip`, `StageMark`, `BookingDot`, `RingMark`, `ReachMark`, `fmtWaitShort` | K1–K5 | the fact only: a label; minutes + why; a `Stage` (+ `dim`, `more`); a `BookingMark` + its word; a `Ring` (+ `word`); `sms` + `email`. |
 | `lib/apps` → `APP_IDS`, `AppId`, `appColor`, `isAppId`, `APP_HEX` | K6 | — `appColor(id)` is `var(--cg-app-<id>, #hex)`; nobody passes hex. |
 
 ## Tokens (v0.80.0)

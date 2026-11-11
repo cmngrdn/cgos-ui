@@ -1,4 +1,4 @@
-import { ArrowBendUpLeft } from '@phosphor-icons/react'
+import { ArrowBendUpLeft, ChatCenteredText, EnvelopeSimple } from '@phosphor-icons/react'
 
 /**
  * THE MARKS — the only four marks a row carries (cgos `docs/hq-system.md`
@@ -14,6 +14,16 @@ import { ArrowBendUpLeft } from '@phosphor-icons/react'
  *               for "+1 open".
  *   BookingDot  K4 — a booking's own status: held aurora, no-show ember,
  *               cancelled a hollow muted ring, unconfirmed a hollow dim ring.
+ *
+ * Two marks Audience's rows add (v0.92.0, cgos build plan D5.20):
+ *
+ *   RingMark    which of the known rings a person is in — Core (the filled
+ *               centre and both rings), Active (the middle ring), Known (the
+ *               hollow outer ring). The rule is cgos's (`audience_rings.py`);
+ *               the mark is only the drawing. Its hue is the app's
+ *               (`--cg-mark-ring`, Audience pink by default). Never `.ib-ring`.
+ *   ReachMark   how a person is reached: the text glyph and the email glyph,
+ *               each in its channel colour when it reaches them, dim when not.
  *
  * Resting state in `ui/Mark.css`, keyed off `data-cg-mark`. Every mark is a
  * `role="img"` with its words as the label and the tooltip.
@@ -94,4 +104,30 @@ export type BookingMark = 'held' | 'unconfirmed' | 'no_show' | 'cancelled'
 
 export function BookingDot({ mark, word, className }: { mark: BookingMark; word: string; className?: string }) {
   return <span data-cg-mark="booking" data-booking={mark} role="img" aria-label={word} title={word} className={className} />
+}
+
+export type Ring = 'core' | 'active' | 'known'
+
+const RING_WORD: Record<Ring, string> = { core: 'Core', active: 'Active', known: 'Known' }
+
+/** The ring a person is in, as three nested circles; `word` shows the ring's name after it. */
+export function RingMark({ ring, word, label, className }: { ring: Ring; word?: boolean; label?: string; className?: string }) {
+  const text = label ?? RING_WORD[ring]
+  return (
+    <span data-cg-mark="ring" data-ring={ring} role="img" aria-label={text} title={text} className={className}>
+      <i aria-hidden />
+      {word ? <span>{RING_WORD[ring]}</span> : null}
+    </span>
+  )
+}
+
+/** How a person is reached — a text glyph and an email glyph, lit where they reach. */
+export function ReachMark({ sms, email, label, className }: { sms: boolean; email: boolean; label?: string; className?: string }) {
+  const text = label ?? (sms && email ? 'Text + email' : sms ? 'Text only' : email ? 'Email only' : 'Unreachable')
+  return (
+    <span data-cg-mark="reach" role="img" aria-label={text} title={text} className={className}>
+      <ChatCenteredText size={14} weight="fill" aria-hidden data-cg-reach="sms" data-on={sms || undefined} />
+      <EnvelopeSimple size={14} weight={email ? 'fill' : 'regular'} aria-hidden data-cg-reach="email" data-on={email || undefined} />
+    </span>
+  )
 }

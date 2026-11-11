@@ -1,4 +1,4 @@
-/* The marks (cgos docs/hq-system.md K1–K4) — see ui/Mark.tsx. */
+/* The marks (cgos docs/hq-system.md K1–K4, plus Audience's ring and reach, v0.92.0) — see ui/Mark.tsx. */
 
 [data-cg-mark] { flex: none; }
 
@@ -46,3 +46,28 @@
 /* the hollow rings read their own tokens (v0.84.0) — at a text colour's low alpha they vanished on paper */
 [data-cg-mark="booking"][data-booking="cancelled"] { --_b: var(--cg-mark-hollow, var(--cg-text-muted, rgba(232, 230, 225, 0.30))); background: none; box-shadow: inset 0 0 0 1.5px var(--_b); }
 [data-cg-mark="booking"][data-booking="unconfirmed"] { --_b: var(--cg-mark-hollow-dim, var(--cg-text-dim, rgba(232, 230, 225, 0.45))); background: none; box-shadow: inset 0 0 0 1.5px var(--_b); }
+
+/* the ring (v0.92.0): three nested circles in the app's hue. Known = the outer ring alone; Active = the middle ring
+   lit inside it; Core = the centre filled too. 14px, so it sits on a row's line beside its word. */
+[data-cg-mark="ring"] {
+  --_r: var(--cg-mark-ring, var(--cg-app-audience, #f779ba));
+  display: inline-flex; align-items: center; gap: 6px; min-width: 0; white-space: nowrap;
+  font-size: var(--cg-type-small-size, 13px); line-height: 1.2; color: var(--cg-text-secondary, rgba(232, 230, 225, 0.72));
+}
+[data-cg-mark="ring"] > i {
+  position: relative; width: 14px; height: 14px; border-radius: 50%; flex: none;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--_r) 70%, transparent);
+}
+[data-cg-mark="ring"] > i::after {
+  content: ""; position: absolute; inset: 3px; border-radius: 50%;
+}
+[data-cg-mark="ring"][data-ring="active"] > i::after { box-shadow: inset 0 0 0 1.5px var(--_r); background: color-mix(in srgb, var(--_r) 22%, transparent); }
+[data-cg-mark="ring"][data-ring="core"] > i { box-shadow: inset 0 0 0 1.5px var(--_r); }
+[data-cg-mark="ring"][data-ring="core"] > i::after { background: var(--_r); box-shadow: 0 0 6px color-mix(in srgb, var(--_r) 50%, transparent); }
+[data-cg-mark="ring"][data-ring="known"] > span { color: var(--cg-text-dim, rgba(232, 230, 225, 0.45)); }
+
+/* reach (v0.92.0): the two channel glyphs, each in its channel colour when it reaches them, dim when not */
+[data-cg-mark="reach"] { display: inline-flex; align-items: center; gap: 6px; }
+[data-cg-reach] { color: var(--cg-mark-hollow-dim, var(--cg-text-dim, rgba(232, 230, 225, 0.45))); opacity: .55; }
+[data-cg-reach="sms"][data-on] { color: var(--cg-channel-sms, #34c759); opacity: 1; }
+[data-cg-reach="email"][data-on] { color: var(--cg-channel-email, #a78bfa); opacity: 1; }
