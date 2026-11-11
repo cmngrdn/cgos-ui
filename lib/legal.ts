@@ -219,6 +219,29 @@ export const AMERICAN_HORSE: LegalEntity = {
   verbalOptInTaker: "a scheduler or crew lead",
 };
 
+/**
+ * Ether Studios is not an entity. The party is Erik Van Nguyen personally,
+ * trading as "Ether Studios" (Feather, 2026-11-11, from Erik's own answers) —
+ * so `legalName` is a person's name and `brandName` is the DBA, which is the
+ * same shape the builders already render for the other doors ("<legal name>
+ * (doing business as "<brand>")"). Do not "complete" the name into a company.
+ *
+ * No Twilio number and no A2P campaign yet, so nothing here has to match a
+ * registration. If one is ever filed, `legalName` must equal the sole
+ * proprietor name on the Customer Profile character-for-character.
+ */
+export const ETHER_STUDIOS: LegalEntity = {
+  legalName: "Erik Van Nguyen",
+  brandName: "Ether Studios",
+  origin: "https://etherstudios.co",
+  // On the brand's own domain: the address the inquiry form's replies come from.
+  supportEmail: "inquiries@etherstudios.co",
+  businessDescription:
+    "a photo, sound and video production studio in Old Saybrook, Connecticut",
+  jurisdiction: "the State of Connecticut",
+  dataRole: "joint",
+};
+
 // ─────────────────────────────────────────────────────────────────────
 // Link destinations
 // ─────────────────────────────────────────────────────────────────────
