@@ -252,6 +252,19 @@ export function buildConsentFinePrint(args: ConsentArgs): string {
   );
 }
 
+/** The fine print for a form that offers EMAIL boxes only (a signup with no phone asked): the marketing disclosure
+ *  without its text-message lines. `buildConsentFinePrint` is carrier-locked and its rates, frequency and HELP/STOP
+ *  sentences are about texts, so an email-only form must not show them. Same opening, same "Consent is not a
+ *  condition of purchase", same verbatim "Terms & Privacy" tail (`renderConsentFinePrintNodes` splits on it); only
+ *  the SMS sentences go, and "messages" becomes "emails". The email checkbox label keeps its own unsubscribe line. */
+export function buildEmailOnlyFinePrint(args: ConsentArgs): string {
+  return (
+    `By submitting your information, you agree to receive marketing and ` +
+    `promotional emails from ${args.brandName}. Consent is not a condition ` +
+    `of purchase. Terms & Privacy.`
+  );
+}
+
 /** Default for what consent is NOT a condition of, completing
  *  "Consent is not a condition of …". "purchase" is the CTIA-standard
  *  phrasing and is right for any commerce-shaped funnel. */
