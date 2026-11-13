@@ -46,6 +46,7 @@ every surface goes through the builders* — which is the rule below.
 | `buildMarketingEmailConsentText` | Marketing email opt-in checkbox label |
 | `buildMarketingSmsConsentText` | Marketing SMS opt-in checkbox label |
 | `buildConsentFinePrint` / `renderConsentFinePrintNodes` | The consolidated CTIA fine print rendered **once** below a form (rates / frequency / HELP-STOP, ending in linked Terms & Privacy) |
+| `buildEmailOnlyFinePrint` | The same disclosure for a form that offers email boxes only (a signup that asks for no phone): no rates, frequency or HELP/STOP lines, same "Terms & Privacy" tail. cmngrdn uses it whenever a signup's `collect_phone` is off |
 | `buildTransactional{Email,Sms}ConsentText` | Non-marketing (operational) opt-in labels — e.g. booking |
 | `buildWelcome / Help / Stop / Start Message` | Twilio keyword auto-replies |
 | `buildSmsConsentText` / `buildEmailConsentText` | Legacy single-surface strings (the `/sms` info page until migrated) |
