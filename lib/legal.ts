@@ -124,6 +124,16 @@ export interface LegalEntity {
    * describe a role a reviewer could actually ask about.
    */
   verbalOptInTaker?: string;
+  /**
+   * True when this door's tracker keeps a first/last-touch record in the
+   * visitor's `localStorage` for 90 days (reliquary's `src/lib/tracker.ts`,
+   * `TOUCH_TTL_MS`). Every other door keeps nothing beyond the tab.
+   *
+   * ⚠️ Like `inPersonOptIn`, this is a statement about what the door's code
+   * does, rendered in a privacy policy: it must equal the tracker, and a door
+   * that starts or stops writing the record changes it in the same pass.
+   */
+  arrivalRecord?: boolean;
 }
 
 /** The platform itself. Common Garden is the ISV every other entity's
@@ -171,6 +181,8 @@ export const MERCEDES_CREATIVE: LegalEntity = {
   // physical room with clients in it, so paper and verbal consent are real
   // routes here in a way they are not for a purely online door.
   inPersonOptIn: true,
+  // reliquary's tracker keeps first/last touch in localStorage for 90 days.
+  arrivalRecord: true,
 };
 
 export const AMERICAN_HORSE: LegalEntity = {
@@ -506,6 +518,50 @@ export function buildDeliveryAndEligibility(entity: LegalEntity): string {
     `of the number you provide, or are authorized by the subscriber to opt it ` +
     `in. If you stop being the subscriber of a number you opted in with, please ` +
     `notify us at ${entity.supportEmail} so we can remove it.`
+  );
+}
+
+/**
+ * The anonymous visit measurement every door's cg-tracker performs. Describes
+ * exactly what the trackers send and the collector stores (cgos
+ * `docs/web-tracker.md` § Privacy posture): no more, no less.
+ *
+ * True of every door: in-memory visit id (Ether: the tab's sessionStorage —
+ * "held in your browser only while the tab stays open" covers both); the full
+ * query string rides on each page view, so campaign tags and ad click ids are
+ * in it; outbound and new-tab link clicks record the link and its text; device
+ * class and browser come from the user agent, country/region/city from the
+ * hosting provider's headers; the IP is used only for a rate limit and never
+ * written. Varies by door: `arrivalRecord` (a 90-day localStorage touch record).
+ */
+export function buildWebAnalytics(entity: LegalEntity): string {
+  const arrival = entity.arrivalRecord
+    ? ` To remember which channel first and most recently brought you here — ` +
+      `for example a tagged link from Instagram — your browser also keeps a ` +
+      `small record in its local storage: the source of your first and most ` +
+      `recent visit (the referrer, campaign tags and any advertising click ` +
+      `identifiers), the page you landed on, and the date, for up to 90 ` +
+      `days. It contains no name or contact details and no ID that names ` +
+      `you, and clearing your browser's site data removes it.`
+    : "";
+  return (
+    `We measure visits to this site with our own first-party tool. For each ` +
+    `page you view it records the page address, including any campaign tags ` +
+    `or advertising click identifiers in the link you followed; where the ` +
+    `visit came from, such as the site or app that referred you; your ` +
+    `browser's language and window size; your device type (phone, tablet or ` +
+    `computer) and browser; and a coarse location, country, region and city ` +
+    `only, taken from your connection. When you click a link that leaves the ` +
+    `site or opens in a new tab, it also records the link address and the ` +
+    `text of the link. This measurement uses no cookies and does not store ` +
+    `your IP address. A random visit number, held in your browser only while ` +
+    `the tab stays open, ties the pages of one visit together; it is not ` +
+    `linked to your name, and a new tab or a later visit gets a new number.` +
+    arrival +
+    ` If you send an inquiry or sign up, we store the source of that visit ` +
+    `and its visit number with it, so we can tell which channel the ` +
+    `inquiry came from. We use all of this to understand how people find ` +
+    `and use this site. We do not sell it.`
   );
 }
 
