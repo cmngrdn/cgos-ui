@@ -49,6 +49,7 @@ A session working in one of these areas opens the matching doc first. `.claude/r
 
 | Subsystem | Covers | Doc |
 |---|---|---|
+| Design language | what the system is going for: the cosmic garden, the bloom accents, thin and polished form, Apple-like springy motion. Read before designing anything | [design-language](docs/subsystems/design-language.md) |
 | Atom inventory | the single-source-of-truth table — Need / Import from / Notes for every token, base utility and v1 atom, plus the consumer-homed rows (hoist candidates) | [atom-inventory](docs/subsystems/atom-inventory.md) |
 | Tokens | every `--cg-*` family — colour, status, data-viz, glass, fills, elevation, motion, layers, control heights, chrome geometry, channels, app colours | [tokens](docs/subsystems/tokens.md) |
 | Type and space | the UI type roles, the 4-point grid, density tokens | [type-and-space](docs/subsystems/type-and-space.md) |
