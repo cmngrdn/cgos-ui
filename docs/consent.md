@@ -57,7 +57,7 @@ Keep this current — when you add a surface that shows or records consent, add 
 here and confirm it imports a builder.
 
 **cmngrdn**
-- `src/components/portal/CaptureForm.tsx` — marketing email + SMS labels + fine print
+- `src/components/spotlight/SpotlightSignUpForm.tsx` — a spotlight page's sign-up (marketing email + SMS labels + fine print). The one form the desktop dialog and the phone sheet both mount; it replaced `portal/CaptureForm.tsx`. One tick per channel, shown once that channel is filled, plus the EU tick
 - `src/app/sms/page.tsx` — public disclosure page
 - `src/components/hq/comms/CommsSettingsBody.tsx` — welcome-message preview
 
