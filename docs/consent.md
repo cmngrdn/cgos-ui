@@ -63,7 +63,7 @@ here and confirm it imports a builder.
 
 **feather.fm**
 - `components/SignalConnectForm.tsx` — splash signup (marketing email + SMS + fine print)
-- `components/PortalCaptureForm.tsx` — `/<slug>` portal capture
+- `components/spotlight/FeatherSignUpForm.tsx` — `/<slug>` sign-up on the spotlight face (marketing email + SMS labels with feather.fm's `CONSENT_ARGS`, the EU tick, the full or email-only fine print). Replaced `PortalCaptureForm.tsx` on 2026-11-17
 - `lib/contacts.ts` — **rebuilds** the text server-side for the consent ledger
 
 **cgos backend** (Python mirror)
