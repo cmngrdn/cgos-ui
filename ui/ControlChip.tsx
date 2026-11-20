@@ -586,17 +586,41 @@ const GROUP_SIZE_TOKENS: Record<ChipGroupSize, ChipGroupSizeTokens> = {
 
 const ChipGroupSizeContext = createContext<ChipGroupSize>('sm')
 
+/**
+ * `default` — the accent-lit segmented control (filters, modes). `stage` (v0.96.0) — the MUTED band a record's stage
+ * tabs wear (cgos One Record P.4 §2.1b): a 4%-ink pill with an inset hairline, 32px segments in the secondary voice,
+ * and the lit segment tinted by the STAGE's colour — read from `--cg-chip-stage`, which the consumer sets per segment
+ * to a token NAME (`var(--cg-stage-talking)`), never a hex — with an inset 3px underline in it, so the lit tab reads
+ * as "where you are", not as an action. The variant's height, fill, ring and underline live in `ControlChip.css`
+ * (`[data-cg-variant="stage"]`); the inline size/colour props are skipped so the stylesheet can own them.
+ */
+export type ChipGroupVariant = 'default' | 'stage'
+const ChipGroupVariantContext = createContext<ChipGroupVariant>('default')
+
 export interface ChipGroupProps {
   /** sm (default) — 28px filter-row chip. md — 40px form-body segmented control
    *  matching Input/Select `size="md"`. Use md whenever the group sits in a
    *  form body alongside text inputs / selects. */
   size?: ChipGroupSize
+  /** `stage` — the muted stage band (see `ChipGroupVariant`); flows to the segments like `size`. */
+  variant?: ChipGroupVariant
   children: ReactNode
 }
 
 /** Wrapper for a row of ChipSegment children inside one segmented-control shell. */
-export function ChipGroup({ size = 'sm', children }: ChipGroupProps) {
+export function ChipGroup({ size = 'sm', variant = 'default', children }: ChipGroupProps) {
   const tokens = GROUP_SIZE_TOKENS[size]
+  if (variant === 'stage') {
+    return (
+      <ChipGroupSizeContext.Provider value={size}>
+        <ChipGroupVariantContext.Provider value={variant}>
+          <div data-cg-chip-group="" data-cg-size={size} data-cg-variant="stage" style={{ fontFamily: 'var(--cg-font)' }}>
+            {children}
+          </div>
+        </ChipGroupVariantContext.Provider>
+      </ChipGroupSizeContext.Provider>
+    )
+  }
   return (
     <ChipGroupSizeContext.Provider value={size}>
       <div
@@ -640,7 +664,16 @@ export interface ChipSegmentProps {
 
 export function ChipSegment({ active, onClick, title, disabled, children }: ChipSegmentProps) {
   const groupSize = useContext(ChipGroupSizeContext)
+  const variant = useContext(ChipGroupVariantContext)
   const tokens = GROUP_SIZE_TOKENS[groupSize]
+  if (variant === 'stage') {
+    // the stylesheet owns the stage segment's height, fill, ring and underline (`--cg-chip-stage` is the consumer's)
+    return (
+      <button type="button" onClick={onClick} title={title} disabled={disabled} data-cg-chip-segment="" data-cg-size={groupSize} data-cg-variant="stage" {...(active ? { 'data-active': '' } : {})} style={{ fontFamily: 'var(--cg-font)' }}>
+        {children}
+      </button>
+    )
+  }
   return (
     <button
       type="button"

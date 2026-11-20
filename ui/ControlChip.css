@@ -110,3 +110,51 @@
 [data-cg-chip][aria-pressed="true"] [data-cg-chip-count] {
   color: inherit;
 }
+
+/* ── variant="stage" (v0.96.0): the muted stage band — cgos One Record P.4 §2.1b ──
+ * Group: 4% ink on a 999 pill, inset hairline, 3px padding, 4px gap → 32 + 6 + 2 = 40 tall.
+ * Segment: 32px (`--cg-control-h-chip` + 4), radius 999, small type in the secondary voice; its count rides in the
+ * detail size at 75% (`[data-cg-chip-count]`). Lit: the STAGE's colour from `--cg-chip-stage` (the consumer's token
+ * name; the app accent when unset) — a 14% fill, an inset 1px ring at 45%, an inset 3px underline, text in `--cg-text`
+ * 600. Motion: fill and ring in `--cg-duration-fast`; never the body. */
+[data-cg-chip-group][data-cg-variant="stage"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--cg-fill);
+  box-shadow: inset 0 0 0 1px var(--cg-border);
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+[data-cg-chip-segment][data-cg-variant="stage"] {
+  --cg-chip-stage-ink: var(--cg-chip-stage, var(--cg-accent));
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: calc(var(--cg-control-h-chip, 28px) + 4px);
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: var(--cg-type-small-size, 13px);
+  font-weight: 500;
+  color: var(--cg-text-secondary);
+  background: transparent;
+  box-shadow: inset 0 0 0 0 transparent;
+  transition: background var(--cg-duration-fast), box-shadow var(--cg-duration-fast), color var(--cg-duration-fast);
+}
+[data-cg-chip-segment][data-cg-variant="stage"] [data-cg-chip-count] {
+  font-size: var(--cg-type-detail-size, 12px);
+  opacity: 0.75;
+}
+[data-cg-chip-segment][data-cg-variant="stage"][data-active] {
+  color: var(--cg-text);
+  font-weight: 600;
+  background: color-mix(in oklch, var(--cg-chip-stage-ink) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--cg-chip-stage-ink) 45%, transparent), inset 0 -3px 0 var(--cg-chip-stage-ink);
+}
+@media (hover: hover) and (pointer: fine) {
+  [data-cg-chip-segment][data-cg-variant="stage"]:not([data-active]):hover { color: var(--cg-text); background: var(--cg-fill-hover); }
+}
