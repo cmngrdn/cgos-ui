@@ -39,6 +39,9 @@
 import { type CSSProperties } from 'react'
 
 const BRAND_PATHS = {
+  // Simple Icons `googledrive` (CC0) — the Drive mark every HQ Drive row wears (v0.96.0); not a social platform, one brand-mark atom all the same
+  drive:
+    'M12.01 1.485c-2.082 0-3.754.02-3.743.047.01.02 1.708 3.001 3.774 6.62l3.76 6.574h3.76c2.081 0 3.753-.02 3.742-.047-.005-.02-1.708-3.001-3.775-6.62l-3.76-6.574zm-4.76 1.73a789.828 789.861 0 0 0-3.63 6.319L0 15.868l1.89 3.298 1.885 3.297 3.62-6.335 3.618-6.33-1.88-3.287C8.1 4.704 7.255 3.22 7.25 3.214zm2.259 12.653-.203.348c-.114.198-.96 1.672-1.88 3.287a423.93 423.948 0 0 1-1.698 2.97c-.01.026 3.24.042 7.222.042h7.244l1.796-3.157c.992-1.734 1.85-3.23 1.906-3.323l.104-.167h-7.249z',
   youtube:
     'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
   instagram:
@@ -123,6 +126,7 @@ export interface BrandMeta {
  * party, not theme values, which is why they are not `--cg-*` tokens.
  */
 export const BRAND_META: Record<SocialBrandKey, BrandMeta> = {
+  drive: { label: 'Google Drive', hex: '#4285F4' },
   youtube: { label: 'YouTube', hex: '#FF0000' },
   instagram: { label: 'Instagram', hex: '#FF0069' },
   facebook: { label: 'Facebook', hex: '#0866FF' },
