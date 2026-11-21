@@ -1,0 +1,44 @@
+/* LinkChip (see ui/LinkChip.tsx). Hoisted from cmngrdn's spotlight.css `.sp-chip`, pixel for pixel: 38px, the pill,
+   the brand's 42% border and 11% fill, 20% / 60% on hover; on a phone the 46px square. A world themes it through
+   --cg-link-chip-accent (the tint of a non-brand link), --cg-link-chip-text and --cg-link-chip-font. */
+
+[data-cg-link-chip-row] { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+[data-cg-link-chip] {
+  --_bk: var(--cg-link-chip-ink, var(--cg-link-chip-accent, var(--cg-accent, #2dd4a8)));
+  display: inline-flex; align-items: center; gap: 8px; flex: none;
+  height: 38px; padding: 0 16px 0 12px; margin: 0;
+  border-radius: 999px; white-space: nowrap; text-decoration: none; cursor: pointer;
+  border: 1px solid color-mix(in oklch, var(--_bk) 42%, transparent);
+  background: color-mix(in oklch, var(--_bk) 11%, transparent);
+  font-family: var(--cg-link-chip-font, var(--cg-font, system-ui, sans-serif));
+  font-size: var(--cg-type-detail-size, 12px);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--cg-link-chip-text, var(--cg-text, #e8e6e1));
+  transition: background 200ms ease, border-color 200ms ease, transform 160ms cubic-bezier(.3, 1.4, .5, 1);
+}
+span[data-cg-link-chip] { cursor: default; }
+[data-cg-link-chip]:hover { background: color-mix(in oklch, var(--_bk) 20%, transparent); border-color: color-mix(in oklch, var(--_bk) 60%, transparent); }
+a[data-cg-link-chip]:active, button[data-cg-link-chip]:active { transform: scale(0.97); }
+[data-cg-link-chip]:focus-visible { outline: 2px solid var(--cg-link-chip-accent, var(--cg-accent, #2dd4a8)); outline-offset: 2px; }
+[data-cg-link-chip] svg { flex: none; }
+[data-cg-link-chip] [data-cg-link-chip-ic] { color: var(--cg-link-chip-accent, var(--cg-accent, #2dd4a8)); }
+
+/* an unlinked platform: dashed and muted; it takes its brand's tint only on hover */
+[data-cg-link-chip][data-ghost] {
+  background: none; border-style: dashed;
+  border-color: var(--cg-border-hover, rgba(232, 230, 225, 0.18));
+  color: var(--cg-text-secondary, #8a8880);
+}
+[data-cg-link-chip][data-ghost]:hover { color: var(--cg-link-chip-text, var(--cg-text, #e8e6e1)); border-color: color-mix(in oklch, var(--_bk) 60%, transparent); background: color-mix(in oklch, var(--_bk) 8%, transparent); }
+/* a ghost holding an unsaved paste: solid, in the sol tone, its words as written */
+[data-cg-link-chip][data-ghost][data-pending] { border-style: solid; color: var(--cg-sol, #f29d52); border-color: color-mix(in oklch, var(--cg-sol, #f29d52) 45%, transparent); text-transform: none; letter-spacing: 0; }
+
+[data-cg-link-chip-set] { display: inline-flex; align-items: center; gap: 2px; }
+
+@media (max-width: 767px) {
+  [data-cg-link-chip][data-square] { width: 46px; height: 46px; padding: 0; justify-content: center; border-radius: 14px; }
+  [data-cg-link-chip][data-square] svg { width: 21px; height: 21px; }
+  [data-cg-link-chip][data-square] [data-cg-link-chip-label] { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { [data-cg-link-chip] { transition: none; } }

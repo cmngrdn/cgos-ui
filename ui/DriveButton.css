@@ -1,0 +1,34 @@
+/* DriveButton (see ui/DriveButton.tsx). The atoms (IconButton, Button) own the states; this file adds the glass — a quiet
+   fill with a hairline inset — and the four sizes xs 24 · sm 28 · md 32 · touch 44. A consumer re-inks it on its own
+   surfaces through --cg-drive-ink · --cg-drive-ink-strong · --cg-drive-ink-quiet. */
+
+[data-cg-drive] { --dv-h: var(--cg-control-h-sm, 32px); --dv-r: var(--cg-drive-radius, 10px); flex: none; }
+[data-cg-drive][data-size="xs"] { --dv-h: var(--cg-control-h-xs, 24px); --dv-r: 7px; }
+[data-cg-drive][data-size="sm"] { --dv-h: var(--cg-control-h-chip, 28px); --dv-r: 8px; }
+[data-cg-drive][data-size="touch"] { --dv-h: var(--cg-row-min, 44px); --dv-r: 12px; }
+
+/* glass + brand: the mark alone on the glass square (the IconButton's ghost look replaced, its hover kept in spirit) */
+[data-cg-drive][data-cg-icon-button] {
+  width: var(--dv-h); height: var(--dv-h); border-radius: var(--dv-r);
+  background: var(--cg-fill, color-mix(in srgb, var(--cg-text, #e8e6e1) 4%, transparent));
+  box-shadow: inset 0 0 0 1px var(--cg-glass-border-strong, color-mix(in srgb, var(--cg-text, #e8e6e1) 14%, transparent));
+  color: var(--cg-drive-ink, var(--cg-text-secondary, #8a8880));
+}
+[data-cg-drive][data-cg-icon-button][data-variant="brand"] { color: var(--cg-drive-ink-strong, var(--cg-text, #e8e6e1)); }
+[data-cg-drive][data-cg-icon-button]:hover:not(:disabled) {
+  background: var(--cg-fill-hover, color-mix(in srgb, var(--cg-text, #e8e6e1) 8%, transparent));
+  color: var(--cg-text, #e8e6e1);
+}
+[data-cg-drive][data-cg-icon-button]:active:not(:disabled) { background: var(--cg-fill-strong, color-mix(in srgb, var(--cg-text, #e8e6e1) 12%, transparent)); }
+/* the glyph slot follows the mark, not the IconButton's fixed step */
+[data-cg-drive][data-cg-icon-button] [data-cg-icon-button-icon],
+[data-cg-drive][data-cg-icon-button] [data-cg-icon-button-icon] svg { width: auto; height: auto; }
+
+/* words: mark · Open in Drive · ↗ on the ghost Button; the arrow a step quieter */
+[data-cg-drive][data-cg-button] { min-height: var(--dv-h); height: var(--dv-h); border-radius: var(--dv-r); gap: 8px; padding: 0 8px; font-weight: 500; color: var(--cg-drive-ink-strong, var(--cg-text, #e8e6e1)); }
+[data-cg-drive][data-cg-button][data-size="xs"] { padding: 0 8px; gap: 4px; }
+[data-cg-drive][data-cg-button]:hover { color: var(--cg-text, #e8e6e1); }
+[data-cg-drive][data-cg-button] [data-cg-button-icon]:last-child { color: var(--cg-drive-ink-quiet, var(--cg-text-dim, rgba(232, 230, 225, .45))); }
+[data-cg-drive][data-cg-button] [data-cg-button-icon] svg { display: block; }
+[data-cg-drive][data-cg-button][aria-disabled="true"] { opacity: var(--cg-disabled-opacity, .45); pointer-events: none; }
+

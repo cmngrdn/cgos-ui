@@ -384,6 +384,14 @@
   /* A switch knob / slider thumb — white in every theme, the way every OS
      draws one. (v0.77.0, first reader: Toggle.) */
   --cg-knob:                #ffffff;
+  /* PAPER — a document as a sheet on a dark ground (v0.97.0; cgos Library P.5 §3, Feather 2026-11-21: "a lighter
+     direction", not bright white). Warm grey card, not printer paper; ink on it passes AA (7.8–9.5:1, the sub-line
+     4.9:1 on the deep foot). A world may override these for its own stock. */
+  --cg-paper:               oklch(.85 .012 85);
+  --cg-paper-deep:          oklch(.79 .014 85);
+  --cg-paper-ink:           oklch(.27 .02 85);
+  --cg-paper-ink-2:         oklch(.39 .02 85);
+  --cg-paper-line:          oklch(1 0 0 / .45);
 
   /* ── Layer scale ────────────────────────────────────────────────────
      WHY THIS EXISTS. There were 41 distinct z-index values across 94 files
