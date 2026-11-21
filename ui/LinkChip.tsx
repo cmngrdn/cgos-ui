@@ -16,7 +16,8 @@ import './LinkChip.css'
  *
  * On a phone (≤ 767) the chip is the mark alone, a 46px square, the name on `aria-label` — `square={false}` keeps the
  * words (an editor that must read every name). `ghost` is an unlinked platform: dashed, muted, the caller's words
- * ("+ Spotify"). `beside` draws a control right after the chip (a Copy), the two held together.
+ * ("+ Spotify"). `beside` draws a control right after the chip (a Copy), the two held together; `children` stand in for
+ * the words (an editor's field inside the chip).
  *
  * Element: `href` → an `<a>` opening a new tab; else `onClick` → a `<button>`; else a `<span>`. Pure: the caller owns
  * analytics (pass it in `onClick`). Theme with `--cg-link-chip-accent` · `--cg-link-chip-text` · `--cg-link-chip-font`
@@ -40,6 +41,8 @@ export interface LinkChipProps {
   square?: boolean
   /** a control right after the chip, held together with it */
   beside?: ReactNode
+  /** in place of the words (an editor's field inside the chip); the label still names it */
+  children?: ReactNode
   title?: string
   'aria-label'?: string
   className?: string
@@ -54,7 +57,7 @@ export function linkChipLabel(platform: string, label?: string): string {
   return platform.replace(/_/g, ' ')
 }
 
-export function LinkChip({ platform, label, href, onClick, mark, ghost, pending, square = true, beside, title, className, ...rest }: LinkChipProps) {
+export function LinkChip({ platform, label, href, onClick, mark, ghost, pending, square = true, beside, children, title, className, ...rest }: LinkChipProps) {
   const name = linkChipLabel(platform, label)
   const brand = hasBrandMark(platform) ? platform : null
   const ink = brand ? brandInk(brand) : null
@@ -63,7 +66,7 @@ export function LinkChip({ platform, label, href, onClick, mark, ghost, pending,
     : brand ? <SocialBrandIcon platform={brand} size={17} tone="brand" />
     : BUY.has(platform) ? <ShoppingBagOpen size={17} weight="fill" data-cg-link-chip-ic="" />
     : <ArrowSquareOut size={17} data-cg-link-chip-ic="" />
-  const body = <>{glyph}<span data-cg-link-chip-label="">{name}</span></>
+  const body = <>{glyph}{children ?? <span data-cg-link-chip-label="">{name}</span>}</>
   const common = {
     'data-cg-link-chip': '',
     'data-ghost': ghost || undefined,
