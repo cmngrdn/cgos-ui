@@ -29,7 +29,7 @@ export const APP_HEX: Readonly<Record<AppId, string>> = {
   library: '#e36927', // burnt orange
   knowledge: '#d8c9a3', // bone (Feather, 2026-10-22)
   offerings: '#deb95c', // gold
-  dispatch: '#9270f4', // purple
+  dispatch: '#40c95d', // green — the Inbox folded into Dispatch (2026-11-21)
   audience: '#f779ba', // pink
   crew: '#ca2352', // crimson
   productions: '#47c5d2', // teal
@@ -47,7 +47,7 @@ export const APP_HEX_DAY: Readonly<Record<AppId, string>> = {
   library: '#9c3f00',
   knowledge: '#6c5a2a',
   offerings: '#735803',
-  dispatch: '#6841c1',
+  dispatch: '#016b24',
   audience: '#a32b6f',
   crew: '#b90144',
   productions: '#05656e',
