@@ -1,0 +1,83 @@
+/* DocCard (see ui/DocCard.tsx) — the one document: paper, dark ink, the folded corner, the kind's glyph on its tile.
+   Hoisted from cmngrdn's Library `develop-paper.css` (P.5 §3, D3 + V4), so the studio, the Library home and every app
+   draw the same sheet. Ink on paper is held to WCAG AA (ink 8.9:1, ink-2 4.9:1, measured 2026-11-21). */
+
+[data-cg-doc-card] {
+  position: relative; display: flex; min-width: 0; isolation: isolate;
+  width: var(--cg-doc-card-w, auto);
+  /* the shadow lives on the wrapper as a drop-shadow, so it follows the fold the sheet clips */
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.34));
+  --cg-file-glyph-bg: rgba(0, 0, 0, 0.07);
+  --cg-file-glyph-ink: var(--cg-paper-ink, #3a3833);
+}
+/* a folder of sheets: two sheets under it */
+[data-cg-doc-card][data-stack]::before, [data-cg-doc-card][data-stack]::after {
+  content: ""; position: absolute; z-index: -1; border-radius: var(--cg-radius-lg, 12px); background: var(--cg-paper-deep, #c4c0b6);
+}
+[data-cg-doc-card][data-stack]::before { inset: 3px -3px -3px 3px; }
+[data-cg-doc-card][data-stack]::after { inset: 6px -6px -6px 6px; background: color-mix(in oklch, var(--cg-paper-deep, #c4c0b6), black 10%); }
+
+[data-cg-doc-card-sheet] {
+  position: relative; flex: 1 1 auto; min-width: 0; display: flex;
+  min-height: 104px; border-radius: var(--cg-radius-lg, 12px);
+  color: var(--cg-paper-ink, #3a3833);
+  background: linear-gradient(180deg, var(--cg-paper, #d6d3cb), var(--cg-paper-deep, #c4c0b6));
+  box-shadow: inset 0 1px 0 var(--cg-paper-line, rgba(255, 255, 255, 0.45));
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+}
+[data-cg-doc-card][data-size="sm"] [data-cg-doc-card-sheet] { min-height: 72px; }
+/* the fold */
+[data-cg-doc-card-sheet]::after {
+  content: ""; position: absolute; right: 0; top: 0; width: 18px; height: 18px; pointer-events: none;
+  background: color-mix(in oklch, var(--cg-paper-deep, #c4c0b6), black 8%); border-bottom-left-radius: 4px;
+}
+
+[data-cg-doc-card-open] {
+  flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: stretch; gap: 8px;
+  padding: 12px; margin: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; text-decoration: none;
+  border-radius: inherit;
+}
+a[data-cg-doc-card-open], button[data-cg-doc-card-open] { cursor: pointer; }
+button[data-cg-doc-card-open]:disabled { cursor: default; }
+[data-cg-doc-card-open]:focus-visible { outline: 2px solid var(--cg-doc-card-ring, var(--cg-accent, #2dd4a8)); outline-offset: -2px; }
+[data-cg-doc-card][data-size="sm"] [data-cg-doc-card-open] { flex-direction: row; align-items: center; gap: 12px; }
+
+[data-cg-doc-card-text] { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+[data-cg-doc-card-title] {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden;
+  font-size: var(--cg-type-small-size, 13px); line-height: 1.3; font-weight: 500;
+}
+[data-cg-doc-card][data-size="sm"] [data-cg-doc-card-title] { -webkit-line-clamp: 2; line-clamp: 2; }
+[data-cg-doc-card-sub] {
+  margin-top: auto; display: block; color: var(--cg-paper-ink-2, #5a574f);
+  font-size: var(--cg-type-detail-size, 12px); line-height: 1.2;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
+/* the verbs: top-right, clear of the fold, re-inked for paper; they rise on hover */
+[data-cg-doc-card-acts] {
+  position: absolute; right: 24px; top: 8px; display: inline-flex; align-items: center; gap: 2px;
+  color: var(--cg-paper-ink-2, #5a574f);
+  --cg-drive-ink: var(--cg-paper-ink-2, #5a574f);
+  --cg-drive-ink-strong: var(--cg-paper-ink, #3a3833);
+}
+[data-cg-doc-card-acts] [data-cg-icon-button] { color: var(--cg-paper-ink-2, #5a574f); }
+[data-cg-doc-card-acts] [data-cg-icon-button]:hover:not(:disabled) { background: rgba(0, 0, 0, 0.08); color: var(--cg-paper-ink, #3a3833); }
+[data-cg-doc-card-acts] [data-cg-drive][data-cg-icon-button] { background: rgba(0, 0, 0, 0.06); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12); }
+
+@media (hover: hover) and (pointer: fine) {
+  [data-cg-doc-card] { transition: filter 120ms var(--cg-ease-out, ease-out); }
+  [data-cg-doc-card]:hover { filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.44)); }
+  [data-cg-doc-card-acts] > * { transition: opacity 120ms var(--cg-ease-out, ease-out); }
+  [data-cg-doc-card]:not(:hover):not(:focus-within):not([data-menu]) [data-cg-doc-card-acts] > * { opacity: 0; }
+  /* a kind that LEAVES for Drive keeps its Drive mark on the face at rest */
+  [data-cg-doc-card][data-leaves]:not(:hover):not(:focus-within):not([data-menu]) [data-cg-doc-card-acts] > [data-cg-drive] { opacity: 1; }
+  /* the hover ring sits inside the edge (an outer ring would be clipped with the fold) */
+  [data-cg-doc-card]:hover [data-cg-doc-card-sheet], [data-cg-doc-card][data-menu] [data-cg-doc-card-sheet] {
+    box-shadow: inset 0 1px 0 var(--cg-paper-line, rgba(255, 255, 255, 0.45)), inset 0 0 0 1.5px color-mix(in oklch, var(--cg-doc-card-ring, var(--cg-accent, #2dd4a8)) 55%, transparent);
+  }
+}
+[data-cg-doc-card][data-current] [data-cg-doc-card-sheet] {
+  box-shadow: inset 0 1px 0 var(--cg-paper-line, rgba(255, 255, 255, 0.45)), inset 0 0 0 1.5px color-mix(in oklch, var(--cg-doc-card-ring, var(--cg-accent, #2dd4a8)) 70%, transparent);
+}
+@media (prefers-reduced-motion: reduce) { [data-cg-doc-card], [data-cg-doc-card-acts] > * { transition: none; } }

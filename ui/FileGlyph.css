@@ -1,0 +1,10 @@
+/* FileGlyph's tile (see ui/FileGlyph.tsx): the one document tile — a small rounded square, the kind's glyph centred.
+   26px at the default 14px glyph (the size × 1.86). */
+[data-cg-file-glyph] {
+  flex: none;
+  width: var(--_s, 26px); height: var(--_s, 26px);
+  border-radius: calc(var(--_s, 26px) * 0.27);
+  display: grid; place-items: center;
+  background: var(--cg-file-glyph-bg, rgba(232, 230, 225, 0.06));
+  color: var(--cg-file-glyph-ink, var(--cg-text-secondary, #8a8880));
+}
